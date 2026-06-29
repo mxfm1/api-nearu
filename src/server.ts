@@ -3,6 +3,9 @@ import { createApp } from './presentation/app';
 
 const app = createApp();
 
+const hasAuthSecret = !!process.env.BETTER_AUTH_SECRET;
+console.log(`🔑 BETTER_AUTH_SECRET ${hasAuthSecret ? '✓ set' : '✗ MISSING'}`);
+
 app.listen(config.port, () => {
   console.log(`🚀 Server running on http://localhost:${config.port}`);
   console.log(`📊 Environment: ${config.nodeEnv}`);

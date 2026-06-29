@@ -13,7 +13,6 @@
     "db:generate": "npx drizzle-kit generate",
     "db:push": "npx drizzle-kit push",
     "db:studio": "npx drizzle-kit studio",
-    "postinstall": "drizzle-kit migrate",
     "lint": "tsc --noEmit"
   },
   "dependencies": {

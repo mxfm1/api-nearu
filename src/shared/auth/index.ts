@@ -15,6 +15,7 @@ export const auth = betterAuth({
       verification: schema.verifications,
     },
   }),
+  trustedOrigins: config.appOrigins,
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false,

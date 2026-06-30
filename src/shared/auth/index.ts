@@ -44,10 +44,15 @@ export const auth = betterAuth({
   emailVerification: {
     sendVerificationEmail: async ({ user, url, token }) => {
       try {
-        console.log('[Auth] 📧 Verification URL generated:', url);
-        const parsed = new URL(url);
-        const modifiedUrl = parsed.toString();
-        await emailService.sendVerificationEmail({ user, url: modifiedUrl });
+        // Build a frontend URL so the user lands on the app, not the API
+        const frontendUrl = new URL(config.corsOrigin);
+        frontendUrl.pathname = '/verify-email';
+        frontendUrl.searchParams.set('token', token ?? '');
+
+        console.log('[Auth] 📧 Original URL:', url);
+        console.log('[Auth] 📧 Frontend URL:', frontendUrl.toString());
+
+        await emailService.sendVerificationEmail({ user, url: frontendUrl.toString() });
         console.log('[Auth] ✓ Verification email sent successfully to', user.email);
       } catch (error) {
         console.error('[Auth] ✗ Failed to send verification email to', user.email, ':', error);

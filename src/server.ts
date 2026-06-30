@@ -5,6 +5,7 @@ const app = createApp();
 
 const hasAuthSecret = !!process.env.BETTER_AUTH_SECRET;
 console.log(`🔑 BETTER_AUTH_SECRET ${hasAuthSecret ? '✓ set' : '✗ MISSING'}`);
+console.log(`🌐 BETTER_AUTH_URL: ${process.env.BETTER_AUTH_URL ?? '(usando default)'}`);
 
 app.listen(config.port, () => {
   console.log(`🚀 Server running on http://localhost:${config.port}`);

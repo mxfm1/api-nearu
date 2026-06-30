@@ -44,6 +44,7 @@ export const auth = betterAuth({
   emailVerification: {
     sendVerificationEmail: async ({ user, url, token }) => {
       try {
+        console.log('[Auth] 📧 Verification URL generated:', url);
         const parsed = new URL(url);
         const modifiedUrl = parsed.toString();
         await emailService.sendVerificationEmail({ user, url: modifiedUrl });

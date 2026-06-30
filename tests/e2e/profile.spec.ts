@@ -51,6 +51,8 @@ test.describe('Profile & Custom Auth Endpoints', () => {
     expect(body.data.email).toBe(testEmail);
     expect(body.data.id).toBeDefined();
     expect(body.data.name).toBe('Profile Test');
+    expect(body.data).toHaveProperty('emailVerified');
+    expect(typeof body.data.emailVerified).toBe('boolean');
   });
 
   test('GET /api/auth/me returns 401 without auth', async ({ request }) => {
@@ -75,6 +77,8 @@ test.describe('Profile & Custom Auth Endpoints', () => {
     expect(body.success).toBe(true);
     expect(body.data.name).toBe('Updated Name');
     expect(body.data.email).toBe(testEmail);
+    expect(body.data).toHaveProperty('emailVerified');
+    expect(typeof body.data.emailVerified).toBe('boolean');
   });
 
   test('PATCH /api/users/me returns 401 without auth', async ({ request }) => {

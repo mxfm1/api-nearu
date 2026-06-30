@@ -12,6 +12,7 @@ import { changeEmailController } from '@/src/domains/auth/controllers/change-ema
 import { forgotPasswordController } from '@/src/domains/auth/controllers/forgot-password.controller';
 import { verifyEmailController } from '@/src/domains/auth/controllers/verify-email.controller';
 import { createUserController } from '@/src/domains/users/controllers/users.controller';
+import { getProfileSchema, updateProfileSchema } from '@/src/domains/profiles/validators/profile.validator';
 
 export function createRouter() {
   const router = Router();
@@ -37,6 +38,12 @@ export function createRouter() {
   router.post('/api/auth/change-password', authMiddleware, changePasswordController());
   router.post('/api/auth/change-email', authMiddleware, changeEmailController());
   router.delete('/api/users/:id', authMiddleware, validate(deleteUserSchema), getInjection('IDeleteUserController'));
+
+  // ──────────────────────────────────────────────
+  // PROFILES
+  // ──────────────────────────────────────────────
+  router.get('/api/profiles/:userId', validate(getProfileSchema), getInjection('IGetProfileController'));
+  router.patch('/api/profiles/me', authMiddleware, validate(updateProfileSchema), getInjection('IUpsertProfileController'));
 
   // Public (supplement Better Auth's internal routes)
   router.post('/api/auth/forgot-password', forgotPasswordController());

@@ -12,6 +12,11 @@ import { changeEmailController } from '@/src/domains/auth/controllers/change-ema
 import { forgotPasswordController } from '@/src/domains/auth/controllers/forgot-password.controller';
 import { verifyEmailController } from '@/src/domains/auth/controllers/verify-email.controller';
 import { createUserController } from '@/src/domains/users/controllers/users.controller';
+import {
+  listCategoriesController,
+  listRegionsController,
+  listLocationsController,
+} from '@/src/domains/catalog/controllers/catalog.controller';
 import { getProfileSchema, updateProfileSchema } from '@/src/domains/profiles/validators/profile.validator';
 import { createContactRequestSchema, updateContactRequestStatusSchema } from '@/src/domains/contact-requests/validators/contact-request.validator';
 import { createServiceSchema, updateServiceSchema, getServiceSchema, deleteServiceSchema, listServicesSchema, addPortfolioItemSchema, deletePortfolioItemSchema } from '@/src/domains/services/validators/service.validator';
@@ -24,6 +29,13 @@ export function createRouter() {
   router.get('/api/health', (_req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
   });
+
+  // ──────────────────────────────────────────────
+  // CATALOG (public) — categorías, regiones, ubicaciones
+  // ──────────────────────────────────────────────
+  router.get('/api/categorias', listCategoriesController);
+  router.get('/api/regiones', listRegionsController);
+  router.get('/api/ubicaciones', listLocationsController);
 
   // Users: public
   router.get('/api/users/:id', getInjection('IGetUserController'));

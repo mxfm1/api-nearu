@@ -5,6 +5,12 @@ export const contactInfoItemSchema = z.object({
   value: z.string().min(1),
 });
 
+const portfolioItemSchema = z.object({
+  url: z.string().url('URL inválida'),
+  title: z.string().max(200).optional().nullable(),
+  description: z.string().max(2000).optional().nullable(),
+});
+
 export const createServiceSchema = z.object({
   body: z.object({
     slug: z.string().min(1).regex(/^[a-z0-9-]+$/, 'Slug debe ser solo minúsculas, números y guiones'),
@@ -22,6 +28,7 @@ export const createServiceSchema = z.object({
     locationId: z.string().optional().nullable(),
     categoryId: z.string().optional().nullable(),
     serviceStatus: z.enum(['draft', 'published', 'paused', 'archived']).optional().default('draft'),
+    portfolio: z.array(portfolioItemSchema).optional().default([]),
   }),
 });
 
@@ -43,6 +50,7 @@ export const updateServiceSchema = z.object({
     locationId: z.string().optional().nullable(),
     categoryId: z.string().optional().nullable(),
     serviceStatus: z.enum(['draft', 'published', 'paused', 'archived']).optional(),
+    portfolio: z.array(portfolioItemSchema).optional(),
   }),
 });
 

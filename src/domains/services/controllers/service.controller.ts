@@ -9,14 +9,36 @@ import { presentService, presentServices } from '../presenters/service.presenter
 import { eq } from 'drizzle-orm';
 import { db } from '@/src/shared/database';
 import { profiles } from '@/src/shared/database/schema';
+import { getMissingFields } from '@/src/domains/profiles/config/profile.constants';
 
-async function getProfileIdByUserId(userId: string): Promise<string | null> {
-  const profile = await db
-    .select({ id: profiles.id })
+type ProfileCheck =
+  | { exists: false }
+  | { exists: true; profileId: string; isComplete: boolean; missingFields: string[] };
+
+async function getProfileCheck(userId: string): Promise<ProfileCheck> {
+  const result = await db
+    .select({
+      id: profiles.id,
+      name: profiles.name,
+      description: profiles.description,
+      bannerUrl: profiles.bannerUrl,
+      industry: profiles.industry,
+      location: profiles.location,
+      website: profiles.website,
+      whatsapp: profiles.whatsapp,
+    })
     .from(profiles)
     .where(eq(profiles.userId, userId))
     .limit(1);
-  return profile[0]?.id ?? null;
+  const profile = result[0];
+  if (!profile) return { exists: false };
+  const missingFields = getMissingFields({ ...profile, socialLinks: [] });
+  return {
+    exists: true,
+    profileId: profile.id,
+    isComplete: missingFields.length === 0,
+    missingFields,
+  };
 }
 
 export type ICreateServiceController = ReturnType<typeof createServiceController>;
@@ -26,21 +48,33 @@ export type IListServicesController = ReturnType<typeof listServicesController>;
 export type IDeleteServiceController = ReturnType<typeof deleteServiceController>;
 export type IAddPortfolioItemController = ReturnType<typeof addPortfolioItemController>;
 export type IDeletePortfolioItemController = ReturnType<typeof deletePortfolioItemController>;
+export type IMyServicesController = ReturnType<typeof myServicesController>;
 
 export const createServiceController =
   (createServiceUseCase: ICreateServiceUseCase) =>
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const authUser = (req as any).user;
-      const profileId = await getProfileIdByUserId(authUser.id);
-      if (!profileId) {
+      const profile = await getProfileCheck(authUser.id);
+      if (!profile.exists) {
         res.status(400).json({
           success: false,
           error: { code: 'BAD_REQUEST', message: 'Debes crear un perfil de empresa antes de publicar servicios' },
         });
         return;
       }
-      const service = await createServiceUseCase({ ...req.body, profileId });
+      if (!profile.isComplete) {
+        res.status(400).json({
+          success: false,
+          error: {
+            code: 'PROFILE_INCOMPLETE',
+            message: 'Completá tu perfil antes de publicar servicios',
+            missingFields: profile.missingFields,
+          },
+        });
+        return;
+      }
+      const service = await createServiceUseCase({ ...req.body, profileId: profile.profileId });
       res.status(201).json({ success: true, data: service });
     } catch (error) {
       next(error);
@@ -74,13 +108,14 @@ export const listServicesController =
   (listServicesUseCase: IListServicesUseCase) =>
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const filters = {
+      const filters: Record<string, string | undefined> = {
         profileId: req.query.profileId as string | undefined,
         categoryId: req.query.categoryId as string | undefined,
         locationId: req.query.locationId as string | undefined,
-        serviceStatus: req.query.serviceStatus as string | undefined,
+        serviceStatus: 'published',
         search: req.query.search as string | undefined,
       };
+
       const services = await listServicesUseCase(filters);
       res.json({ success: true, data: presentServices(services) });
     } catch (error) {
@@ -123,6 +158,27 @@ export const deletePortfolioItemController =
     try {
       await servicePortfolioRepository.delete(req.params.portfolioId);
       res.status(204).end();
+    } catch (error) {
+      next(error);
+    }
+  };
+
+export const myServicesController =
+  (listServicesUseCase: IListServicesUseCase) =>
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const authUser = (req as any).user;
+      const profile = await getProfileCheck(authUser.id);
+      if (!profile.exists) {
+        res.status(400).json({
+          success: false,
+          error: { code: 'BAD_REQUEST', message: 'Debes crear un perfil de empresa antes de publicar servicios' },
+        });
+        return;
+      }
+
+      const services = await listServicesUseCase({ profileId: profile.profileId });
+      res.json({ success: true, data: presentServices(services) });
     } catch (error) {
       next(error);
     }

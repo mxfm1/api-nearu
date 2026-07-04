@@ -7,7 +7,7 @@ export function presentEvent(event: EventWithDetails) {
     slug: event.slug,
     title: event.title,
     description: event.description,
-    startAt: event.startAt?.toISOString?.() ?? event.startAt,
+    startAt: event.startAt instanceof Date ? event.startAt.toISOString() : event.startAt,
     location: event.locationId
       ? {
           id: event.locationId,

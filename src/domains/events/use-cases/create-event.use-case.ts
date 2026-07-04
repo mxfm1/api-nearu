@@ -1,11 +1,12 @@
 import type { Event } from '../entities/event.entity';
 import type { IEventsRepository } from '../repositories/events.repository.interface';
+import { slugifyUnique } from '@/src/shared/utils/slugify';
 
 export type ICreateEventUseCase = ReturnType<typeof createEventUseCase>;
 
 export interface CreateEventInput {
   profileId: string;
-  slug: string;
+  slug?: string;
   title: string;
   description?: string | null;
   startAt?: Date | string | null;
@@ -18,10 +19,10 @@ export interface CreateEventInput {
 export const createEventUseCase =
   (eventsRepository: IEventsRepository) =>
   async (input: CreateEventInput): Promise<Event> => {
-    const existing = await eventsRepository.findBySlug(input.slug);
-    if (existing) {
-      throw new Error('Ya existe un evento con ese slug');
-    }
+    const slug = input.slug ?? await slugifyUnique(input.title, async (s) => {
+      const existing = await eventsRepository.findBySlug(s);
+      return existing !== null;
+    });
 
-    return eventsRepository.create(input);
+    return eventsRepository.create({ ...input, slug });
   };

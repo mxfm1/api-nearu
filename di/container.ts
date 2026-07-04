@@ -37,6 +37,7 @@ import {
   deleteServiceController,
   addPortfolioItemController,
   deletePortfolioItemController,
+  myServicesController,
 } from '@/src/domains/services/controllers/service.controller';
 import { EventsRepository } from '@/src/domains/events/repositories/events.repository';
 import { createEventUseCase } from '@/src/domains/events/use-cases/create-event.use-case';
@@ -50,6 +51,8 @@ import {
   updateEventController,
   listEventsController,
   deleteEventController,
+  myEventsController,
+  getMyEventController,
 } from '@/src/domains/events/controllers/event.controller';
 
 const container = createContainer();
@@ -96,12 +99,14 @@ container.bind(DI_SYMBOLS.IUpdateContactRequestStatusUseCase).toHigherOrderFunct
 // Services use cases
 container.bind(DI_SYMBOLS.ICreateServiceUseCase).toHigherOrderFunction(createServiceUseCase, [
   DI_SYMBOLS.IServicesRepository,
+  DI_SYMBOLS.IServicePortfolioRepository,
 ]);
 container.bind(DI_SYMBOLS.IGetServiceUseCase).toHigherOrderFunction(getServiceUseCase, [
   DI_SYMBOLS.IServicesRepository,
 ]);
 container.bind(DI_SYMBOLS.IUpdateServiceUseCase).toHigherOrderFunction(updateServiceUseCase, [
   DI_SYMBOLS.IServicesRepository,
+  DI_SYMBOLS.IServicePortfolioRepository,
 ]);
 container.bind(DI_SYMBOLS.IListServicesUseCase).toHigherOrderFunction(listServicesUseCase, [
   DI_SYMBOLS.IServicesRepository,
@@ -173,6 +178,9 @@ container.bind(DI_SYMBOLS.IAddPortfolioItemController).toHigherOrderFunction(add
 container.bind(DI_SYMBOLS.IDeletePortfolioItemController).toHigherOrderFunction(deletePortfolioItemController, [
   DI_SYMBOLS.IServicePortfolioRepository,
 ]);
+container.bind(DI_SYMBOLS.IMyServicesController).toHigherOrderFunction(myServicesController, [
+  DI_SYMBOLS.IListServicesUseCase,
+]);
 // Events controllers
 container.bind(DI_SYMBOLS.ICreateEventController).toHigherOrderFunction(createEventController, [
   DI_SYMBOLS.ICreateEventUseCase,
@@ -188,6 +196,12 @@ container.bind(DI_SYMBOLS.IListEventsController).toHigherOrderFunction(listEvent
 ]);
 container.bind(DI_SYMBOLS.IDeleteEventController).toHigherOrderFunction(deleteEventController, [
   DI_SYMBOLS.IDeleteEventUseCase,
+]);
+container.bind(DI_SYMBOLS.IMyEventsController).toHigherOrderFunction(myEventsController, [
+  DI_SYMBOLS.IListEventsUseCase,
+]);
+container.bind(DI_SYMBOLS.IGetMyEventController).toHigherOrderFunction(getMyEventController, [
+  DI_SYMBOLS.IGetEventUseCase,
 ]);
 
 export function getInjection<K extends keyof DI_RETURN_TYPES>(symbol: K): DI_RETURN_TYPES[K] {

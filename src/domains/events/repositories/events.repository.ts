@@ -164,7 +164,7 @@ export class EventsRepository implements IEventsRepository {
           slug: data.slug,
           title: data.title,
           description: data.description ?? null,
-          startAt: data.startAt ?? null,
+          startAt: data.startAt ? new Date(data.startAt) : null,
           locationId: data.locationId ?? null,
           categoryId: data.categoryId ?? null,
           thumbnailUrl: data.thumbnailUrl ?? null,
@@ -194,7 +194,11 @@ export class EventsRepository implements IEventsRepository {
     try {
       const result = await db
         .update(events)
-        .set({ ...data, updatedAt: new Date() })
+        .set({
+          ...data,
+          startAt: data.startAt ? new Date(data.startAt) : null,
+          updatedAt: new Date(),
+        })
         .where(eq(events.id, id))
         .returning();
       return result[0] as Event;

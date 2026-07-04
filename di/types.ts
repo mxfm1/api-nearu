@@ -21,14 +21,14 @@ import type { IGetServiceUseCase } from '@/src/domains/services/use-cases/get-se
 import type { IUpdateServiceUseCase } from '@/src/domains/services/use-cases/update-service.use-case';
 import type { IListServicesUseCase } from '@/src/domains/services/use-cases/list-services.use-case';
 import type { IDeleteServiceUseCase } from '@/src/domains/services/use-cases/delete-service.use-case';
-import type { ICreateServiceController, IGetServiceController, IUpdateServiceController, IListServicesController, IDeleteServiceController, IAddPortfolioItemController, IDeletePortfolioItemController } from '@/src/domains/services/controllers/service.controller';
+import type { ICreateServiceController, IGetServiceController, IUpdateServiceController, IListServicesController, IDeleteServiceController, IAddPortfolioItemController, IDeletePortfolioItemController, IMyServicesController } from '@/src/domains/services/controllers/service.controller';
 import type { IEventsRepository } from '@/src/domains/events/repositories/events.repository.interface';
 import type { ICreateEventUseCase } from '@/src/domains/events/use-cases/create-event.use-case';
 import type { IGetEventUseCase } from '@/src/domains/events/use-cases/get-event.use-case';
 import type { IUpdateEventUseCase } from '@/src/domains/events/use-cases/update-event.use-case';
 import type { IListEventsUseCase } from '@/src/domains/events/use-cases/list-events.use-case';
 import type { IDeleteEventUseCase } from '@/src/domains/events/use-cases/delete-event.use-case';
-import type { ICreateEventController, IGetEventController, IUpdateEventController, IListEventsController, IDeleteEventController } from '@/src/domains/events/controllers/event.controller';
+import type { ICreateEventController, IGetEventController, IUpdateEventController, IListEventsController, IDeleteEventController, IMyEventsController, IGetMyEventController } from '@/src/domains/events/controllers/event.controller';
 
 export const DI_SYMBOLS = {
   IAuthenticationService: Symbol.for('IAuthenticationService'),
@@ -67,6 +67,7 @@ export const DI_SYMBOLS = {
   IDeleteServiceController: Symbol.for('IDeleteServiceController'),
   IAddPortfolioItemController: Symbol.for('IAddPortfolioItemController'),
   IDeletePortfolioItemController: Symbol.for('IDeletePortfolioItemController'),
+  IMyServicesController: Symbol.for('IMyServicesController'),
   // Events
   IEventsRepository: Symbol.for('IEventsRepository'),
   ICreateEventUseCase: Symbol.for('ICreateEventUseCase'),
@@ -79,6 +80,8 @@ export const DI_SYMBOLS = {
   IUpdateEventController: Symbol.for('IUpdateEventController'),
   IListEventsController: Symbol.for('IListEventsController'),
   IDeleteEventController: Symbol.for('IDeleteEventController'),
+  IMyEventsController: Symbol.for('IMyEventsController'),
+  IGetMyEventController: Symbol.for('IGetMyEventController'),
 };
 
 export interface DI_RETURN_TYPES {
@@ -118,6 +121,7 @@ export interface DI_RETURN_TYPES {
   IDeleteServiceController: IDeleteServiceController;
   IAddPortfolioItemController: IAddPortfolioItemController;
   IDeletePortfolioItemController: IDeletePortfolioItemController;
+  IMyServicesController: IMyServicesController;
   // Events
   IEventsRepository: IEventsRepository;
   ICreateEventUseCase: ICreateEventUseCase;
@@ -130,4 +134,6 @@ export interface DI_RETURN_TYPES {
   IUpdateEventController: IUpdateEventController;
   IListEventsController: IListEventsController;
   IDeleteEventController: IDeleteEventController;
+  IMyEventsController: IMyEventsController;
+  IGetMyEventController: IGetMyEventController;
 }

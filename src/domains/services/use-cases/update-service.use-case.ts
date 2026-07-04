@@ -1,12 +1,19 @@
-import type { Service } from '../entities/service.entity';
+import type { ServiceWithDetails } from '../entities/service.entity';
 import type { IServicesRepository } from '../repositories/services.repository.interface';
+import type { IServicePortfolioRepository } from '../repositories/service-portfolio.repository.interface';
 import { NotFoundError, UnauthorizedError } from '@/src/shared/errors/common';
 import { UnauthorizedError as AuthError } from '@/src/shared/errors/auth';
 
 export type IUpdateServiceUseCase = ReturnType<typeof updateServiceUseCase>;
 
+export interface PortfolioInput {
+  url: string;
+  title?: string | null;
+  description?: string | null;
+}
+
 export const updateServiceUseCase =
-  (servicesRepository: IServicesRepository) =>
+  (servicesRepository: IServicesRepository, portfolioRepository: IServicePortfolioRepository) =>
   async (
     id: string,
     userId: string,
@@ -19,24 +26,20 @@ export const updateServiceUseCase =
       priceMin: number | null;
       priceMax: number | null;
       availability: string | null;
-      contactInfo: Service['contactInfo'];
+      contactInfo: ServiceWithDetails['contactInfo'];
       bannerUrl: string | null;
       logoUrl: string | null;
       thumbnailUrl: string | null;
       locationId: string | null;
       categoryId: string | null;
       serviceStatus: string;
+      portfolio: PortfolioInput[];
     }>
-  ): Promise<Service> => {
+  ): Promise<ServiceWithDetails> => {
     const existing = await servicesRepository.findById(id);
     if (!existing) throw new NotFoundError('Service');
 
-    // Verify ownership: the service's profileId must correspond to the user
-    // We check userId matches the profile's user (we need to verify profile ownership)
-    // For now, we check if the profile belongs to this user via the profileId
-    // This is a simplified check - in production, verify via profiles table
     if (existing.profileId !== userId) {
-      // Check if the profile belongs to the user
       const { eq } = await import('drizzle-orm');
       const { db } = await import('@/src/shared/database');
       const { profiles } = await import('@/src/shared/database/schema');
@@ -51,5 +54,21 @@ export const updateServiceUseCase =
       }
     }
 
-    return servicesRepository.update(id, data);
+    const { portfolio, ...serviceData } = data;
+    await servicesRepository.update(id, serviceData);
+
+    if (portfolio !== undefined) {
+      await portfolioRepository.deleteByServiceId(id);
+      for (const item of portfolio) {
+        await portfolioRepository.create({
+          serviceId: id,
+          url: item.url,
+          title: item.title,
+          description: item.description,
+        });
+      }
+    }
+
+    const enriched = await servicesRepository.findById(id);
+    return enriched!;
   };

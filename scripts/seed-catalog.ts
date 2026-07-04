@@ -21,14 +21,16 @@ async function seedCatalog() {
   ];
 
   const eventCategories = [
-    'Música',
-    'Comida & Bebida',
-    'Tecnología',
-    'Moda & Belleza',
-    'Deportes',
-    'Arte & Cultura',
-    'Networking & Negocios',
-    'Educación & Talleres',
+    'Conferencias & Seminarios',
+    'Congresos & Convenciones',
+    'Lanzamientos de Producto',
+    'Cenas de Gala & Premiaciones',
+    'Talleres & Workshops Corporativos',
+    'Ferias & Exposiciones',
+    'Team Building & Retiros',
+    'Juntas & Reuniones Ejecutivas',
+    'Networking Empresarial',
+    'After Office & Cocktails Corporativos',
   ];
 
   const allCategories = [
@@ -64,46 +66,174 @@ async function seedCatalog() {
 
   const regionsData = [
     {
-      name: 'Metropolitana',
-      slug: 'metropolitana',
+      name: 'Arica y Parinacota',
+      slug: 'arica-y-parinacota',
       locations: [
-        'Santiago, RM',
-        'Providencia',
-        'Las Condes',
-        'Espacio Riesco, Santiago',
-        'Centro de Convenciones, Santiago',
-        'Hotel W, Santiago',
-        'Parque Bicentenario, Santiago',
-        'Teatro Municipal, Santiago',
-        'Centro Cultural GAM',
-        'Barrio Bellavista, Santiago',
-        'CoWork Providencia',
+        'Arica',
+        'Parinacota',
+        'Termas de Jurasi',
+      ],
+    },
+    {
+      name: 'Tarapacá',
+      slug: 'tarapaca',
+      locations: [
+        'Iquique',
+        'Alto Hospicio',
+        'Humberstone',
+      ],
+    },
+    {
+      name: 'Antofagasta',
+      slug: 'antofagasta',
+      locations: [
+        'Antofagasta',
+        'San Pedro de Atacama',
+        'Calama',
+      ],
+    },
+    {
+      name: 'Atacama',
+      slug: 'atacama',
+      locations: [
+        'Copiapó',
+        'Vallenar',
+        'Bahía Inglesa',
+      ],
+    },
+    {
+      name: 'Coquimbo',
+      slug: 'coquimbo',
+      locations: [
+        'La Serena',
+        'Coquimbo',
+        'Valle del Elqui',
       ],
     },
     {
       name: 'Valparaíso',
       slug: 'valparaiso',
-      locations: ['Viña del Mar'],
+      locations: [
+        'Valparaíso',
+        'Viña del Mar',
+        'Concón',
+        'Casablanca',
+        'Centro de Convenciones Enjoy Viña',
+        'Hotel Sheraton Miramar',
+      ],
+    },
+    {
+      name: 'Metropolitana',
+      slug: 'metropolitana',
+      locations: [
+        'Santiago Centro',
+        'Providencia',
+        'Las Condes',
+        'Vitacura',
+        'Espacio Riesco',
+        'Centro de Convenciones Metropolitan',
+        'Hotel W Santiago',
+        'Hotel Renaissance',
+        'Parque Bicentenario',
+        'Teatro Municipal',
+        'Centro Cultural GAM',
+        'GAM Digital',
+        'Estación Mapocho',
+        'Barrio Bellavista',
+        'Centro de Convenciones CasaPiedra',
+      ],
+    },
+    {
+      name: "Libertador General Bernardo O'Higgins",
+      slug: 'ohiggins',
+      locations: [
+        'Rancagua',
+        'San Fernando',
+        'Pichilemu',
+        'Santa Cruz',
+      ],
+    },
+    {
+      name: 'Maule',
+      slug: 'maule',
+      locations: [
+        'Talca',
+        'Curicó',
+        'Linares',
+        'Constitución',
+      ],
+    },
+    {
+      name: 'Ñuble',
+      slug: 'nuble',
+      locations: [
+        'Chillán',
+        'San Carlos',
+        'Termas de Chillán',
+      ],
     },
     {
       name: 'Biobío',
       slug: 'biobio',
-      locations: ['Concepción'],
+      locations: [
+        'Concepción',
+        'Talcahuano',
+        'Los Ángeles',
+        'Coronel',
+        'Centro de Eventos Suractivo',
+      ],
     },
     {
-      name: 'Aysén',
+      name: 'La Araucanía',
+      slug: 'la-araucania',
+      locations: [
+        'Temuco',
+        'Pucón',
+        'Villarrica',
+        'Congreso Nacional de Eventos Pucón',
+      ],
+    },
+    {
+      name: 'Los Ríos',
+      slug: 'los-rios',
+      locations: [
+        'Valdivia',
+        'La Unión',
+        'Neltume',
+      ],
+    },
+    {
+      name: 'Los Lagos',
+      slug: 'los-lagos',
+      locations: [
+        'Puerto Montt',
+        'Osorno',
+        'Puerto Varas',
+        'Chiloé',
+        'Hotel Enjoy Puerto Varas',
+      ],
+    },
+    {
+      name: 'Aysén del General Carlos Ibáñez del Campo',
       slug: 'aysen',
-      locations: [],
+      locations: [
+        'Coyhaique',
+        'Puerto Aysén',
+        'Cerro Castillo',
+      ],
     },
     {
-      name: 'Magallanes',
+      name: 'Magallanes y de la Antártica Chilena',
       slug: 'magallanes',
-      locations: ['Punta Arenas'],
+      locations: [
+        'Punta Arenas',
+        'Puerto Natales',
+        'Torres del Paine',
+      ],
     },
   ];
 
   for (const regionData of regionsData) {
-    // Check if region already exists
     const existingRegion = await db
       .select({ id: regions.id })
       .from(regions)
@@ -121,11 +251,10 @@ async function seedCatalog() {
         name: regionData.name,
         slug: regionData.slug,
       });
-      console.log(`  ✓ ${regionData.name}: ${regionData.locations.length} ubicaciones`);
+      console.log(`  ✓ ${regionData.name}`);
     }
 
     if (regionData.locations.length > 0) {
-      // Check existing locations for this region to avoid duplicates
       const existingLocations = await db
         .select({ name: locations.name })
         .from(locations)

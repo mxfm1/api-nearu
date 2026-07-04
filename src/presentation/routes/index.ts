@@ -78,6 +78,8 @@ export function createRouter() {
   router.post('/api/servicios', authMiddleware, validate(createServiceSchema), getInjection('ICreateServiceController'));
   router.patch('/api/servicios/:id', authMiddleware, validate(updateServiceSchema), getInjection('IUpdateServiceController'));
   router.delete('/api/servicios/:id', authMiddleware, validate(deleteServiceSchema), getInjection('IDeleteServiceController'));
+  // My services (protected)
+  router.get('/api/mis-servicios', authMiddleware, getInjection('IMyServicesController'));
   // Portfolio (protected)
   router.post('/api/servicios/:id/portfolio', authMiddleware, validate(addPortfolioItemSchema), getInjection('IAddPortfolioItemController'));
   router.delete('/api/servicios/:id/portfolio/:portfolioId', authMiddleware, validate(deletePortfolioItemSchema), getInjection('IDeletePortfolioItemController'));
@@ -88,6 +90,9 @@ export function createRouter() {
   // Public
   router.get('/api/eventos', validate(listEventsSchema), getInjection('IListEventsController'));
   router.get('/api/eventos/:slugOrId', validate(getEventSchema), getInjection('IGetEventController'));
+  // My events (protected)
+  router.get('/api/mis-eventos', authMiddleware, getInjection('IMyEventsController'));
+  router.get('/api/mis-eventos/:id', authMiddleware, getInjection('IGetMyEventController'));
   // Protected
   router.post('/api/eventos', authMiddleware, validate(createEventSchema), getInjection('ICreateEventController'));
   router.patch('/api/eventos/:id', authMiddleware, validate(updateEventSchema), getInjection('IUpdateEventController'));

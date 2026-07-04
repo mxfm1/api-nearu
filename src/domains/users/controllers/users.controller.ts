@@ -5,6 +5,8 @@ import type { User } from '../entities/user.entity';
 import { auth } from '@/src/shared/auth';
 import { InputParseError, ConflictError } from '@/src/shared/errors/common';
 import { presentUser } from '../presenters/user.presenter';
+import { db } from '@/src/shared/database';
+import { profiles } from '@/src/shared/database/schema';
 
 export type IGetUserController = ReturnType<typeof getUserController>;
 export type ICreateUserController = ReturnType<typeof createUserController>;
@@ -46,6 +48,12 @@ export const createUserController = () =>
         createdAt: result.user.createdAt,
         updatedAt: result.user.updatedAt,
       };
+
+      await db.insert(profiles).values({
+        id: crypto.randomUUID(),
+        userId: result.user.id,
+        name: result.user.name,
+      });
 
       res.status(201).json({ success: true, data: presentUser(user) });
     } catch (error: any) {

@@ -1,6 +1,14 @@
 import type { Profile } from '../entities/profile.entity';
+import { getMissingFields } from '../config/profile.constants';
+
+type PresentableProfile = Profile & {
+  missingFields: string[];
+  isComplete: boolean;
+};
 
 export function presentProfile(profile: Profile) {
+  const missingFields = getMissingFields(profile);
+
   return {
     id: profile.id,
     userId: profile.userId,
@@ -23,5 +31,7 @@ export function presentProfile(profile: Profile) {
     })),
     createdAt: profile.createdAt?.toISOString?.() ?? profile.createdAt,
     updatedAt: profile.updatedAt?.toISOString?.() ?? profile.updatedAt,
-  };
+    missingFields,
+    isComplete: missingFields.length === 0,
+  } satisfies PresentableProfile;
 }

@@ -99,4 +99,75 @@ export const emailService = {
       `,
     });
   },
+
+  sendApplicationReceivedEmail({
+    to,
+    userName,
+    eventTitle,
+  }: {
+    to: string;
+    userName?: string;
+    eventTitle: string;
+  }) {
+    return sendEmail({
+      to,
+      subject: `Tu postulación fue recibida — ${eventTitle}`,
+      html: `
+        <h1>Postulación recibida</h1>
+        <p>Hola${userName ? ` ${userName}` : ''},</p>
+        <p>Tu postulación para <strong>${eventTitle}</strong> ha sido recibida exitosamente.</p>
+        <p>Te notificaremos cuando el organizador revise tu postulación.</p>
+        <p>¡Gracias por tu interés!</p>
+      `,
+    });
+  },
+
+  sendApplicationStatusChangedEmail({
+    to,
+    userName,
+    eventTitle,
+    status,
+  }: {
+    to: string;
+    userName?: string;
+    eventTitle: string;
+    status: 'accepted' | 'rejected';
+  }) {
+    const statusText = status === 'accepted' ? 'aceptada' : 'rechazada';
+    const statusEmoji = status === 'accepted' ? '🎉' : '😔';
+
+    return sendEmail({
+      to,
+      subject: `${statusEmoji} Tu postulación fue ${statusText} — ${eventTitle}`,
+      html: `
+        <h1>Estado de tu postulación</h1>
+        <p>Hola${userName ? ` ${userName}` : ''},</p>
+        <p>Tu postulación para <strong>${eventTitle}</strong> ha sido <strong>${statusText}</strong>.</p>
+        ${status === 'accepted' ? '<p>¡Felicitaciones! Te contactaremos pronto con más detalles.</p>' : '<p>No te desanimes, hay muchas otras oportunidades disponibles.</p>'}
+      `,
+    });
+  },
+
+  sendAccountChangeEmail({
+    to,
+    userName,
+    changeType,
+  }: {
+    to: string;
+    userName?: string;
+    changeType: 'email' | 'password';
+  }) {
+    const changeText = changeType === 'email' ? 'correo electrónico' : 'contraseña';
+
+    return sendEmail({
+      to,
+      subject: `Tu ${changeText} fue actualizado — nearU`,
+      html: `
+        <h1>Cuenta actualizada</h1>
+        <p>Hola${userName ? ` ${userName}` : ''},</p>
+        <p>Tu ${changeText} ha sido actualizado exitosamente.</p>
+        <p>Si no realizaste este cambio, por favor contacta a soporte inmediatamente.</p>
+      `,
+    });
+  },
 };

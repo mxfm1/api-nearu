@@ -223,6 +223,34 @@ export const inboxMessages = pgTable(
 // ──────────────────────────────────────────────
 // NOTIFICATIONS (in-app, type-discriminated)
 // ──────────────────────────────────────────────
+export const notificationTypeEnum = pgEnum('notification_type', [
+  'new_application',
+  'application_reviewing',
+  'application_accepted',
+  'application_rejected',
+  'email_changed',
+  'password_changed',
+  'profile_updated',
+  'account_change',
+  'profile_verified',
+  'profile_revalidation_required',
+  'event_closed',
+  'event_filled',
+  'new_message',
+  'system',
+]);
+
+export const entityTypeEnum = pgEnum('entity_type', [
+  'application',
+  'event',
+  'message',
+  'conversation',
+  'profile',
+  'account',
+  'system',
+  'service',
+]);
+
 export const notifications = pgTable(
   'notifications',
   {
@@ -230,22 +258,56 @@ export const notifications = pgTable(
     userId: text('user_id')
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
-    type: text('type').notNull(),
+    actorProfileId: text('actor_profile_id'),
+    type: notificationTypeEnum('type').notNull(),
     title: text('title').notNull(),
-    message: text('message').notNull(),
-    data: jsonb('data'),
+    body: text('body').notNull(),
+    entityType: entityTypeEnum('entity_type'),
+    entityId: text('entity_id'),
+    actionUrl: text('action_url'),
+    isRead: boolean('is_read').notNull().default(false),
     readAt: timestamp('read_at'),
+    emailSentAt: timestamp('email_sent_at'),
+    metadata: jsonb('metadata'),
     createdAt: timestamp('created_at').notNull().defaultNow(),
   },
   (table) => [
     index('notif_user_idx').on(table.userId),
     index('notif_createdAt_idx').on(table.createdAt),
     index('notif_readAt_idx').on(table.readAt),
+    index('notif_isRead_idx').on(table.isRead),
+    index('notif_type_idx').on(table.type),
+    index('notif_entity_idx').on(table.entityType, table.entityId),
   ],
 );
 
 // ──────────────────────────────────────────────
-// USER NOTIFICATION SETTINGS (email toggle)
+// NOTIFICATION PREFERENCES (per-type)
+// ──────────────────────────────────────────────
+export const notificationPreferences = pgTable(
+  'notification_preferences',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    type: notificationTypeEnum('type').notNull(),
+    emailEnabled: boolean('email_enabled').notNull().default(true),
+    inAppEnabled: boolean('in_app_enabled').notNull().default(true),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at')
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [
+    index('np_user_idx').on(table.userId),
+    index('np_user_type_idx').on(table.userId, table.type),
+  ],
+);
+
+// ──────────────────────────────────────────────
+// USER NOTIFICATION SETTINGS (deprecated — use notification_preferences)
 // ──────────────────────────────────────────────
 export const userNotificationSettings = pgTable(
   'user_notification_settings',
@@ -387,10 +449,18 @@ export const events = pgTable(
     slug: text('slug').notNull().unique(),
     title: text('title').notNull(),
     description: text('description'),
+    requirements: text('requirements'),
     startAt: timestamp('start_at', { withTimezone: true }),
+    applicationDeadline: timestamp('application_deadline'),
     locationId: text('location_id').references(() => locations.id),
     categoryId: text('category_id').references(() => categories.id),
     thumbnailUrl: text('thumbnail_url'),
+    bannerUrl: text('banner_url'),
+    requiredCandidates: integer('required_candidates').notNull().default(1),
+    selectedCandidates: integer('selected_candidates').notNull().default(0),
+    applicationCount: integer('application_count').notNull().default(0),
+    requiresVerifiedProfile: boolean('requires_verified_profile').notNull().default(true),
+    autoCloseWhenFilled: boolean('auto_close_when_filled').notNull().default(true),
     statusId: text('status_id')
       .notNull()
       .references(() => statuses.id),
@@ -406,6 +476,7 @@ export const events = pgTable(
     index('events_categoryId_idx').on(table.categoryId),
     index('events_statusId_idx').on(table.statusId),
     index('events_startAt_idx').on(table.startAt),
+    index('events_applicationDeadline_idx').on(table.applicationDeadline),
     index('events_createdAt_idx').on(table.createdAt),
     index('events_slug_idx').on(table.slug),
   ],
@@ -432,6 +503,27 @@ export const ruleTypeEnum = pgEnum('rule_type', [
   'FAST_RESPONSE_TIME',
   'IS_PREMIUM_COMPANY',
   'CUSTOM_FIELD_MATCH',
+]);
+
+export const threadStatusEnum = pgEnum('thread_status', [
+  'OPEN',
+  'CLOSED',
+  'ARCHIVED',
+]);
+
+export const messageTypeEnum = pgEnum('message_type', [
+  'TEXT',
+  'SYSTEM',
+  'FILE',
+  'IMAGE',
+  'MIXED',
+]);
+
+export const attachmentTypeEnum = pgEnum('attachment_type', [
+  'IMAGE',
+  'DOCUMENT',
+  'VIDEO',
+  'OTHER',
 ]);
 
 export const applications = pgTable(
@@ -511,6 +603,109 @@ export const applicationScoreBreakdown = pgTable(
   ],
 );
 
+// ──────────────────────────────────────────────
+// APPLICATION SCORING FIELDS (respuestas del postulante por regla)
+// ──────────────────────────────────────────────
+export const applicationScoringFields = pgTable(
+  'application_scoring_fields',
+  {
+    id: text('id').primaryKey(),
+    applicationId: text('application_id')
+      .notNull()
+      .references(() => applications.id, { onDelete: 'cascade' }),
+    ruleType: ruleTypeEnum('rule_type').notNull(),
+    value: jsonb('value'),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at')
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [
+    index('asf_applicationId_idx').on(table.applicationId),
+    index('asf_ruleType_idx').on(table.ruleType),
+  ],
+);
+
+// ──────────────────────────────────────────────
+// THREADS (conversaciones post-aceptación)
+// ──────────────────────────────────────────────
+export const threads = pgTable(
+  'threads',
+  {
+    id: text('id').primaryKey(),
+    applicationId: text('application_id')
+      .notNull()
+      .references(() => applications.id, { onDelete: 'cascade' }),
+    status: threadStatusEnum('status').notNull().default('OPEN'),
+    closedAt: timestamp('closed_at'),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at')
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [
+    index('threads_applicationId_idx').on(table.applicationId),
+    index('threads_status_idx').on(table.status),
+  ],
+);
+
+// ──────────────────────────────────────────────
+// MESSAGES (mensajes del chat por thread)
+// ──────────────────────────────────────────────
+export const messages = pgTable(
+  'messages',
+  {
+    id: text('id').primaryKey(),
+    threadId: text('thread_id')
+      .notNull()
+      .references(() => threads.id, { onDelete: 'cascade' }),
+    senderProfileId: text('sender_profile_id')
+      .notNull()
+      .references(() => profiles.id, { onDelete: 'cascade' }),
+    content: text('content'),
+    messageType: messageTypeEnum('message_type').notNull().default('TEXT'),
+    readAt: timestamp('read_at'),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at')
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [
+    index('messages_threadId_idx').on(table.threadId),
+    index('messages_senderProfileId_idx').on(table.senderProfileId),
+    index('messages_createdAt_idx').on(table.createdAt),
+  ],
+);
+
+// ──────────────────────────────────────────────
+// MESSAGE ATTACHMENTS (archivos adjuntos por mensaje)
+// ──────────────────────────────────────────────
+export const messageAttachments = pgTable(
+  'message_attachments',
+  {
+    id: text('id').primaryKey(),
+    messageId: text('message_id')
+      .notNull()
+      .references(() => messages.id, { onDelete: 'cascade' }),
+    fileUrl: text('file_url').notNull(),
+    fileName: text('file_name').notNull(),
+    mimeType: text('mime_type').notNull(),
+    attachmentType: attachmentTypeEnum('attachment_type').notNull(),
+    sizeBytes: integer('size_bytes').notNull(),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at')
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [
+    index('ma_messageId_idx').on(table.messageId),
+  ],
+);
+
 export const testTable = pgTable('test', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
@@ -562,6 +757,7 @@ export const profilesRelations = relations(profiles, ({ one, many }) => ({
   services: many(services),
   events: many(events),
   applications: many(applications),
+  sentMessages: many(messages),
 }));
 
 export const contactRequestsRelations = relations(contactRequests, ({ one, many }) => ({
@@ -689,6 +885,17 @@ export const notificationsRelations = relations(notifications, ({ one }) => ({
     fields: [notifications.userId],
     references: [users.id],
   }),
+  actorProfile: one(profiles, {
+    fields: [notifications.actorProfileId],
+    references: [profiles.id],
+  }),
+}));
+
+export const notificationPreferencesRelations = relations(notificationPreferences, ({ one }) => ({
+  user: one(users, {
+    fields: [notificationPreferences.userId],
+    references: [users.id],
+  }),
 }));
 
 export const userNotificationSettingsRelations = relations(userNotificationSettings, ({ one }) => ({
@@ -725,6 +932,8 @@ export const applicationsRelations = relations(applications, ({ one, many }) => 
     references: [profiles.id],
   }),
   scores: many(applicationScores),
+  scoringFields: many(applicationScoringFields),
+  thread: one(threads),
 }));
 
 export const publicationScoringRulesRelations = relations(publicationScoringRules, ({ one }) => ({
@@ -746,6 +955,40 @@ export const applicationScoreBreakdownRelations = relations(applicationScoreBrea
   score: one(applicationScores, {
     fields: [applicationScoreBreakdown.scoreId],
     references: [applicationScores.id],
+  }),
+}));
+
+export const applicationScoringFieldsRelations = relations(applicationScoringFields, ({ one }) => ({
+  application: one(applications, {
+    fields: [applicationScoringFields.applicationId],
+    references: [applications.id],
+  }),
+}));
+
+export const threadsRelations = relations(threads, ({ one, many }) => ({
+  application: one(applications, {
+    fields: [threads.applicationId],
+    references: [applications.id],
+  }),
+  messages: many(messages),
+}));
+
+export const messagesRelations = relations(messages, ({ one, many }) => ({
+  thread: one(threads, {
+    fields: [messages.threadId],
+    references: [threads.id],
+  }),
+  senderProfile: one(profiles, {
+    fields: [messages.senderProfileId],
+    references: [profiles.id],
+  }),
+  attachments: many(messageAttachments),
+}));
+
+export const messageAttachmentsRelations = relations(messageAttachments, ({ one }) => ({
+  message: one(messages, {
+    fields: [messageAttachments.messageId],
+    references: [messages.id],
   }),
 }));
 

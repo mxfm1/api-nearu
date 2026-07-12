@@ -76,8 +76,11 @@ export const createContactRequestUseCase =
         userId: propietarioId,
         type: 'new_contact_request',
         title: 'Nueva solicitud de contacto',
-        message: 'Has recibido una nueva solicitud de contacto',
-        data: { contactRequestId: request.id },
+        body: 'Has recibido una nueva solicitud de contacto',
+        entityType: service ? 'service' : 'event',
+        entityId: service?.id ?? event?.id ?? null,
+        actionUrl: service ? `/servicios/${service.slug}` : `/eventos/${event?.slug}`,
+        metadata: { contactRequestId: request.id },
       });
     } catch {
       console.warn('[CreateContactRequest] Failed to create notification');
@@ -85,8 +88,8 @@ export const createContactRequestUseCase =
 
     // Send email if enabled
     try {
-      const settings = await notificationsRepository.findSettingsByUserId(propietarioId);
-      if (!settings || settings.emailNotificationsEnabled) {
+      const emailEnabled = await notificationsRepository.isEmailEnabled(propietarioId, 'new_contact_request');
+      if (emailEnabled) {
         const user = await usersRepository.findById(propietarioId);
         if (user?.email) {
           await emailService.sendContactNotificationEmail({

@@ -225,6 +225,9 @@ container.bind(DI_SYMBOLS.ICreateApplicationUseCase).toHigherOrderFunction(creat
   DI_SYMBOLS.IApplicationsRepository,
   DI_SYMBOLS.IEventsRepository,
   DI_SYMBOLS.IProfilesRepository,
+  DI_SYMBOLS.INotificationsRepository,
+  DI_SYMBOLS.ICreateNotificationUseCase,
+  DI_SYMBOLS.IUsersRepository,
 ]);
 container.bind(DI_SYMBOLS.IGetApplicationUseCase).toHigherOrderFunction(getApplicationUseCase, [
   DI_SYMBOLS.IApplicationsRepository,
@@ -244,6 +247,9 @@ container.bind(DI_SYMBOLS.IUpdateApplicationStatusUseCase).toHigherOrderFunction
   DI_SYMBOLS.IApplicationsRepository,
   DI_SYMBOLS.IEventsRepository,
   DI_SYMBOLS.IProfilesRepository,
+  DI_SYMBOLS.INotificationsRepository,
+  DI_SYMBOLS.ICreateNotificationUseCase,
+  DI_SYMBOLS.IUsersRepository,
 ]);
 container.bind(DI_SYMBOLS.IComputeScoreUseCase).toHigherOrderFunction(computeScoreUseCase, [
   DI_SYMBOLS.IApplicationsRepository,
@@ -375,6 +381,8 @@ container.bind(DI_SYMBOLS.IListScoringRulesController).toHigherOrderFunction(lis
 ]);
 container.bind(DI_SYMBOLS.ICreateScoringRulesController).toHigherOrderFunction(createScoringRulesController, [
   DI_SYMBOLS.ICreateScoringRulesUseCase,
+  DI_SYMBOLS.IProfilesRepository,
+  DI_SYMBOLS.IEventsRepository,
 ]);
 
 export function getInjection<K extends keyof DI_RETURN_TYPES>(symbol: K): DI_RETURN_TYPES[K] {

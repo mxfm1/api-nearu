@@ -52,8 +52,14 @@ export function createRouter() {
   // Protected
   router.get('/api/auth/me', authMiddleware, getMeController());
   router.patch('/api/users/me', authMiddleware, updateMeController());
-  router.post('/api/auth/change-password', authMiddleware, changePasswordController());
-  router.post('/api/auth/change-email', authMiddleware, changeEmailController());
+  router.post('/api/auth/change-password', authMiddleware, changePasswordController(
+    getInjection('IUsersRepository'),
+    getInjection('ICreateNotificationUseCase'),
+  ));
+  router.post('/api/auth/change-email', authMiddleware, changeEmailController(
+    getInjection('IUsersRepository'),
+    getInjection('ICreateNotificationUseCase'),
+  ));
   router.delete('/api/users/:id', authMiddleware, validate(deleteUserSchema), getInjection('IDeleteUserController'));
 
   // ──────────────────────────────────────────────

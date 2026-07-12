@@ -15,10 +15,7 @@ export function updateMeController() {
       const { name, image } = req.body;
 
       if (name !== undefined && (typeof name !== 'string' || name.length < 2 || name.length > 100)) {
-        res.status(400).json({
-          success: false,
-          error: { code: 'INPUT_PARSE_ERROR', message: 'Name must be between 2 and 100 characters' },
-        });
+        res.status(400).json({ success: false, errorCode: 'INPUT_PARSE_ERROR' });
         return;
       }
 

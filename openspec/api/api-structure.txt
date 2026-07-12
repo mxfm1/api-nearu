@@ -1,0 +1,114 @@
+Checklist OpenAPI para definir una API profesional
+
+1. Información general
+
+-   openapi version
+-   info.title
+-   info.version
+-   info.description
+-   servers
+
+2. Seguridad
+
+-   securitySchemes
+-   mecanismo de autenticación (cookie, bearer token, api key)
+-   endpoints protegidos y públicos
+
+3. Organización
+
+-   tags por dominio funcional
+    -   Auth
+    -   Profiles
+    -   Services
+    -   Events
+    -   Contacts
+    -   Notifications
+
+4. Definición de endpoint
+
+Para cada endpoint definir: - Método HTTP - Ruta - Summary -
+Description - OperationId - Tags
+
+5. Parámetros
+
+-   Path parameters
+-   Query parameters
+-   Header parameters
+-   Cookie parameters
+
+Para cada parámetro indicar: - nombre - tipo - requerido - descripción -
+ejemplo
+
+6. Request Body
+
+Definir: - content-type - schema - required fields - ejemplos
+
+7. Responses
+
+Definir: - código HTTP - descripción - schema de respuesta - ejemplos
+
+8. Modelo de respuesta estándar
+
+Success: { “success”: true, “data”: {} }
+
+Error: { “success”: false, “error”: { “code”: “…”, “message”: “…” } }
+
+9. Catálogo de errores
+
+Documentar: - código HTTP - error.code - significado - cuándo ocurre
+
+10. Schemas reutilizables
+
+Definir en components.schemas: - User - Profile - Service - Event -
+ContactRequest - Notification
+
+11. Enumeraciones
+
+Documentar todos los enums: - estados - tipos - intenciones - categorías
+
+12. Ejemplos
+
+Agregar: - ejemplo de request - ejemplo de success response - ejemplo de
+error response
+
+13. Versionado
+
+Definir estrategia: - /api/v1 - compatibilidad futura
+
+14. Paginación
+
+Documentar: - page - limit - total - totalPages
+
+15. Filtros y ordenamiento
+
+Documentar: - filtros disponibles - campos de ordenamiento - dirección
+asc/desc
+
+16. Convenciones globales
+
+Definir: - formato de fechas - timezone - nomenclatura - manejo de
+nullables
+
+17. Archivos y uploads
+
+Definir: - multipart/form-data - tipos permitidos - tamaño máximo
+
+18. Deprecaciones
+
+Documentar: - endpoints deprecados - fecha de eliminación - reemplazo
+recomendado
+
+19. Webhooks (si existen)
+
+Definir: - eventos emitidos - payload - reintentos
+
+20. Checklist mínimo profesional
+
+-   Endpoint documentado
+-   Seguridad definida
+-   Request tipado
+-   Response tipada
+-   Errores documentados
+-   Ejemplos incluidos
+-   Enums definidos
+-   Schemas reutilizables

@@ -5,6 +5,7 @@ export function presentUser(user: User) {
     id: user.id,
     name: user.name,
     email: user.email,
+    emailVerified: user.emailVerified,
     image: user.image,
     createdAt: user.createdAt.toISOString(),
     updatedAt: user.updatedAt.toISOString(),

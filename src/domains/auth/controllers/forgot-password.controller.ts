@@ -7,10 +7,7 @@ export function forgotPasswordController() {
       const { email } = req.body;
 
       if (!email) {
-        res.status(400).json({
-          success: false,
-          error: { code: 'INPUT_PARSE_ERROR', message: 'Email is required' },
-        });
+        res.status(400).json({ success: false, errorCode: 'INPUT_PARSE_ERROR' });
         return;
       }
 

@@ -14,18 +14,12 @@ export function changePasswordController() {
       const { currentPassword, newPassword } = req.body;
 
       if (!currentPassword || !newPassword) {
-        res.status(400).json({
-          success: false,
-          error: { code: 'INPUT_PARSE_ERROR', message: 'currentPassword and newPassword are required' },
-        });
+        res.status(400).json({ success: false, errorCode: 'INPUT_PARSE_ERROR' });
         return;
       }
 
       if (typeof newPassword !== 'string' || newPassword.length < 8) {
-        res.status(400).json({
-          success: false,
-          error: { code: 'INPUT_PARSE_ERROR', message: 'Password must be at least 8 characters' },
-        });
+        res.status(400).json({ success: false, errorCode: 'INPUT_PARSE_ERROR' });
         return;
       }
 

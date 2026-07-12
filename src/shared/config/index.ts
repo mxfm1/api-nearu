@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import './env';
 
 export const config = {
   get nodeEnv() {
@@ -16,6 +17,13 @@ export const config = {
   get betterAuthUrl() {
     return process.env.BETTER_AUTH_URL ?? 'http://localhost:3000/api/auth';
   },
+  get appOrigins() {
+    return process.env.APP_ORIGINS
+      ?.split(',')
+      .map(origin => origin.trim())
+      .filter(Boolean) ?? ['http://localhost:3001'];
+  },
+
   get corsOrigin() {
     return process.env.CORS_ORIGIN ?? 'http://localhost:3001';
   },

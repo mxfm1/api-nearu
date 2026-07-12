@@ -1,0 +1,296 @@
+# Contexto del dominio
+
+La plataforma es un marketplace B2B orientado al ecosistema empresarial chileno.
+
+Existen dos tipos de publicaciones:
+
+## Servicios
+
+Los servicios funcionan como un directorio profesional.
+
+```text
+empresa publica servicio
+↓
+empresa interesada envía contacto
+↓
+se inicia conversación
+↓
+negociación libre entre ambas partes
+```
+
+No existe selección automática de candidatos ni ranking de empresas.
+
+---
+
+## Eventos
+
+Los eventos representan oportunidades donde una empresa necesita encontrar uno o varios proveedores, colaboradores o participantes.
+
+```text
+empresa publica evento
+↓
+empresas generan postulaciones
+↓
+el sistema evalúa automáticamente candidatos
+↓
+el organizador selecciona empresas
+↓
+se habilita canal de comunicación
+↓
+se ejecuta el trabajo
+↓
+feedback opcional
+```
+
+Para soportar este flujo se introducen las entidades:
+
+* applications
+* application_scores
+* application_score_breakdown
+* publication_scoring_rules
+* conversations
+* messages
+
+El objetivo es automatizar parcialmente el proceso de selección de proveedores y reducir el tiempo que una empresa dedica a revisar manualmente postulaciones.
+
+---
+
+# ENUM publication_scoring_rules.rule_type
+
+Define los criterios utilizados para evaluar candidatos.
+
+## ENUM
+
+```text
+VERIFIED_PROFILE
+SAME_REGION
+HAS_PORTFOLIO
+YEARS_EXPERIENCE
+HAS_WEBSITE
+HAS_SOCIAL_LINKS
+HAS_COMPANY_DESCRIPTION
+HAS_LOGO
+HAS_BANNER
+HAS_PREVIOUS_FEEDBACK
+AVERAGE_RATING
+NUMBER_OF_COMPLETED_JOBS
+NUMBER_OF_COMPLETED_EVENTS
+HAS_RESPONSE_HISTORY
+FAST_RESPONSE_TIME
+IS_PREMIUM_COMPANY
+CUSTOM_FIELD_MATCH
+```
+
+---
+
+## Explicación de cada regla
+
+### VERIFIED_PROFILE
+
+La empresa completó el proceso de validación empresarial.
+
+---
+
+### SAME_REGION
+
+La empresa pertenece a la misma región del evento.
+
+---
+
+### HAS_PORTFOLIO
+
+Posee elementos publicados en su portfolio.
+
+---
+
+### YEARS_EXPERIENCE
+
+Cantidad de años de experiencia declarados.
+
+---
+
+### HAS_WEBSITE
+
+Posee sitio web corporativo.
+
+---
+
+### HAS_SOCIAL_LINKS
+
+Posee redes sociales corporativas configuradas.
+
+---
+
+### HAS_COMPANY_DESCRIPTION
+
+Posee descripción empresarial suficientemente completa.
+
+---
+
+### HAS_LOGO
+
+Posee logo configurado.
+
+---
+
+### HAS_BANNER
+
+Posee banner corporativo configurado.
+
+---
+
+### HAS_PREVIOUS_FEEDBACK
+
+La empresa ya trabajó anteriormente dentro de la plataforma y posee evaluaciones.
+
+---
+
+### AVERAGE_RATING
+
+Promedio histórico de evaluaciones recibidas.
+
+Ejemplo:
+
+```text
+4.8/5 estrellas
+```
+
+---
+
+### NUMBER_OF_COMPLETED_JOBS
+
+Cantidad de trabajos completados dentro de la plataforma.
+
+---
+
+### NUMBER_OF_COMPLETED_EVENTS
+
+Cantidad de eventos donde la empresa fue seleccionada exitosamente.
+
+---
+
+### HAS_RESPONSE_HISTORY
+
+La empresa históricamente responde mensajes.
+
+Ayuda a evitar proveedores inactivos.
+
+---
+
+### FAST_RESPONSE_TIME
+
+Tiempo promedio de respuesta bajo cierto umbral.
+
+Ejemplo:
+
+```text
+menos de 4 horas
+```
+
+---
+
+### IS_PREMIUM_COMPANY
+
+Preparado para futuras funcionalidades premium.
+
+---
+
+### CUSTOM_FIELD_MATCH
+
+Permite definir reglas específicas del evento mediante configuración dinámica.
+
+Ejemplo:
+
+```json
+{
+  "requiredCertification": "ISO9001"
+}
+```
+
+```json
+{
+  "requiredTechnology": "React"
+}
+```
+
+```json
+{
+  "requiredLanguage": "English"
+}
+```
+
+---
+
+# Regla de negocio: múltiples postulaciones
+
+Una empresa no puede postular más de una vez al mismo evento.
+
+Constraint:
+
+```text
+UNIQUE(event_id, applicant_profile_id)
+```
+
+---
+
+## Validación backend
+
+Antes de crear una postulación el backend debe verificar:
+
+```text
+¿Existe una aplicación previa para:
+
+event_id
++
+applicant_profile_id ?
+```
+
+Si existe:
+
+```text
+throw ApplicationAlreadyExistsError
+```
+
+---
+
+## Error controlado expuesto al frontend
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "APPLICATION_TIMEOUT",
+    "message": "Ya existe una postulación activa para este evento."
+  }
+}
+```
+
+Este error permite al frontend:
+
+* mostrar un mensaje amigable;
+* redirigir al usuario hacia `/mis-aplicaciones`;
+* evitar duplicidad accidental de postulaciones.
+
+---
+
+## Consideración
+
+Semánticamente un código como:
+
+```text
+APPLICATION_ALREADY_EXISTS
+```
+
+o
+
+```text
+APPLICATION_DUPLICATED
+```
+
+describe mejor el problema que `APPLICATION_TIMEOUT`.
+
+Sin embargo, si el equipo decide estandarizar `APPLICATION_TIMEOUT`, el backend y frontend deben tratarlo como:
+
+```text
+"La empresa ya posee una postulación vigente para este evento."
+```

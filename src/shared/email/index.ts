@@ -73,4 +73,30 @@ export const emailService = {
       `,
     });
   },
+
+  sendContactNotificationEmail({ to, propietarioName }: { to: string; propietarioName?: string }) {
+    return sendEmail({
+      to,
+      subject: 'Nueva solicitud de contacto — nearU',
+      html: `
+        <h1>Nueva solicitud de contacto</h1>
+        <p>Hola${propietarioName ? ` ${propietarioName}` : ''},</p>
+        <p>Has recibido una nueva solicitud de contacto en nearU.</p>
+        <p>Inicia sesión para revisar los detalles y responder.</p>
+      `,
+    });
+  },
+
+  sendNewMessageEmail({ to, recipientName }: { to: string; recipientName?: string }) {
+    return sendEmail({
+      to,
+      subject: 'Nuevo mensaje — nearU',
+      html: `
+        <h1>Nuevo mensaje</h1>
+        <p>Hola${recipientName ? ` ${recipientName}` : ''},</p>
+        <p>Has recibido un nuevo mensaje en una conversación de nearU.</p>
+        <p>Inicia sesión para ver el mensaje y responder.</p>
+      `,
+    });
+  },
 };

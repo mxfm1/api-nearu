@@ -4,9 +4,9 @@ export interface IListEventsFilters {
   profileId?: string;
   categoryId?: string;
   locationId?: string;
-  eventStatus?: string;
+  status?: string;
   search?: string;
-  upcoming?: boolean; // only future events
+  upcoming?: boolean;
 }
 
 export interface IEventsRepository {
@@ -23,7 +23,7 @@ export interface IEventsRepository {
     locationId?: string | null;
     categoryId?: string | null;
     thumbnailUrl?: string | null;
-    eventStatus?: string;
+    statusId?: string;
   }): Promise<Event>;
   update(id: string, data: Partial<{
     slug: string;
@@ -33,7 +33,7 @@ export interface IEventsRepository {
     locationId: string | null;
     categoryId: string | null;
     thumbnailUrl: string | null;
-    eventStatus: string;
+    statusId: string;
   }>): Promise<Event>;
   delete(id: string): Promise<void>;
 }

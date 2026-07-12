@@ -26,7 +26,11 @@ export function presentEvent(event: EventWithDetails) {
       name: event.profileName,
       slug: event.profileSlug,
     },
-    eventStatus: event.eventStatus,
+    status: {
+      id: event.statusId,
+      name: event.statusName,
+      slug: event.statusSlug,
+    },
     createdAt: event.createdAt?.toISOString?.() ?? event.createdAt,
     updatedAt: event.updatedAt?.toISOString?.() ?? event.updatedAt,
   };

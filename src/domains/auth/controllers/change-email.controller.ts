@@ -14,10 +14,7 @@ export function changeEmailController() {
       const { newEmail } = req.body;
 
       if (!newEmail) {
-        res.status(400).json({
-          success: false,
-          error: { code: 'INPUT_PARSE_ERROR', message: 'newEmail is required' },
-        });
+        res.status(400).json({ success: false, errorCode: 'INPUT_PARSE_ERROR' });
         return;
       }
 

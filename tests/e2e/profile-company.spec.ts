@@ -49,7 +49,7 @@ test.describe('Company Profile Endpoints', () => {
 
     const body = await res.json();
     expect(body.success).toBe(false);
-    expect(body.error.code).toBe('NOT_FOUND');
+    expect(body.errorCode).toBe('NOT_FOUND');
   });
 
   test('PATCH /api/profiles/me creates a new profile (upsert)', async ({ request }) => {

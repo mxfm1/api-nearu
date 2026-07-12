@@ -5,7 +5,7 @@ import { UnauthorizedError } from '@/src/shared/errors/auth';
 
 export type IUpdateContactRequestStatusUseCase = ReturnType<typeof updateContactRequestStatusUseCase>;
 
-const VALID_STATUSES = ['pendiente', 'leido', 'respondido', 'archivado'];
+const VALID_STATUSES = ['pendiente', 'en_curso', 'cerrada'];
 
 export const updateContactRequestStatusUseCase =
   (contactRequestsRepository: IContactRequestsRepository) =>

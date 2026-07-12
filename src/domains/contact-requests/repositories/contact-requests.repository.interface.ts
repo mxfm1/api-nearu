@@ -3,11 +3,13 @@ import type { ContactRequest, ContactRequestWithUsers } from '../entities/contac
 export interface IContactRequestsRepository {
   findById(id: string): Promise<ContactRequestWithUsers | null>;
   findByPropietarioId(propietarioId: string): Promise<ContactRequestWithUsers[]>;
+  findByRemitenteId(remitenteId: string): Promise<ContactRequestWithUsers[]>;
   create(data: {
-    servicioId: string;
+    servicioId?: string | null;
+    eventoId?: string | null;
     propietarioId: string;
     remitenteId: string;
-    mensaje?: string | null;
+    intencion: string;
   }): Promise<ContactRequest>;
   updateEstado(id: string, estado: string): Promise<ContactRequest>;
 }

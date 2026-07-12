@@ -1,6 +1,11 @@
-export interface ServiceContactInfo {
-  type: 'email' | 'telefono' | 'whatsapp' | 'website' | 'instagram' | 'facebook' | 'twitter';
+export interface ServiceContact {
+  id: string;
+  serviceId: string;
+  type: string;
   value: string;
+  readAt: Date | null;
+  respondedAt: Date | null;
+  createdAt: Date;
 }
 
 export interface ServicePortfolioItem {
@@ -24,13 +29,12 @@ export interface Service {
   priceMin: number | null;
   priceMax: number | null;
   availability: string | null;
-  contactInfo: ServiceContactInfo[];
   bannerUrl: string | null;
   logoUrl: string | null;
   thumbnailUrl: string | null;
   locationId: string | null;
   categoryId: string | null;
-  serviceStatus: string;
+  statusId: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -40,5 +44,8 @@ export interface ServiceWithDetails extends Service {
   categoryName: string | null;
   profileName: string | null;
   profileSlug: string | null;
+  statusName: string | null;
+  statusSlug: string | null;
   portfolio: ServicePortfolioItem[];
+  contacts: ServiceContact[];
 }

@@ -29,6 +29,27 @@
       "when": 1782817168729,
       "tag": "0003_numerous_pixie",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1783230328223,
+      "tag": "0004_left_loki",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1783367014401,
+      "tag": "0005_low_wolfsbane",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1783826201615,
+      "tag": "0006_pretty_doctor_octopus",
+      "breakpoints": true
     }
   ]
 }

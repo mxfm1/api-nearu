@@ -20,3 +20,26 @@ export class ConflictError extends AppError {
     this.name = 'ConflictError';
   }
 }
+
+export class ForbiddenError extends AppError {
+  constructor(message: string) {
+    super(message, 403, 'FORBIDDEN');
+    this.name = 'ForbiddenError';
+  }
+}
+
+export class ApplicationAlreadyExistsError extends ConflictError {
+  constructor() {
+    super('Ya existe una postulación activa para este evento.');
+    this.name = 'ApplicationAlreadyExistsError';
+    (this as any).code = 'APPLICATION_ALREADY_EXISTS';
+  }
+}
+
+export class EmptyScoringRulesError extends InputParseError {
+  constructor() {
+    super('Debe configurar al menos una regla de scoring para el evento.');
+    this.name = 'EmptyScoringRulesError';
+    (this as any).code = 'SCORING_RULES_EMPTY';
+  }
+}

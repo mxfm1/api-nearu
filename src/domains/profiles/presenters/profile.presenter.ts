@@ -1,11 +1,6 @@
 import type { Profile } from '../entities/profile.entity';
 import { getMissingFields } from '../config/profile.constants';
 
-type PresentableProfile = Profile & {
-  missingFields: string[];
-  isComplete: boolean;
-};
-
 export function presentProfile(profile: Profile) {
   const missingFields = getMissingFields(profile);
 
@@ -15,10 +10,13 @@ export function presentProfile(profile: Profile) {
     bannerUrl: profile.bannerUrl,
     logoUrl: profile.logoUrl,
     name: profile.name,
+    slug: profile.slug,
     industry: profile.industry,
     description: profile.description,
-    tags: profile.tags,
-    location: profile.location,
+    tags: (profile.tags ?? []).map((t) => ({ id: t.id, name: t.name, slug: t.slug })),
+    location: profile.locationId
+      ? { id: profile.locationId, name: profile.locationName ?? null }
+      : null,
     founded: profile.founded,
     employees: profile.employees,
     website: profile.website,
@@ -33,5 +31,5 @@ export function presentProfile(profile: Profile) {
     updatedAt: profile.updatedAt?.toISOString?.() ?? profile.updatedAt,
     missingFields,
     isComplete: missingFields.length === 0,
-  } satisfies PresentableProfile;
+  };
 }

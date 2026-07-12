@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-export const contactInfoItemSchema = z.object({
-  type: z.enum(['email', 'telefono', 'whatsapp', 'website', 'instagram', 'facebook', 'twitter']),
+const contactItemSchema = z.object({
+  type: z.string().min(1),
   value: z.string().min(1),
 });
 
@@ -21,13 +21,13 @@ export const createServiceSchema = z.object({
     priceMin: z.number().int().min(0).optional().nullable(),
     priceMax: z.number().int().min(0).optional().nullable(),
     availability: z.string().max(500).optional().nullable(),
-    contactInfo: z.array(contactInfoItemSchema).optional().default([]),
     bannerUrl: z.string().url().optional().nullable(),
     logoUrl: z.string().url().optional().nullable(),
     thumbnailUrl: z.string().url().optional().nullable(),
     locationId: z.string().optional().nullable(),
     categoryId: z.string().optional().nullable(),
-    serviceStatus: z.enum(['draft', 'published', 'paused', 'archived']).optional().default('draft'),
+    status: z.enum(['draft', 'published', 'paused', 'archived']).optional().default('draft'),
+    contacts: z.array(contactItemSchema).optional().default([]),
     portfolio: z.array(portfolioItemSchema).optional().default([]),
   }),
 });
@@ -43,13 +43,13 @@ export const updateServiceSchema = z.object({
     priceMin: z.number().int().min(0).optional().nullable(),
     priceMax: z.number().int().min(0).optional().nullable(),
     availability: z.string().max(500).optional().nullable(),
-    contactInfo: z.array(contactInfoItemSchema).optional(),
     bannerUrl: z.string().url().optional().nullable(),
     logoUrl: z.string().url().optional().nullable(),
     thumbnailUrl: z.string().url().optional().nullable(),
     locationId: z.string().optional().nullable(),
     categoryId: z.string().optional().nullable(),
-    serviceStatus: z.enum(['draft', 'published', 'paused', 'archived']).optional(),
+    status: z.enum(['draft', 'published', 'paused', 'archived']).optional(),
+    contacts: z.array(contactItemSchema).optional(),
     portfolio: z.array(portfolioItemSchema).optional(),
   }),
 });
@@ -67,7 +67,7 @@ export const listServicesSchema = z.object({
     profileId: z.string().optional(),
     categoryId: z.string().optional(),
     locationId: z.string().optional(),
-    serviceStatus: z.string().optional(),
+    status: z.string().optional(),
     search: z.string().optional(),
   }),
 });

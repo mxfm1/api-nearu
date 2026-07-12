@@ -15,7 +15,7 @@ export const createEventSchema = z.object({
     locationId: z.string().optional().nullable(),
     categoryId: z.string().optional().nullable(),
     thumbnailUrl: z.string().url().optional().nullable(),
-    eventStatus: z.enum(['draft', 'published', 'paused', 'archived']).optional().default('draft'),
+    status: z.enum(['draft', 'published', 'paused', 'archived']).optional().default('draft'),
   }),
 });
 
@@ -29,7 +29,7 @@ export const updateEventSchema = z.object({
     locationId: z.string().optional().nullable(),
     categoryId: z.string().optional().nullable(),
     thumbnailUrl: z.string().url().optional().nullable(),
-    eventStatus: z.enum(['draft', 'published', 'paused', 'archived']).optional(),
+    status: z.enum(['draft', 'published', 'paused', 'archived']).optional(),
   }),
 });
 
@@ -46,7 +46,7 @@ export const listEventsSchema = z.object({
     profileId: z.string().optional(),
     categoryId: z.string().optional(),
     locationId: z.string().optional(),
-    eventStatus: z.string().optional(),
+    status: z.string().optional(),
     search: z.string().optional(),
     upcoming: z
       .string()

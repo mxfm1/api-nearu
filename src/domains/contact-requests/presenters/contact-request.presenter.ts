@@ -1,4 +1,4 @@
-import type { ContactRequest, ContactRequestWithUsers } from '../entities/contact-request.entity';
+import type { ContactRequestWithUsers } from '../entities/contact-request.entity';
 
 export function presentContactRequest(request: ContactRequestWithUsers) {
   return {
@@ -11,8 +11,9 @@ export function presentContactRequest(request: ContactRequestWithUsers) {
       email: request.remitenteEmail ?? null,
       imagen: request.remitenteImagen ?? null,
     },
-    mensaje: request.mensaje,
     estado: request.estado,
+    ultimoMensaje: request.ultimoMensaje ?? null,
+    cantidadMensajes: request.cantidadMensajes ?? 0,
     createdAt: request.createdAt?.toISOString?.() ?? request.createdAt,
     updatedAt: request.updatedAt?.toISOString?.() ?? request.updatedAt,
   };

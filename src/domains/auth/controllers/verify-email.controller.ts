@@ -7,10 +7,7 @@ export function verifyEmailController() {
       const { token } = req.body;
 
       if (!token) {
-        res.status(400).json({
-          success: false,
-          error: { code: 'INPUT_PARSE_ERROR', message: 'Token is required' },
-        });
+        res.status(400).json({ success: false, errorCode: 'INPUT_PARSE_ERROR' });
         return;
       }
 
@@ -21,11 +18,7 @@ export function verifyEmailController() {
     } catch (error: any) {
       // Any error from verifyEmail (invalid/expired token, user not found, etc.)
       // is a client error — return 400, not 500
-      const message = error?.message || error?.body?.message || 'Invalid or expired token';
-      res.status(400).json({
-        success: false,
-        error: { code: 'VERIFICATION_FAILED', message },
-      });
+      res.status(400).json({ success: false, errorCode: 'VERIFICATION_FAILED' });
     }
   };
 }

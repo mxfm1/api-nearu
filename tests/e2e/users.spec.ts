@@ -44,7 +44,7 @@ test.describe('Users API (public)', () => {
 
     const body = await response.json();
     expect(body.success).toBe(false);
-    expect(body.error.code).toBe('NOT_FOUND');
+    expect(body.errorCode).toBe('NOT_FOUND');
   });
 
   test('POST /api/users returns 400 for invalid input', async ({ request }) => {
@@ -55,7 +55,7 @@ test.describe('Users API (public)', () => {
 
     const body = await response.json();
     expect(body.success).toBe(false);
-    expect(body.error.code).toBe('INPUT_PARSE_ERROR');
+    expect(body.errorCode).toBe('INPUT_PARSE_ERROR');
   });
 
   test('POST /api/users returns 409 for duplicate email', async ({ request }) => {
@@ -74,6 +74,6 @@ test.describe('Users API (public)', () => {
 
     const body = await response.json();
     expect(body.success).toBe(false);
-    expect(body.error.code).toBe('CONFLICT');
+    expect(body.errorCode).toBe('CONFLICT');
   });
 });

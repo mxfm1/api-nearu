@@ -8,7 +8,7 @@ export interface Event {
   locationId: string | null;
   categoryId: string | null;
   thumbnailUrl: string | null;
-  eventStatus: string;
+  statusId: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -18,4 +18,6 @@ export interface EventWithDetails extends Event {
   categoryName: string | null;
   profileName: string | null;
   profileSlug: string | null;
+  statusName: string | null;
+  statusSlug: string | null;
 }

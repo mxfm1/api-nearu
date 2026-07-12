@@ -1,0 +1,928 @@
+================================================================================
+  NEARU API — DOCUMENTACIÓN COMPLETA
+  ================================================================================
+  Versión: 0.1.0
+  Base URL: http://localhost:3000
+  Formato: OpenAPI 3.0.3
+  Última actualización: 2026-07-07
+
+  ================================================================================
+  1. INFORMACIÓN GENERAL
+  ================================================================================
+
+  - openapi: 3.0.3
+  - info.title: NearU API
+  - info.version: 0.1.0
+  - info.description: |
+      API de NearU — plataforma que conecta profesionales con clientes
+      a través de servicios y eventos. Manejo de perfiles, catálogos,
+      solicitudes de contacto, mensajería y notificaciones.
+
+  - servers:
+      - url: http://localhost:3000
+        description: Desarrollo local
+      - url: https://api-nearu-production.up.railway.app
+        description: Producción (Railway)
+
+  ================================================================================
+  2. SEGURIDAD
+  ================================================================================
+
+  - securitySchemes:
+      cookieAuth:
+        type: apiKey
+        in: cookie
+        name: better-auth-session
+
+  - Mecanismo de autenticación:
+      Se utiliza Better Auth con sesión manejada por cookie HTTP-only.
+      El cliente debe hacer sign-in primero, lo que establece la cookie
+      'better-auth-session'. Todos los endpoints protegidos dependen
+      del middleware authMiddleware que verifica esta cookie e inyecta
+      req.user con { id, email, name }.
+
+  - Endpoints protegidos y públicos:
+
+      Públicos (sin auth):
+        GET  /api/contactos/intenciones   ← Listar intenciones disponibles
+        GET  /api/categorias              ← Listar categorías
+        GET  /api/regiones                ← Listar regiones
+        GET  /api/ubicaciones             ← Listar ubicaciones
+        GET  /api/profiles/:userId        ← Ver perfil público
+        POST /api/users                   ← Registro
+
+      Protegidos (requieren cookieAuth):
+        POST   /api/contactos                             ← Crear solicitud
+        GET    /api/contactos/inbox                       ← Ver inbox
+        GET    /api/contactos/:id                         ← Ver detalle
+        PATCH  /api/contactos/:id/estado                  ← Cambiar estado
+        PATCH  /api/profiles/me                           ← Editar perfil
+
+  ================================================================================
+  3. ORGANIZACIÓN — TAGS POR DOMINIO FUNCIONAL
+  ================================================================================
+
+    Tag            | Descripción
+    ---------------|-----------------------------------------------
+    Auth           | Registro, inicio de sesión, autenticación
+    Profiles       | Perfiles de empresa/profesional
+    Catálogo       | Categorías, regiones, ubicaciones
+    Servicios      | CRUD de servicios (pendiente documentar)
+    Eventos        | CRUD de eventos (pendiente documentar)
+    Contacts       | Solicitudes de contacto, inbox, mensajería
+    Notifications  | Notificaciones in-app y email (pendiente documentar)
+
+  ================================================================================
+  4. DEFINICIÓN DE ENDPOINTS — CONTACTS (SERVICE CONTACTS)
+  ================================================================================
+
+  DOMINIO: Contact Requests (serviceContacts)
+  TAG:     Contacts
+  PREFIX:  /api/contactos
+
+
+  -------------------------------------------------------------------------------
+  4.1 POST /api/contactos — Crear solicitud de contacto
+  -------------------------------------------------------------------------------
+
+  - Método: POST
+  - Ruta: /api/contactos
+  - Summary: Crear una nueva solicitud de contacto
+  - Description: |
+      Crea una solicitud de contacto desde un remitente (autenticado)
+      hacia el propietario de un servicio o evento identificado por slug.
+      El slug se resuelve primero como servicio; si no existe, como evento.
+      Si el usuario provee mensaje y/o attachments, se crea automáticamente
+      el primer mensaje del thread.
+      Dispara notificación in-app al propietario y, si tiene habilitadas
+      las notificaciones email, envía un correo de aviso.
+  - OperationId: createContactRequest
+  - Tags: [Contacts]
+  - Security: cookieAuth
+
+  - Request Body:
+      content-type: application/json
+      required: true
+      schema:
+        type: object
+        required: [slug, intencion]
+        properties:
+          slug:
+            type: string
+            description: Slug del servicio o evento a contactar
+            minLength: 1
+            example: servicio-nuevo-de-pruebs
+          intencion:
+            type: string
+            enum:
+              - Solicitar una cotización
+              - Solicitar una propuesta comercial
+              - Consultar disponibilidad
+              - Realizar una consulta sobre el servicio
+            example: Solicitar una propuesta comercial
+          mensaje:
+            type: string
+            nullable: true
+            maxLength: 2000
+            description: Mensaje inicial opcional
+            example: "Hola, me interesa tu servicio. ¿Podemos agendar una llamada?"
+          attachments:
+            type: array
+            items:
+              type: string
+              format: uri
+            maxItems: 6
+            description: URLs de archivos adjuntos (desde UploadThing)
+            default: []
+            example:
+              - "https://utfs.io/f/4hMAcVuLqlXrfPnTcv7RvEU91wkVQhnG5TrBD6SCIz0KNp2u"
+
+  - Responses:
+      201:
+        description: Solicitud creada exitosamente
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  $ref: '#/components/schemas/ContactRequest'
+            example:
+              success: true
+              data:
+                id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                servicioId: 7edbce6d-6328-4ec5-92a0-006479aedab9
+                eventoId: null
+                propietarioId: gNYcIXwDEpMW0ZBJItuEreONSdsffMod
+                remitenteId: Xa8NDuRz5GMdn6dfpVPoNzfZsrqG8RB3
+                intencion: Solicitar una propuesta comercial
+                estado: pendiente
+                createdAt: "2026-07-07T15:30:00.000Z"
+                updatedAt: "2026-07-07T15:30:00.000Z"
+
+      400:
+        description: Datos inválidos o auto-contacto
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApiError'
+            example:
+              success: false
+              error:
+                code: INPUT_PARSE_ERROR
+                message: No puedes contactarte a ti mismo
+
+      401:
+        description: No autenticado
+        $ref: '#/components/responses/Unauthenticated'
+
+      404:
+        description: Servicio o evento no encontrado
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApiError'
+            example:
+              success: false
+              error:
+                code: NOT_FOUND
+                message: Servicio o evento no encontrado
+
+      500:
+        $ref: '#/components/responses/InternalError'
+
+
+  --------------------------------------------------------------------------------
+  4.2 GET /api/contactos/intenciones — Listar intenciones disponibles
+  --------------------------------------------------------------------------------
+
+  - Método: GET
+  - Ruta: /api/contactos/intenciones
+  - Summary: Obtener lista de intenciones de contacto
+  - Description: |
+      Devuelve el listado de todas las intenciones válidas que un usuario
+      puede seleccionar al crear una solicitud de contacto.
+      Endpoint público (no requiere autenticación).
+  - OperationId: listIntenciones
+  - Tags: [Contacts]
+
+  - Responses:
+      200:
+        description: Lista de intenciones
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                    - Solicitar una cotización
+                    - Solicitar una propuesta comercial
+                    - Consultar disponibilidad
+                    - Realizar una consulta sobre el servicio
+
+
+  --------------------------------------------------------------------------------
+  4.3 GET /api/contactos/inbox — Obtener inbox del usuario autenticado
+  --------------------------------------------------------------------------------
+
+  - Método: GET
+  - Ruta: /api/contactos/inbox
+  - Summary: Obtener bandeja de solicitudes de contacto
+  - Description: |
+      Devuelve las solicitudes de contacto del usuario autenticado.
+      Puede filtrarse por recibidas (propietario) o enviadas (remitente).
+      Incluye datos del remitente, último mensaje y conteo de mensajes.
+  - OperationId: getInbox
+  - Tags: [Contacts]
+  - Security: cookieAuth
+
+  - Parámetros Query:
+      - name: tipo
+        in: query
+        required: false
+        schema:
+          type: string
+          enum: [recibidos, enviados]
+        description: "Filtrar por tipo: 'recibidos' (soy propietario, default) o 'enviados' (soy remitente)"
+        example: recibidos
+
+  - Responses:
+      200:
+        description: Lista de solicitudes con datos del remitente
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ContactRequestWithUsers'
+            example:
+              success: true
+              data:
+                - id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                  servicioId: 7edbce6d-6328-4ec5-92a0-006479aedab9
+                  propietarioId: gNYcIXwDEpMW0ZBJItuEreONSdsffMod
+                  remitente:
+                    id: Xa8NDuRz5GMdn6dfpVPoNzfZsrqG8RB3
+                    nombre: Juan Pérez
+                    email: juan@ejemplo.com
+                    imagen: null
+                  estado: pendiente
+                  intencion: Solicitar una propuesta comercial
+                  ultimoMensaje: "Hola, me interesa tu servicio"
+                  cantidadMensajes: 3
+                  createdAt: "2026-07-07T15:30:00.000Z"
+                  updatedAt: "2026-07-07T16:00:00.000Z"
+
+      400:
+        description: Parámetro tipo inválido
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApiError'
+            example:
+              success: false
+              error:
+                code: INPUT_PARSE_ERROR
+                message: tipo debe ser "recibidos" o "enviados"
+
+      401:
+        $ref: '#/components/responses/Unauthenticated'
+
+
+  --------------------------------------------------------------------------------
+  4.4 GET /api/contactos/:id — Obtener detalle de una solicitud
+  --------------------------------------------------------------------------------
+
+  - Método: GET
+  - Ruta: /api/contactos/{id}
+  - Summary: Obtener detalle de una solicitud de contacto
+  - Description: |
+      Devuelve el detalle completo de una solicitud de contacto,
+      incluyendo datos del remitente, último mensaje y conteo.
+      Solo accesible por el propietario o el remitente de la solicitud.
+  - OperationId: getContactRequestDetail
+  - Tags: [Contacts]
+  - Security: cookieAuth
+
+  - Parámetros Path:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: ID de la solicitud de contacto
+        example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+
+  - Responses:
+      200:
+        description: Detalle de la solicitud
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  $ref: '#/components/schemas/ContactRequestWithUsers'
+
+      401:
+        $ref: '#/components/responses/Unauthenticated'
+
+      403:
+        $ref: '#/components/responses/Unauthorized'
+
+      404:
+        description: Solicitud no encontrada
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApiError'
+            example:
+              success: false
+              error:
+                code: NOT_FOUND
+                message: ContactRequest not found
+
+
+  --------------------------------------------------------------------------------
+  4.5 PATCH /api/contactos/:id/estado — Actualizar estado de una solicitud
+  --------------------------------------------------------------------------------
+
+  - Método: PATCH
+  - Ruta: /api/contactos/{id}/estado
+  - Summary: Cambiar el estado de una solicitud de contacto
+  - Description: |
+      Actualiza el estado de una solicitud de contacto.
+      Solo el propietario (dueño del servicio/evento) puede cambiar
+      el estado. Estados válidos: pendiente, en_curso, cerrada.
+  - OperationId: updateContactRequestStatus
+  - Tags: [Contacts]
+  - Security: cookieAuth
+
+  - Parámetros Path:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: ID de la solicitud de contacto
+        example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+
+  - Request Body:
+      content-type: application/json
+      required: true
+      schema:
+        type: object
+        required: [estado]
+        properties:
+          estado:
+            type: string
+            enum: [pendiente, en_curso, cerrada]
+            description: Nuevo estado de la solicitud
+            example: en_curso
+
+  - Responses:
+      200:
+        description: Estado actualizado exitosamente
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  $ref: '#/components/schemas/ContactRequest'
+
+      400:
+        description: Estado inválido
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApiError'
+            example:
+              success: false
+              error:
+                code: INPUT_PARSE_ERROR
+                message: 'Estado inválido. Valores: pendiente, en_curso, cerrada'
+
+      401:
+        $ref: '#/components/responses/Unauthenticated'
+
+      403:
+        $ref: '#/components/responses/Unauthorized'
+
+      404:
+        $ref: '#/components/responses/NotFound'
+
+
+  ================================================================================
+  5. PARÁMETROS — CONVENCIONES GENERALES
+  ================================================================================
+
+  - Path parameters:
+      Formato: /resource/{id}
+      Tipo: string (UUID v4)
+      Ejemplo: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+
+  - Query parameters:
+      Formato: ?param=value&otro=valor
+      Tipo: string | number | enum
+      En contact-requests:
+        ?tipo=recibidos | enviados
+
+  - Header parameters:
+      Content-Type: application/json (default)
+      Cookie: better-auth-session=<session_token> (automático)
+
+  - Cookie parameters:
+      better-auth-session: string — set by Better Auth on sign-in
+
+  ================================================================================
+  6. REQUEST BODY — FORMATO GENERAL
+  ================================================================================
+
+  - content-type: application/json (siempre, excepto uploads)
+  - schema: objeto JSON con los campos requeridos
+  - required fields: definidos por Zod schema en cada endpoint
+  - ejemplos: incluidos en cada definición de endpoint arriba
+
+  ================================================================================
+  7. RESPONSES — FORMATO GENERAL
+  ================================================================================
+
+  - 200: OK — Operación exitosa
+  - 201: Created — Recurso creado
+  - 400: Bad Request — InputParseError (datos inválidos)
+  - 401: Unauthenticated — Falta sesión
+  - 403: Unauthorized — Sin permisos
+  - 404: Not Found — Recurso no existe
+  - 409: Conflict — Recurso duplicado
+  - 500: Internal Server Error — Error inesperado
+
+  Cada respuesta incluye schema en application/json con el
+  modelo estándar (ver sección 8).
+
+  ================================================================================
+  8. MODELO DE RESPUESTA ESTÁNDAR
+  ================================================================================
+
+  Success:
+  {
+    "success": true,
+    "data": { ... }        // El payload del recurso
+  }
+
+  Success (lista):
+  {
+    "success": true,
+    "data": [ ... ]        // Array de recursos
+  }
+
+  Error:
+  {
+    "success": false,
+    "error": {
+      "code": "ERROR_CODE",          // Código máquina (ver catálogo)
+      "message": "Human description" // Mensaje legible
+    }
+  }
+
+  ================================================================================
+  9. CATÁLOGO DE ERRORES
+  ================================================================================
+
+  Código HTTP | error.code              | Significado                  | Cuándo ocurre
+  ------------|-------------------------|-----------------------------|------------------------------------------
+  400         | INPUT_PARSE_ERROR       | Datos de entrada inválidos  | Validación Zod falla, auto-contacto
+  401         | UNAUTHENTICATED         | Sesión requerida            | Endpoint protegido sin cookie
+  403         | UNAUTHORIZED            | Sin permisos                | No sos propietario/remitente de la solicitud
+  404         | NOT_FOUND               | Recurso no existe           | Servicio/evento/perfil/solicitud no encontrado
+  409         | CONFLICT                | Conflicto/duplicado         | Email ya registrado
+  500         | INTERNAL_SERVER_ERROR   | Error inesperado            | Cualquier error no operacional
+
+  ================================================================================
+  10. SCHEMAS REUTILIZABLES — CONTACT REQUESTS
+  ================================================================================
+
+  ContactRequest:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+        example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+      servicioId:
+        type: string
+        nullable: true
+        format: uuid
+        description: ID del servicio asociado (null si es evento)
+        example: 7edbce6d-6328-4ec5-92a0-006479aedab9
+      eventoId:
+        type: string
+        nullable: true
+        format: uuid
+        description: ID del evento asociado (null si es servicio)
+        example: null
+      propietarioId:
+        type: string
+        description: ID del usuario propietario del servicio/evento
+        example: gNYcIXwDEpMW0ZBJItuEreONSdsffMod
+      remitenteId:
+        type: string
+        description: ID del usuario que envía la solicitud
+        example: Xa8NDuRz5GMdn6dfpVPoNzfZsrqG8RB3
+      intencion:
+        type: string
+        enum:
+          - Solicitar una cotización
+          - Solicitar una propuesta comercial
+          - Consultar disponibilidad
+          - Realizar una consulta sobre el servicio
+        example: Solicitar una propuesta comercial
+      estado:
+        type: string
+        enum: [pendiente, en_curso, cerrada]
+        example: pendiente
+      createdAt:
+        type: string
+        format: date-time
+      updatedAt:
+        type: string
+        format: date-time
+
+  ContactRequestWithUsers:
+    allOf:
+      - $ref: '#/components/schemas/ContactRequest'
+      - type: object
+        properties:
+          remitente:
+            type: object
+            properties:
+              id:
+                type: string
+              nombre:
+                type: string
+                nullable: true
+              email:
+                type: string
+                nullable: true
+                format: email
+              imagen:
+                type: string
+                nullable: true
+                format: uri
+          ultimoMensaje:
+            type: string
+            nullable: true
+            description: Contenido del último mensaje del thread
+          cantidadMensajes:
+            type: integer
+            description: Total de mensajes en el thread
+            example: 3
+
+  ApiError:
+    type: object
+    properties:
+      success:
+        type: boolean
+        example: false
+      error:
+        type: object
+        properties:
+          code:
+            type: string
+          message:
+            type: string
+
+  ================================================================================
+  11. ENUMERACIONES
+  ================================================================================
+
+  ContactRequestIntencion (intenciones de contacto):
+    - Solicitar una cotización
+    - Solicitar una propuesta comercial
+    - Consultar disponibilidad
+    - Realizar una consulta sobre el servicio
+
+  ContactRequestStatus (estados de solicitud):
+    - pendiente  → Recién creada, sin acción del propietario
+    - en_curso   → El propietario respondió / está gestionando
+    - cerrada    → Conversación finalizada
+
+  InboxFilter (filtro de inbox):
+    - recibidos  → Solicitudes donde soy propietario (default)
+    - enviados   → Solicitudes donde soy remitente
+
+  ================================================================================
+  12. EJEMPLOS COMPLETOS
+  ================================================================================
+
+  EJEMPLO 1: Crear solicitud de contacto con mensaje
+
+  Request:
+    POST /api/contactos
+    Cookie: better-auth-session=<session_token>
+    Content-Type: application/json
+
+    {
+      "slug": "servicio-nuevo-de-pruebs",
+      "intencion": "Solicitar una propuesta comercial",
+      "mensaje": "Hola, me interesa tu servicio de fotografía. ¿Tienes disponibilidad para la próxima semana?",
+      "attachments": [
+        "https://utfs.io/f/4hMAcVuLqlXrfPnTcv7RvEU91wkVQhnG5TrBD6SCIz0KNp2u"
+      ]
+    }
+
+  Response 201:
+    {
+      "success": true,
+      "data": {
+        "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        "servicioId": "7edbce6d-6328-4ec5-92a0-006479aedab9",
+        "eventoId": null,
+        "propietarioId": "gNYcIXwDEpMW0ZBJItuEreONSdsffMod",
+        "remitenteId": "Xa8NDuRz5GMdn6dfpVPoNzfZsrqG8RB3",
+        "intencion": "Solicitar una propuesta comercial",
+        "estado": "pendiente",
+        "createdAt": "2026-07-07T15:30:00.000Z",
+        "updatedAt": "2026-07-07T15:30:00.000Z"
+      }
+    }
+
+  -------------------------------------------------------------------------------
+  EJEMPLO 2: Crear solicitud — slug resuelve a evento
+
+  Request:
+    POST /api/contactos
+    Cookie: better-auth-session=<session_token>
+
+    {
+      "slug": "concierto-verano-2026",
+      "intencion": "Consultar disponibilidad"
+    }
+
+  Response 201:
+    {
+      "success": true,
+      "data": {
+        "id": "f1e2d3c4-b5a6-7890-abcd-ef1234567890",
+        "servicioId": null,
+        "eventoId": "c8d9e0f1-2345-6789-abcd-ef1234567890",
+        "propietarioId": "gNYcIXwDEpMW0ZBJItuEreONSdsffMod",
+        "remitenteId": "Xa8NDuRz5GMdn6dfpVPoNzfZsrqG8RB3",
+        "intencion": "Consultar disponibilidad",
+        "estado": "pendiente",
+        "createdAt": "2026-07-07T16:00:00.000Z",
+        "updatedAt": "2026-07-07T16:00:00.000Z"
+      }
+    }
+
+  -------------------------------------------------------------------------------
+  EJEMPLO 3: Error — auto-contacto
+
+  Request:
+    POST /api/contactos
+    Cookie: better-auth-session=<session_token>
+
+    {
+      "slug": "mi-propio-servicio",
+      "intencion": "Solicitar una cotización"
+    }
+
+  Response 400:
+    {
+      "success": false,
+      "error": {
+        "code": "INPUT_PARSE_ERROR",
+        "message": "No puedes contactarte a ti mismo"
+      }
+    }
+
+  -------------------------------------------------------------------------------
+  EJEMPLO 4: Obtener inbox (recibidos)
+
+  Request:
+    GET /api/contactos/inbox?tipo=recibidos
+    Cookie: better-auth-session=<session_token>
+
+  Response 200:
+    {
+      "success": true,
+      "data": [
+        {
+          "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+          "servicioId": "7edbce6d-6328-4ec5-92a0-006479aedab9",
+          "propietarioId": "gNYcIXwDEpMW0ZBJItuEreONSdsffMod",
+          "remitente": {
+            "id": "Xa8NDuRz5GMdn6dfpVPoNzfZsrqG8RB3",
+            "nombre": "Juan Pérez",
+            "email": "juan@ejemplo.com",
+            "imagen": null
+          },
+          "estado": "pendiente",
+          "intencion": "Solicitar una propuesta comercial",
+          "ultimoMensaje": "Hola, me interesa tu servicio de fotografía",
+          "cantidadMensajes": 3,
+          "createdAt": "2026-07-07T15:30:00.000Z",
+          "updatedAt": "2026-07-07T16:00:00.000Z"
+        }
+      ]
+    }
+
+  -------------------------------------------------------------------------------
+  EJEMPLO 5: Actualizar estado — de pendiente a en_curso
+
+  Request:
+    PATCH /api/contactos/a1b2c3d4-e5f6-7890-abcd-ef1234567890/estado
+    Cookie: better-auth-session=<session_token>
+    Content-Type: application/json
+
+    {
+      "estado": "en_curso"
+    }
+
+  Response 200:
+    {
+      "success": true,
+      "data": {
+        "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        "servicioId": "7edbce6d-6328-4ec5-92a0-006479aedab9",
+        "eventoId": null,
+        "propietarioId": "gNYcIXwDEpMW0ZBJItuEreONSdsffMod",
+        "remitenteId": "Xa8NDuRz5GMdn6dfpVPoNzfZsrqG8RB3",
+        "intencion": "Solicitar una propuesta comercial",
+        "estado": "en_curso",
+        "createdAt": "2026-07-07T15:30:00.000Z",
+        "updatedAt": "2026-07-07T17:00:00.000Z"
+      }
+    }
+
+  -------------------------------------------------------------------------------
+  EJEMPLO 6: Error — sin permisos para cambiar estado
+
+  Response 403:
+    {
+      "success": false,
+      "error": {
+        "code": "UNAUTHORIZED",
+        "message": "Solo el propietario puede cambiar el estado"
+      }
+    }
+
+  ================================================================================
+  13. VERSIONADO
+  ================================================================================
+
+  Estrategia actual:
+    - Sin prefijo de versión en la URL (ej: /api/contactos, no /api/v1/contactos)
+    - Versión de API general: 0.1.0 (fase alpha)
+    - Estrategia futura recomendada: /api/v1/ cuando se estabilice
+
+  Compatibilidad:
+    - Breaking changes se comunican via changelog
+    - Migraciones de BD son versionadas por drizzle-kit (0000 a 0006)
+    - El api-spec.yaml es la fuente de verdad para contratos
+
+  ================================================================================
+  14. PAGINACIÓN
+  ================================================================================
+
+  Estado actual:
+    - Los endpoints de contact-requests NO implementan paginación aún.
+    - GET /api/contactos/inbox devuelve todas las solicitudes sin paginar.
+
+  Formato recomendado para implementación futura:
+    Parámetros query:
+      - page: número de página (default: 1)
+      - limit: items por página (default: 20, max: 100)
+
+    Response meta:
+      {
+        "success": true,
+        "data": [ ... ],
+        "meta": {
+          "page": 1,
+          "limit": 20,
+          "total": 150,
+          "totalPages": 8
+        }
+      }
+
+  ================================================================================
+  15. FILTROS Y ORDENAMIENTO
+  ================================================================================
+
+  Estado actual:
+    GET /api/contactos/inbox?tipo=recibidos|enviados
+      - Filtro por tipo (recibidos/enviados)
+      - Ordenamiento: por createdAt descendente (más reciente primero)
+
+  Pendiente de implementar:
+    - Filtro por estado (?estado=pendiente|en_curso|cerrada)
+    - Ordenamiento por campo (?sort=createdAt&order=asc|desc)
+    - Búsqueda por texto (?q=texto)
+
+  ================================================================================
+  16. CONVENCIONES GLOBALES
+  ================================================================================
+
+  - Formato de fechas: ISO 8601 / UTC
+      Ejemplo: "2026-07-07T15:30:00.000Z"
+      Timezone: Siempre UTC, el frontend debe convertir a local
+
+  - Nomenclatura:
+      Tablas BD: snake_case (solicitudes_contacto)
+      Código TS: camelCase (contactRequests)
+      API JSON: camelCase (servicioId, remitenteId)
+      Endpoints: plural en español (/api/contactos)
+      Campos con tilde: usar español (intencion, estado)
+
+  - Manejo de nullables:
+      Campos opcionales se envían como null en JSON.
+      El frontend debe manejar null en lugar de undefined.
+      En el presenter, los undefined se convierten a null.
+
+  - IDs:
+      Formato: UUID v4 (string de 36 caracteres)
+      Generación: crypto.randomUUID() en el backend
+      IDs de Better Auth: strings cortas (ej: Xa8NDuRz5GMdn6dfpVPoNzfZsrqG8RB3)
+
+  ================================================================================
+  17. ARCHIVOS Y UPLOADS
+  ================================================================================
+
+  - No se manejan uploads directos en la API.
+  - Los archivos se suben a UploadThing (servicio externo) desde el frontend.
+  - La API recibe URLs de archivos ya subidos en el campo attachments[].
+  - Límite: máximo 6 attachments por solicitud.
+  - Validación: cada URL debe ser una URI válida.
+  - Los attachments se almacenan como JSONB en inbox_messages.
+
+  ================================================================================
+  18. DEPRECACIONES
+  ================================================================================
+
+  - Ningún endpoint está deprecado actualmente.
+  - La columna "mensaje" en solicitudes_contacto fue eliminada (migración 0006).
+    Ahora los mensajes viven en inbox_messages (thread).
+  - Estados antiguos "leido" y "respondido" fueron migrados a "en_curso".
+    Estado "archivado" fue migrado a "cerrada".
+
+  ================================================================================
+  19. WEBHOOKS
+  ================================================================================
+
+  - No hay webhooks implementados actualmente.
+  - Las notificaciones son internas (in-app y email).
+
+  ================================================================================
+  20. CHECKLIST MÍNIMO PROFESIONAL — CONTACT-REQUESTS
+  ================================================================================
+
+  [x] Endpoint documentado         — Todos los endpoints tienen spec completo
+  [x] Seguridad definida            — cookieAuth + roles propietario/remitente
+  [x] Request tipado                — Zod schemas con validación
+  [x] Response tipada               — Presenters + interfaces TS
+  [x] Errores documentados          — Catálogo completo con códigos y causas
+  [x] Ejemplos incluidos            — 6 ejemplos completos (éxito y error)
+  [x] Enums definidos               — Intenciones, estados, filtros
+  [x] Schemas reutilizables         — ContactRequest, ContactRequestWithUsers
+
+  ================================================================================
+  ENDPOINTS PENDIENTES DE DOCUMENTAR (otros dominios)
+  ================================================================================
+
+  Los siguientes endpoints existen en el código pero están pendientes
+  de documentación siguiendo esta misma estructura:
+
+  - Servicios CRUD:      POST/GET /api/servicios/*
+  - Eventos CRUD:        POST/GET /api/eventos/*
+  - Mensajes (thread):   GET  /api/mensajes/:contactRequestId
+                         POST /api/mensajes
+  - Notificaciones:      GET  /api/notificaciones
+                         PATCH /api/notificaciones/:id/leida
+  - Config notificaciones: GET/PATCH /api/config-notificaciones
+
+  ================================================================================

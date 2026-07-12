@@ -1,6 +1,6 @@
 import { eq, like, and, desc, gte } from 'drizzle-orm';
 import { db } from '@/src/shared/database';
-import { events, locations, categories, profiles } from '@/src/shared/database/schema';
+import { events, locations, categories, profiles, statuses } from '@/src/shared/database/schema';
 import type { IEventsRepository, IListEventsFilters } from './events.repository.interface';
 import type { Event, EventWithDetails } from '../entities/event.entity';
 
@@ -14,23 +14,28 @@ export class EventsRepository implements IEventsRepository {
           categoryName: categories.name,
           profileName: profiles.name,
           profileSlug: profiles.id,
+          statusName: statuses.name,
+          statusSlug: statuses.slug,
         })
         .from(events)
         .where(eq(events.id, id))
         .leftJoin(locations, eq(events.locationId, locations.id))
         .leftJoin(categories, eq(events.categoryId, categories.id))
         .leftJoin(profiles, eq(events.profileId, profiles.id))
+        .leftJoin(statuses, eq(events.statusId, statuses.id))
         .limit(1);
 
       if (!result[0]) return null;
 
-      const { event, locationName, categoryName, profileName, profileSlug } = result[0];
+      const { event, locationName, categoryName, profileName, profileSlug, statusName, statusSlug } = result[0];
       return {
         ...(event as Event),
         locationName: locationName ?? null,
         categoryName: categoryName ?? null,
         profileName: profileName ?? null,
         profileSlug: profileSlug ?? null,
+        statusName,
+        statusSlug,
       };
     } catch (error) {
       console.error('[EventsRepository.findById] Error:', error);
@@ -47,23 +52,28 @@ export class EventsRepository implements IEventsRepository {
           categoryName: categories.name,
           profileName: profiles.name,
           profileSlug: profiles.id,
+          statusName: statuses.name,
+          statusSlug: statuses.slug,
         })
         .from(events)
         .where(eq(events.slug, slug))
         .leftJoin(locations, eq(events.locationId, locations.id))
         .leftJoin(categories, eq(events.categoryId, categories.id))
         .leftJoin(profiles, eq(events.profileId, profiles.id))
+        .leftJoin(statuses, eq(events.statusId, statuses.id))
         .limit(1);
 
       if (!result[0]) return null;
 
-      const { event, locationName, categoryName, profileName, profileSlug } = result[0];
+      const { event, locationName, categoryName, profileName, profileSlug, statusName, statusSlug } = result[0];
       return {
         ...(event as Event),
         locationName: locationName ?? null,
         categoryName: categoryName ?? null,
         profileName: profileName ?? null,
         profileSlug: profileSlug ?? null,
+        statusName,
+        statusSlug,
       };
     } catch (error) {
       console.error('[EventsRepository.findBySlug] Error:', error);
@@ -80,20 +90,25 @@ export class EventsRepository implements IEventsRepository {
           categoryName: categories.name,
           profileName: profiles.name,
           profileSlug: profiles.id,
+          statusName: statuses.name,
+          statusSlug: statuses.slug,
         })
         .from(events)
         .where(eq(events.profileId, profileId))
         .leftJoin(locations, eq(events.locationId, locations.id))
         .leftJoin(categories, eq(events.categoryId, categories.id))
         .leftJoin(profiles, eq(events.profileId, profiles.id))
+        .leftJoin(statuses, eq(events.statusId, statuses.id))
         .orderBy(desc(events.createdAt));
 
-      return result.map(({ event, locationName, categoryName, profileName, profileSlug }) => ({
+      return result.map(({ event, locationName, categoryName, profileName, profileSlug, statusName, statusSlug }) => ({
         ...(event as Event),
         locationName: locationName ?? null,
         categoryName: categoryName ?? null,
         profileName: profileName ?? null,
         profileSlug: profileSlug ?? null,
+        statusName,
+        statusSlug,
       }));
     } catch (error) {
       console.error('[EventsRepository.findByProfileId] Error:', error);
@@ -108,7 +123,7 @@ export class EventsRepository implements IEventsRepository {
       if (filters?.profileId) conditions.push(eq(events.profileId, filters.profileId));
       if (filters?.categoryId) conditions.push(eq(events.categoryId, filters.categoryId));
       if (filters?.locationId) conditions.push(eq(events.locationId, filters.locationId));
-      if (filters?.eventStatus) conditions.push(eq(events.eventStatus, filters.eventStatus));
+      if (filters?.status) conditions.push(eq(statuses.slug, filters.status));
       if (filters?.search) conditions.push(like(events.title, `%${filters.search}%`));
       if (filters?.upcoming) conditions.push(gte(events.startAt, new Date()));
 
@@ -119,11 +134,14 @@ export class EventsRepository implements IEventsRepository {
           categoryName: categories.name,
           profileName: profiles.name,
           profileSlug: profiles.id,
+          statusName: statuses.name,
+          statusSlug: statuses.slug,
         })
         .from(events)
         .leftJoin(locations, eq(events.locationId, locations.id))
         .leftJoin(categories, eq(events.categoryId, categories.id))
         .leftJoin(profiles, eq(events.profileId, profiles.id))
+        .leftJoin(statuses, eq(events.statusId, statuses.id))
         .orderBy(desc(events.createdAt));
 
       if (conditions.length > 0) {
@@ -131,12 +149,14 @@ export class EventsRepository implements IEventsRepository {
       }
 
       const result = await query;
-      return result.map(({ event, locationName, categoryName, profileName, profileSlug }) => ({
+      return result.map(({ event, locationName, categoryName, profileName, profileSlug, statusName, statusSlug }) => ({
         ...(event as Event),
         locationName: locationName ?? null,
         categoryName: categoryName ?? null,
         profileName: profileName ?? null,
         profileSlug: profileSlug ?? null,
+        statusName,
+        statusSlug,
       }));
     } catch (error) {
       console.error('[EventsRepository.list] Error:', error);
@@ -153,7 +173,7 @@ export class EventsRepository implements IEventsRepository {
     locationId?: string | null;
     categoryId?: string | null;
     thumbnailUrl?: string | null;
-    eventStatus?: string;
+    statusId?: string;
   }): Promise<Event> {
     try {
       const result = await db
@@ -168,7 +188,7 @@ export class EventsRepository implements IEventsRepository {
           locationId: data.locationId ?? null,
           categoryId: data.categoryId ?? null,
           thumbnailUrl: data.thumbnailUrl ?? null,
-          eventStatus: data.eventStatus ?? 'draft',
+          statusId: data.statusId ?? (await this.resolveDefaultStatusId()),
         })
         .returning();
       return result[0] as Event;
@@ -188,7 +208,7 @@ export class EventsRepository implements IEventsRepository {
       locationId: string | null;
       categoryId: string | null;
       thumbnailUrl: string | null;
-      eventStatus: string;
+      statusId: string;
     }>
   ): Promise<Event> {
     try {
@@ -206,6 +226,16 @@ export class EventsRepository implements IEventsRepository {
       console.error('[EventsRepository.update] Error:', error);
       throw error;
     }
+  }
+
+  private async resolveDefaultStatusId(): Promise<string> {
+    const result = await db
+      .select({ id: statuses.id })
+      .from(statuses)
+      .where(eq(statuses.slug, 'draft'))
+      .limit(1);
+    if (!result[0]) throw new Error('Default status "draft" not found. Seed the statuses table first.');
+    return result[0].id;
   }
 
   async delete(id: string): Promise<void> {

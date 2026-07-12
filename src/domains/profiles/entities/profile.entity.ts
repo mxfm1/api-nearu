@@ -1,3 +1,9 @@
+export interface Tag {
+  id: string;
+  name: string;
+  slug: string;
+}
+
 export interface SocialLink {
   id: string;
   profileId: string;
@@ -15,8 +21,8 @@ export interface Profile {
   name: string | null;
   industry: string;
   description: string | null;
-  tags: string[];
-  location: string | null;
+  slug: string | null;
+  locationId: string | null;
   founded: string | null;
   employees: string | null;
   website: string | null;
@@ -24,4 +30,6 @@ export interface Profile {
   createdAt: Date;
   updatedAt: Date;
   socialLinks?: SocialLink[];
+  tags?: Tag[];
+  locationName?: string | null;
 }

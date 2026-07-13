@@ -52,8 +52,14 @@ export function createRouter() {
   // Protected
   router.get('/api/auth/me', authMiddleware, getMeController());
   router.patch('/api/users/me', authMiddleware, updateMeController());
-  router.post('/api/auth/change-password', authMiddleware, changePasswordController());
-  router.post('/api/auth/change-email', authMiddleware, changeEmailController());
+  router.post('/api/auth/change-password', authMiddleware, changePasswordController(
+    getInjection('IUsersRepository'),
+    getInjection('ICreateNotificationUseCase'),
+  ));
+  router.post('/api/auth/change-email', authMiddleware, changeEmailController(
+    getInjection('IUsersRepository'),
+    getInjection('ICreateNotificationUseCase'),
+  ));
   router.delete('/api/users/:id', authMiddleware, validate(deleteUserSchema), getInjection('IDeleteUserController'));
 
   // ──────────────────────────────────────────────
@@ -123,8 +129,20 @@ export function createRouter() {
   router.post('/api/applications', authMiddleware, validate(createApplicationSchema), getInjection('ICreateApplicationController'));
   router.get('/api/applications/:id', authMiddleware, validate(getApplicationSchema), getInjection('IGetApplicationController'));
   router.get('/api/events/:eventId/applications', authMiddleware, validate(listEventApplicationsSchema), getInjection('IListEventApplicationsController'));
+  router.get('/api/events/:eventId/applications/score-details', authMiddleware, validate(listEventApplicationsSchema), getInjection('IListEventApplicationsWithScoreController'));
   router.get('/api/mis-aplicaciones', authMiddleware, getInjection('IListMyApplicationsController'));
+  router.get('/api/events/:eventId/my-application', authMiddleware, getInjection('IGetMyApplicationByEventController'));
   router.patch('/api/applications/:id/status', authMiddleware, validate(updateApplicationStatusSchema), getInjection('IUpdateApplicationStatusController'));
+
+  // ──────────────────────────────────────────────
+  // THREADS (post-acceptance communication)
+  // ──────────────────────────────────────────────
+  router.get('/api/threads', authMiddleware, getInjection('IThreadsListController'));
+  router.get('/api/threads/application/:applicationId', authMiddleware, getInjection('IThreadsGetByApplicationController'));
+  router.get('/api/threads/:threadId', authMiddleware, getInjection('IThreadsGetThreadController'));
+  router.get('/api/threads/:threadId/messages', authMiddleware, getInjection('IThreadsGetMessagesController'));
+  router.post('/api/threads/:threadId/messages', authMiddleware, getInjection('IThreadsSendMessageController'));
+  router.patch('/api/threads/:threadId/close', authMiddleware, getInjection('IThreadsCloseThreadController'));
 
   // ──────────────────────────────────────────────
   // SCORING RULES (per event)

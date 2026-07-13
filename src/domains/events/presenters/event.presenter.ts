@@ -7,7 +7,9 @@ export function presentEvent(event: EventWithDetails) {
     slug: event.slug,
     title: event.title,
     description: event.description,
+    requirements: event.requirements,
     startAt: event.startAt instanceof Date ? event.startAt.toISOString() : event.startAt,
+    applicationDeadline: event.applicationDeadline instanceof Date ? event.applicationDeadline.toISOString() : event.applicationDeadline,
     location: event.locationId
       ? {
           id: event.locationId,
@@ -21,10 +23,17 @@ export function presentEvent(event: EventWithDetails) {
         }
       : null,
     thumbnailUrl: event.thumbnailUrl,
+    bannerUrl: event.bannerUrl,
+    requiredCandidates: event.requiredCandidates,
+    selectedCandidates: event.selectedCandidates,
+    applicationCount: event.applicationCount,
+    requiresVerifiedProfile: event.requiresVerifiedProfile,
+    autoCloseWhenFilled: event.autoCloseWhenFilled,
     profile: {
       id: event.profileId,
       name: event.profileName,
       slug: event.profileSlug,
+      region: event.profileRegion,
     },
     status: {
       id: event.statusId,

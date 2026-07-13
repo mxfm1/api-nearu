@@ -9,8 +9,22 @@ export const createNotificationUseCase =
     userId: string;
     type: NotificationType;
     title: string;
-    message: string;
-    data?: Record<string, unknown> | null;
+    body?: string;
+    actorProfileId?: string | null;
+    entityType?: string | null;
+    entityId?: string | null;
+    actionUrl?: string | null;
+    metadata?: Record<string, unknown> | null;
   }): Promise<Notification> => {
-    return notificationsRepository.create(input);
+    return notificationsRepository.create({
+      userId: input.userId,
+      type: input.type,
+      title: input.title,
+      body: input.body ?? input.title,
+      actorProfileId: input.actorProfileId,
+      entityType: input.entityType,
+      entityId: input.entityId,
+      actionUrl: input.actionUrl,
+      metadata: input.metadata,
+    });
   };

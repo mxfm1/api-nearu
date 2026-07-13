@@ -10,10 +10,15 @@ export interface CreateEventInput {
   slug?: string;
   title: string;
   description?: string | null;
+  requirements?: string | null;
   startAt?: Date | string | null;
+  applicationDeadline?: Date | string | null;
   locationId?: string | null;
   categoryId?: string | null;
   thumbnailUrl?: string | null;
+  bannerUrl?: string | null;
+  requiredCandidates?: number;
+  requiresVerifiedProfile?: boolean;
   status?: string;
 }
 
@@ -27,5 +32,12 @@ export const createEventUseCase =
 
     const status = await statusesRepository.findBySlug(input.status ?? 'draft');
     const { status: _status, ...rest } = input;
-    return eventsRepository.create({ ...rest, slug, statusId: status.id });
+    return eventsRepository.create({
+      ...rest,
+      slug,
+      statusId: status.id,
+      applicationCount: 0,
+      selectedCandidates: 0,
+      autoCloseWhenFilled: input.autoCloseWhenFilled ?? true,
+    } as Parameters<typeof eventsRepository.create>[0]);
   };

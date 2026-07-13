@@ -1,8 +1,8 @@
-import { eq, desc, and, isNull } from 'drizzle-orm';
+import { eq, desc, and, isNull, sql } from 'drizzle-orm';
 import { db } from '@/src/shared/database';
-import { notifications, userNotificationSettings } from '@/src/shared/database/schema';
+import { notifications, userNotificationSettings, notificationPreferences } from '@/src/shared/database/schema';
 import type { INotificationsRepository } from './notifications.repository.interface';
-import type { Notification, NotificationSettings, NotificationType } from '../entities/notification.entity';
+import type { Notification, NotificationPreferences, NotificationSettings, NotificationType } from '../entities/notification.entity';
 
 export class NotificationsRepository implements INotificationsRepository {
   async findByUserId(userId: string): Promise<Notification[]> {
@@ -19,12 +19,29 @@ export class NotificationsRepository implements INotificationsRepository {
     }
   }
 
+  async findByEntityId(entityId: string): Promise<Notification[]> {
+    try {
+      const result = await db
+        .select()
+        .from(notifications)
+        .where(eq(notifications.entityId, entityId));
+      return result as unknown as Notification[];
+    } catch (error) {
+      console.error('[NotificationsRepository.findByEntityId] Error:', error);
+      throw error;
+    }
+  }
+
   async create(data: {
     userId: string;
     type: NotificationType;
     title: string;
-    message: string;
-    data?: Record<string, unknown> | null;
+    body: string;
+    actorProfileId?: string | null;
+    entityType?: string | null;
+    entityId?: string | null;
+    actionUrl?: string | null;
+    metadata?: Record<string, unknown> | null;
   }): Promise<Notification> {
     try {
       const result = await db
@@ -32,10 +49,15 @@ export class NotificationsRepository implements INotificationsRepository {
         .values({
           id: crypto.randomUUID(),
           userId: data.userId,
-          type: data.type,
+          type: data.type as any,
           title: data.title,
-          message: data.message,
-          data: data.data ?? null,
+          body: data.body,
+          actorProfileId: data.actorProfileId ?? null,
+          entityType: data.entityType as any ?? null,
+          entityId: data.entityId ?? null,
+          actionUrl: data.actionUrl ?? null,
+          metadata: data.metadata ?? null,
+          isRead: false,
         })
         .returning();
       return result[0] as unknown as Notification;
@@ -49,7 +71,7 @@ export class NotificationsRepository implements INotificationsRepository {
     try {
       const result = await db
         .update(notifications)
-        .set({ readAt: new Date() })
+        .set({ readAt: new Date(), isRead: true })
         .where(and(eq(notifications.id, id), eq(notifications.userId, userId)))
         .returning();
       return result[0] as unknown as Notification;
@@ -63,7 +85,7 @@ export class NotificationsRepository implements INotificationsRepository {
     try {
       await db
         .update(notifications)
-        .set({ readAt: new Date() })
+        .set({ readAt: new Date(), isRead: true })
         .where(and(eq(notifications.userId, userId), isNull(notifications.readAt)));
     } catch (error) {
       console.error('[NotificationsRepository.markAllRead] Error:', error);
@@ -102,6 +124,65 @@ export class NotificationsRepository implements INotificationsRepository {
       return result[0] as unknown as NotificationSettings;
     } catch (error) {
       console.error('[NotificationsRepository.upsertSettings] Error:', error);
+      throw error;
+    }
+  }
+
+  async findPreferencesByUserId(userId: string): Promise<NotificationPreferences[]> {
+    try {
+      const result = await db
+        .select()
+        .from(notificationPreferences)
+        .where(eq(notificationPreferences.userId, userId));
+      return result as unknown as NotificationPreferences[];
+    } catch (error) {
+      console.error('[NotificationsRepository.findPreferencesByUserId] Error:', error);
+      throw error;
+    }
+  }
+
+  async upsertPreference(
+    userId: string,
+    type: NotificationType,
+    emailEnabled: boolean,
+    inAppEnabled: boolean
+  ): Promise<NotificationPreferences> {
+    try {
+      const result = await db
+        .insert(notificationPreferences)
+        .values({
+          id: crypto.randomUUID(),
+          userId,
+          type: type as any,
+          emailEnabled,
+          inAppEnabled,
+        })
+        .onConflictDoUpdate({
+          target: [notificationPreferences.userId, notificationPreferences.type],
+          set: { emailEnabled, inAppEnabled, updatedAt: new Date() },
+        })
+        .returning();
+      return result[0] as unknown as NotificationPreferences;
+    } catch (error) {
+      console.error('[NotificationsRepository.upsertPreference] Error:', error);
+      throw error;
+    }
+  }
+
+  async isEmailEnabled(userId: string, type: NotificationType): Promise<boolean> {
+    try {
+      const result = await db
+        .select({ emailEnabled: notificationPreferences.emailEnabled })
+        .from(notificationPreferences)
+        .where(and(
+          eq(notificationPreferences.userId, userId),
+          eq(notificationPreferences.type, type as any)
+        ))
+        .limit(1);
+      if (!result[0]) return true;
+      return result[0].emailEnabled;
+    } catch (error) {
+      console.error('[NotificationsRepository.isEmailEnabled] Error:', error);
       throw error;
     }
   }

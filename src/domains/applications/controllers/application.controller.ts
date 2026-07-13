@@ -3,6 +3,7 @@ import type { ICreateApplicationUseCase } from '../use-cases/create-application.
 import type { IGetApplicationUseCase } from '../use-cases/get-application.use-case';
 import type { IListEventApplicationsUseCase } from '../use-cases/list-event-applications.use-case';
 import type { IListMyApplicationsUseCase } from '../use-cases/list-my-applications.use-case';
+import type { IGetMyApplicationByEventUseCase } from '../use-cases/get-my-application-by-event.use-case';
 import type { IUpdateApplicationStatusUseCase } from '../use-cases/update-application-status.use-case';
 import type { ICreateScoringRulesUseCase } from '../use-cases/create-scoring-rules.use-case';
 import type { IScoringRulesRepository } from '../repositories/scoring-rules.repository.interface';
@@ -15,6 +16,7 @@ export type ICreateApplicationController = ReturnType<typeof createApplicationCo
 export type IGetApplicationController = ReturnType<typeof getApplicationController>;
 export type IListEventApplicationsController = ReturnType<typeof listEventApplicationsController>;
 export type IListMyApplicationsController = ReturnType<typeof listMyApplicationsController>;
+export type IGetMyApplicationByEventController = ReturnType<typeof getMyApplicationByEventController>;
 export type IUpdateApplicationStatusController = ReturnType<typeof updateApplicationStatusController>;
 export type IListScoringRulesController = ReturnType<typeof listScoringRulesController>;
 export type ICreateScoringRulesController = ReturnType<typeof createScoringRulesController>;
@@ -62,7 +64,32 @@ export const listEventApplicationsController =
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const authUser = (req as any).user;
-      const applications = await listEventApplicationsUseCase(req.params.eventId, authUser.id);
+      const status = req.query.status as string | undefined;
+      const applications = await listEventApplicationsUseCase(
+        req.params.eventId,
+        authUser.id,
+        status ? { status } : undefined
+      );
+      res.json({ success: true, data: presentApplications(applications) });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+// New controller with full score details
+export type IListEventApplicationsWithScoreController = ReturnType<typeof listEventApplicationsWithScoreController>;
+
+export const listEventApplicationsWithScoreController =
+  (listEventApplicationsWithScoreUseCase: IListEventApplicationsWithScoreUseCase) =>
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const authUser = (req as any).user;
+      const status = req.query.status as string | undefined;
+      const applications = await listEventApplicationsWithScoreUseCase(
+        req.params.eventId,
+        authUser.id,
+        status ? { status } : undefined
+      );
       res.json({ success: true, data: presentApplications(applications) });
     } catch (error) {
       next(error);
@@ -76,6 +103,23 @@ export const listMyApplicationsController =
       const authUser = (req as any).user;
       const applications = await listMyApplicationsUseCase(authUser.id);
       res.json({ success: true, data: presentApplications(applications) });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+export const getMyApplicationByEventController =
+  (getMyApplicationByEventUseCase: IGetMyApplicationByEventUseCase) =>
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const authUser = (req as any).user;
+      const { eventId } = req.params;
+      const application = await getMyApplicationByEventUseCase(authUser.id, eventId);
+      if (!application) {
+        res.json({ success: true, data: null });
+        return;
+      }
+      res.json({ success: true, data: presentApplication(application) });
     } catch (error) {
       next(error);
     }
@@ -100,12 +144,15 @@ export const listScoringRulesController =
     try {
       const { eventId } = req.params;
 
-      const event = await eventsRepository.findById(eventId);
+      let event = await eventsRepository.findById(eventId);
+      if (!event) {
+        event = await eventsRepository.findBySlug(eventId);
+      }
       if (!event) {
         throw new NotFoundError('Evento no encontrado');
       }
 
-      const rules = await scoringRulesRepository.findByEventId(eventId);
+      const rules = await scoringRulesRepository.findByEventId(event.id);
       res.json({ success: true, data: rules });
     } catch (error) {
       next(error);
@@ -113,14 +160,27 @@ export const listScoringRulesController =
   };
 
 export const createScoringRulesController =
-  (createScoringRulesUseCase: ICreateScoringRulesUseCase) =>
+  (createScoringRulesUseCase: ICreateScoringRulesUseCase, profilesRepository: IProfilesRepository, eventsRepository: IEventsRepository) =>
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const authUser = (req as any).user;
       const { eventId } = req.params;
       const { rules } = req.body;
 
-      const createdRules = await createScoringRulesUseCase(eventId, authUser.id, rules);
+      let event = await eventsRepository.findById(eventId);
+      if (!event) {
+        event = await eventsRepository.findBySlug(eventId);
+      }
+      if (!event) {
+        throw new NotFoundError('Evento no encontrado');
+      }
+
+      const profile = await profilesRepository.findByUserId(authUser.id);
+      if (!profile) {
+        throw new NotFoundError('Perfil no encontrado');
+      }
+
+      const createdRules = await createScoringRulesUseCase(event.id, authUser.id, rules);
       res.json({ success: true, data: createdRules });
     } catch (error) {
       next(error);

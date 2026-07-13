@@ -1,4 +1,4 @@
-import type { ApplicationWithDetails } from '../entities/application.entity';
+import type { ApplicationWithDetails, ApplicationScoreWithBreakdown } from '../entities/application.entity';
 import type { IApplicationsRepository } from '../repositories/applications.repository.interface';
 import type { IEventsRepository } from '@/src/domains/events/repositories/events.repository.interface';
 import type { IProfilesRepository } from '@/src/domains/profiles/repositories/profiles.repository.interface';
@@ -14,8 +14,9 @@ export const listEventApplicationsUseCase =
   ) =>
   async (
     eventId: string,
-    userId: string
-  ): Promise<ApplicationWithDetails[]> => {
+    userId: string,
+    options?: { status?: string }
+  ): Promise<(ApplicationWithDetails & { score?: ApplicationScoreWithBreakdown })[]> => {
     // Verify event exists
     const event = await eventsRepository.findById(eventId);
     if (!event) {
@@ -33,7 +34,8 @@ export const listEventApplicationsUseCase =
       throw new ForbiddenError('No tienes permiso para ver estas postulaciones');
     }
 
-    // List applications for event
-    const applications = await applicationsRepository.findByEventId(eventId);
+    // List applications for event (already includes score and ordered by score)
+    const applications = await applicationsRepository.findByEventId(eventId, options);
+
     return applications;
   };

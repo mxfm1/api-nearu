@@ -1,7 +1,8 @@
 import type { ScoringRule } from '../entities/application.entity';
 import type { IScoringRulesRepository } from '../repositories/scoring-rules.repository.interface';
 import type { IEventsRepository } from '@/src/domains/events/repositories/events.repository.interface';
-import { NotFoundError, ForbiddenError, EmptyScoringRulesError } from '@/src/shared/errors/common';
+import { NotFoundError, EmptyScoringRulesError } from '@/src/shared/errors/common';
+import { UnauthorizedError } from '@/src/shared/errors/auth';
 
 export type ICreateScoringRulesUseCase = ReturnType<typeof createScoringRulesUseCase>;
 
@@ -25,9 +26,18 @@ export const createScoringRulesUseCase =
       throw new NotFoundError('Evento no encontrado');
     }
 
-    // Verify user owns the event
-    if (event.profileId !== userId) {
-      throw new ForbiddenError('No tienes permiso para modificar las reglas de este evento');
+    // Verify user owns the event via profiles
+    const { eq } = await import('drizzle-orm');
+    const { db } = await import('@/src/shared/database');
+    const { profiles } = await import('@/src/shared/database/schema');
+    const profile = await db
+      .select()
+      .from(profiles)
+      .where(eq(profiles.userId, userId))
+      .limit(1);
+
+    if (!profile[0] || profile[0].id !== event.profileId) {
+      throw new UnauthorizedError('No tienes permiso para modificar las reglas de este evento');
     }
 
     // Validate rules array is not empty

@@ -15,10 +15,15 @@ export const updateEventUseCase =
       slug: string;
       title: string;
       description: string | null;
+      requirements: string | null;
       startAt: Date | string | null;
+      applicationDeadline: Date | string | null;
       locationId: string | null;
       categoryId: string | null;
       thumbnailUrl: string | null;
+      bannerUrl: string | null;
+      requiredCandidates: number;
+      requiresVerifiedProfile: boolean;
       status: string;
     }>
   ): Promise<Event> => {

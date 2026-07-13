@@ -2,6 +2,7 @@ import type { Notification, NotificationPreferences, NotificationSettings, Notif
 
 export interface INotificationsRepository {
   findByUserId(userId: string): Promise<Notification[]>;
+  findByEntityId(entityId: string): Promise<Notification[]>;
   create(data: {
     userId: string;
     type: NotificationType;

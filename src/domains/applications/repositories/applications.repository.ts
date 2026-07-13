@@ -1,6 +1,6 @@
-import { eq, and, desc } from 'drizzle-orm';
+import { eq, and, desc, sql } from 'drizzle-orm';
 import { db } from '@/src/shared/database';
-import { applications, events, profiles, users, locations, statuses, applicationScores, applicationScoreBreakdown } from '@/src/shared/database/schema';
+import { applications, events, profiles, users, locations, statuses, applicationScores, applicationScoreBreakdown, regions } from '@/src/shared/database/schema';
 import type { IApplicationsRepository } from './applications.repository.interface';
 import type { Application, ApplicationWithDetails, ApplicationScoreWithBreakdown } from '../entities/application.entity';
 
@@ -11,41 +11,118 @@ function mapApplicationRow(row: any): ApplicationWithDetails {
     applicantProfileId: row.application.applicantProfileId,
     coverLetter: row.application.coverLetter,
     portfolioUrls: (row.application.portfolioUrls as string[]) ?? [],
-    status: row.application.status as ApplicationWithDetails['status'],
+    statusId: row.application.statusId,
     createdAt: row.application.createdAt,
     updatedAt: row.application.updatedAt,
     eventTitle: row.eventTitle ?? null,
     eventStartAt: row.eventStartAt ?? null,
     eventStatusSlug: row.eventStatusSlug ?? null,
+    eventStatusName: row.eventStatusName ?? null,
     applicantName: row.applicantName ?? null,
     applicantLogoUrl: row.applicantLogoUrl ?? null,
-    locationName: row.locationName ?? null,
+    regionName: row.regionName ?? null,
+    applicantIndustry: row.applicantIndustry ?? null,
+    score: row.totalScore != null
+      ? {
+        totalScore: row.totalScore,
+        maxPossible: row.maxPossible,
+        computedAt: null,
+        breakdown: [],
+      }
+      : undefined,
   };
 }
 
 export class ApplicationsRepository implements IApplicationsRepository {
   async findById(id: string): Promise<ApplicationWithDetails | null> {
     try {
+      // Get application with basic details
       const result = await db
         .select({
           application: applications,
           eventTitle: events.title,
           eventStartAt: events.startAt,
           eventStatusSlug: statuses.slug,
+          eventStatusName: statuses.name,
           applicantName: profiles.name,
           applicantLogoUrl: profiles.logoUrl,
+          applicantIndustry: profiles.industry,
           locationName: locations.name,
+          regionName: regions.name,
         })
         .from(applications)
         .where(eq(applications.id, id))
         .leftJoin(events, eq(applications.eventId, events.id))
-        .leftJoin(statuses, eq(events.statusId, statuses.id))
+        .leftJoin(statuses, eq(applications.statusId, statuses.id))
         .leftJoin(profiles, eq(applications.applicantProfileId, profiles.id))
         .leftJoin(locations, eq(profiles.locationId, locations.id))
+        .leftJoin(regions, eq(locations.regionId, regions.id))
         .limit(1);
 
       if (!result[0]) return null;
-      return mapApplicationRow(result[0]);
+
+      const row = result[0];
+
+      // Get organizer profile name separately
+      let organizerProfileName: string | null = null;
+      if (row.application.eventId) {
+        const eventResult = await db
+          .select({ profileName: profiles.name })
+          .from(events)
+          .leftJoin(profiles, eq(events.profileId, profiles.id))
+          .where(eq(events.id, row.application.eventId))
+          .limit(1);
+        organizerProfileName = eventResult[0]?.profileName ?? null;
+      }
+
+      // Get score and breakdown
+      const scoreResult = await db
+        .select()
+        .from(applicationScores)
+        .where(eq(applicationScores.applicationId, id))
+        .limit(1);
+
+      let breakdown: any[] = [];
+      if (scoreResult[0]) {
+        const breakdownResult = await db
+          .select()
+          .from(applicationScoreBreakdown)
+          .where(eq(applicationScoreBreakdown.scoreId, scoreResult[0].id));
+        breakdown = breakdownResult;
+      }
+
+      return {
+        id: row.application.id,
+        eventId: row.application.eventId,
+        applicantProfileId: row.application.applicantProfileId,
+        coverLetter: row.application.coverLetter,
+        portfolioUrls: (row.application.portfolioUrls as string[]) ?? [],
+        statusId: row.application.statusId,
+        createdAt: row.application.createdAt,
+        updatedAt: row.application.updatedAt,
+        eventTitle: row.eventTitle ?? null,
+        eventStartAt: row.eventStartAt ?? null,
+        eventStatusSlug: row.eventStatusSlug ?? null,
+        eventStatusName: row.eventStatusName ?? null,
+        applicantName: row.applicantName ?? null,
+        applicantLogoUrl: row.applicantLogoUrl ?? null,
+        regionName: row.regionName ?? null,
+        applicantIndustry: row.applicantIndustry ?? null,
+        organizerProfileName: organizerProfileName,
+        score: scoreResult[0]
+          ? {
+              totalScore: scoreResult[0].totalScore,
+              maxPossible: scoreResult[0].maxPossible,
+              computedAt: scoreResult[0].computedAt,
+              breakdown: breakdown.map((b) => ({
+                ruleType: b.ruleType,
+                pointsEarned: b.pointsEarned,
+                pointsPossible: b.pointsPossible,
+                reason: b.reason,
+              })),
+            }
+          : undefined,
+      };
     } catch (error) {
       console.error('[ApplicationsRepository.findById] Error:', error);
       throw error;
@@ -73,29 +150,137 @@ export class ApplicationsRepository implements IApplicationsRepository {
     }
   }
 
-  async findByEventId(eventId: string): Promise<ApplicationWithDetails[]> {
+  async findByEventId(
+    eventId: string,
+    options?: { status?: string }
+  ): Promise<ApplicationWithDetails[]> {
     try {
+      const conditions = [eq(applications.eventId, eventId)];
+
+      // Filter by status if provided
+      if (options?.status) {
+        conditions.push(eq(statuses.slug, options.status));
+      }
+
       const result = await db
         .select({
           application: applications,
           eventTitle: events.title,
           eventStartAt: events.startAt,
           eventStatusSlug: statuses.slug,
+          eventStatusName: statuses.name,
           applicantName: profiles.name,
           applicantLogoUrl: profiles.logoUrl,
           locationName: locations.name,
+          regionName: regions.name,
+          applicantIndustry: profiles.industry,
+          totalScore: applicationScores.totalScore,
+          maxPossible: applicationScores.maxPossible,
         })
         .from(applications)
-        .where(eq(applications.eventId, eventId))
+        .where(and(...conditions))
         .leftJoin(events, eq(applications.eventId, events.id))
-        .leftJoin(statuses, eq(events.statusId, statuses.id))
+        .leftJoin(statuses, eq(applications.statusId, statuses.id))
         .leftJoin(profiles, eq(applications.applicantProfileId, profiles.id))
         .leftJoin(locations, eq(profiles.locationId, locations.id))
-        .orderBy(desc(applications.createdAt));
+        .leftJoin(regions, eq(locations.regionId, regions.id))
+        .leftJoin(applicationScores, eq(applications.id, applicationScores.applicationId))
+        .orderBy(desc(applicationScores.totalScore), desc(applications.createdAt));
 
       return result.map(mapApplicationRow);
     } catch (error) {
       console.error('[ApplicationsRepository.findByEventId] Error:', error);
+      throw error;
+    }
+  }
+
+  async findByEventIdWithScoreDetails(
+    eventId: string,
+    options?: { status?: string }
+  ): Promise<ApplicationWithDetails[]> {
+    try {
+      const conditions = [eq(applications.eventId, eventId)];
+
+      if (options?.status) {
+        conditions.push(eq(statuses.slug, options.status));
+      }
+
+      const result = await db
+        .select({
+          application: applications,
+          eventTitle: events.title,
+          eventStartAt: events.startAt,
+          eventStatusSlug: statuses.slug,
+          eventStatusName: statuses.name,
+          applicantName: profiles.name,
+          applicantLogoUrl: profiles.logoUrl,
+          locationName: locations.name,
+          regionName: regions.name,
+          applicantIndustry: profiles.industry,
+          totalScore: applicationScores.totalScore,
+          maxPossible: applicationScores.maxPossible,
+          computedAt: applicationScores.computedAt,
+          scoreId: applicationScores.id,
+        })
+        .from(applications)
+        .where(and(...conditions))
+        .leftJoin(events, eq(applications.eventId, events.id))
+        .leftJoin(statuses, eq(applications.statusId, statuses.id))
+        .leftJoin(profiles, eq(applications.applicantProfileId, profiles.id))
+        .leftJoin(locations, eq(profiles.locationId, locations.id))
+        .leftJoin(regions, eq(locations.regionId, regions.id))
+        .leftJoin(applicationScores, eq(applications.id, applicationScores.applicationId))
+        .orderBy(desc(applicationScores.totalScore), desc(applications.createdAt));
+
+      // Get breakdown for each application
+      const applicationsWithBreakdown = await Promise.all(
+        result.map(async (row) => {
+          let breakdown: any[] = [];
+          if (row.scoreId) {
+            const breakdownResult = await db
+              .select()
+              .from(applicationScoreBreakdown)
+              .where(eq(applicationScoreBreakdown.scoreId, row.scoreId));
+            breakdown = breakdownResult;
+          }
+
+          return {
+            id: row.application.id,
+            eventId: row.application.eventId,
+            applicantProfileId: row.application.applicantProfileId,
+            coverLetter: row.application.coverLetter,
+            portfolioUrls: (row.application.portfolioUrls as string[]) ?? [],
+            statusId: row.application.statusId,
+            createdAt: row.application.createdAt,
+            updatedAt: row.application.updatedAt,
+            eventTitle: row.eventTitle ?? null,
+            eventStartAt: row.eventStartAt ?? null,
+            eventStatusSlug: row.eventStatusSlug ?? null,
+            eventStatusName: row.eventStatusName ?? null,
+            applicantName: row.applicantName ?? null,
+            applicantLogoUrl: row.applicantLogoUrl ?? null,
+            regionName: row.regionName ?? null,
+            applicantIndustry: row.applicantIndustry ?? null,
+            score: row.totalScore != null
+              ? {
+                totalScore: row.totalScore,
+                maxPossible: row.maxPossible,
+                computedAt: row.computedAt,
+                breakdown: breakdown.map((b) => ({
+                  ruleType: b.ruleType,
+                  pointsEarned: b.pointsEarned,
+                  pointsPossible: b.pointsPossible,
+                  reason: b.reason,
+                })),
+              }
+              : undefined,
+          };
+        })
+      );
+
+      return applicationsWithBreakdown;
+    } catch (error) {
+      console.error('[ApplicationsRepository.findByEventIdWithScoreDetails] Error:', error);
       throw error;
     }
   }
@@ -108,16 +293,20 @@ export class ApplicationsRepository implements IApplicationsRepository {
           eventTitle: events.title,
           eventStartAt: events.startAt,
           eventStatusSlug: statuses.slug,
+          eventStatusName: statuses.name,
           applicantName: profiles.name,
           applicantLogoUrl: profiles.logoUrl,
           locationName: locations.name,
+          regionName: regions.name,
+          applicantIndustry: profiles.industry,
         })
         .from(applications)
         .where(eq(applications.applicantProfileId, applicantProfileId))
         .leftJoin(events, eq(applications.eventId, events.id))
-        .leftJoin(statuses, eq(events.statusId, statuses.id))
+        .leftJoin(statuses, eq(applications.statusId, statuses.id))
         .leftJoin(profiles, eq(applications.applicantProfileId, profiles.id))
         .leftJoin(locations, eq(profiles.locationId, locations.id))
+        .leftJoin(regions, eq(locations.regionId, regions.id))
         .orderBy(desc(applications.createdAt));
 
       return result.map(mapApplicationRow);
@@ -132,6 +321,7 @@ export class ApplicationsRepository implements IApplicationsRepository {
     applicantProfileId: string;
     coverLetter?: string | null;
     portfolioUrls?: string[];
+    statusId?: string;
   }): Promise<Application> {
     try {
       const result = await db
@@ -142,6 +332,7 @@ export class ApplicationsRepository implements IApplicationsRepository {
           applicantProfileId: data.applicantProfileId,
           coverLetter: data.coverLetter ?? null,
           portfolioUrls: data.portfolioUrls ?? [],
+          statusId: data.statusId ?? '10000000-0000-0000-0000-000000000001', // Default: pending
         })
         .returning();
       return result[0] as Application;
@@ -151,11 +342,11 @@ export class ApplicationsRepository implements IApplicationsRepository {
     }
   }
 
-  async updateStatus(id: string, status: string): Promise<Application> {
+  async updateStatus(id: string, statusId: string): Promise<Application> {
     try {
       const result = await db
         .update(applications)
-        .set({ status, updatedAt: new Date() })
+        .set({ statusId, updatedAt: new Date() })
         .where(eq(applications.id, id))
         .returning();
       return result[0] as Application;

@@ -95,6 +95,7 @@ export const profiles = pgTable(
     employees: text('employees'),
     website: text('website'),
     whatsapp: text('whatsapp'),
+    isVerified: boolean('is_verified').notNull().default(false),
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at')
       .notNull()
@@ -488,21 +489,8 @@ export const events = pgTable(
 export const ruleTypeEnum = pgEnum('rule_type', [
   'VERIFIED_PROFILE',
   'SAME_REGION',
-  'HAS_PORTFOLIO',
-  'YEARS_EXPERIENCE',
   'HAS_WEBSITE',
-  'HAS_SOCIAL_LINKS',
-  'HAS_COMPANY_DESCRIPTION',
-  'HAS_LOGO',
-  'HAS_BANNER',
-  'HAS_PREVIOUS_FEEDBACK',
-  'AVERAGE_RATING',
-  'NUMBER_OF_COMPLETED_JOBS',
-  'NUMBER_OF_COMPLETED_EVENTS',
-  'HAS_RESPONSE_HISTORY',
-  'FAST_RESPONSE_TIME',
-  'IS_PREMIUM_COMPANY',
-  'CUSTOM_FIELD_MATCH',
+  'ACCOUNT_AGE',
 ]);
 
 export const threadStatusEnum = pgEnum('thread_status', [
@@ -538,7 +526,10 @@ export const applications = pgTable(
       .references(() => profiles.id, { onDelete: 'cascade' }),
     coverLetter: text('cover_letter'),
     portfolioUrls: jsonb('portfolio_urls').notNull().default([]),
-    status: text('status').notNull().default('pending'),
+    statusId: text('status_id')
+      .notNull()
+      .default('10000000-0000-0000-0000-000000000001') // application_pending UUID
+      .references(() => statuses.id, { onDelete: 'restrict' }),
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at')
       .notNull()
@@ -548,7 +539,7 @@ export const applications = pgTable(
   (table) => [
     index('applications_eventId_idx').on(table.eventId),
     index('applications_applicantId_idx').on(table.applicantProfileId),
-    index('applications_status_idx').on(table.status),
+    index('applications_statusId_idx').on(table.statusId),
     index('applications_createdAt_idx').on(table.createdAt),
   ],
 );

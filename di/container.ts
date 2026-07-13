@@ -64,6 +64,14 @@ import {
   sendMessageController,
   getThreadController,
 } from '@/src/domains/messages/controllers/message.controller';
+import { ThreadsMessagesRepository } from '@/src/domains/threads/repositories/messages.repository';
+import { getThreadUseCase as threadsGetThreadUseCase } from '@/src/domains/threads/use-cases/get-thread.use-case';
+import { getThreadMessagesUseCase } from '@/src/domains/threads/use-cases/get-thread-messages.use-case';
+import { sendMessageUseCase as threadsSendMessageUseCase } from '@/src/domains/threads/use-cases/send-message.use-case';
+import { closeThreadUseCase } from '@/src/domains/threads/use-cases/close-thread.use-case';
+import { listThreadsUseCase } from '@/src/domains/threads/use-cases/list-threads.use-case';
+import { getThreadByApplicationUseCase } from '@/src/domains/threads/use-cases/get-thread-by-application.use-case';
+import { createThreadsGetThreadController, createThreadsGetMessagesController, createThreadsSendMessageController, createThreadsCloseThreadController, createThreadsListController, createThreadsGetByApplicationController } from '@/src/domains/threads/controllers/thread.controller';
 import { NotificationsRepository } from '@/src/domains/notifications/repositories/notifications.repository';
 import { listNotificationsUseCase } from '@/src/domains/notifications/use-cases/list-notifications.use-case';
 import { createNotificationUseCase } from '@/src/domains/notifications/use-cases/create-notification.use-case';
@@ -79,18 +87,24 @@ import {
 } from '@/src/domains/notifications/controllers/notification.controller';
 import { ApplicationsRepository } from '@/src/domains/applications/repositories/applications.repository';
 import { ScoringRulesRepository } from '@/src/domains/applications/repositories/scoring-rules.repository';
+import { ThreadsRepository } from '@/src/domains/threads/repositories/threads.repository';
 import { createApplicationUseCase } from '@/src/domains/applications/use-cases/create-application.use-case';
 import { getApplicationUseCase } from '@/src/domains/applications/use-cases/get-application.use-case';
 import { listEventApplicationsUseCase } from '@/src/domains/applications/use-cases/list-event-applications.use-case';
+import { listEventApplicationsWithScoreUseCase } from '@/src/domains/applications/use-cases/list-event-applications-with-score.use-case';
 import { listMyApplicationsUseCase } from '@/src/domains/applications/use-cases/list-my-applications.use-case';
+import { getMyApplicationByEventUseCase } from '@/src/domains/applications/use-cases/get-my-application-by-event.use-case';
 import { updateApplicationStatusUseCase } from '@/src/domains/applications/use-cases/update-application-status.use-case';
 import { computeScoreUseCase } from '@/src/domains/applications/use-cases/compute-score.use-case';
 import { createScoringRulesUseCase } from '@/src/domains/applications/use-cases/create-scoring-rules.use-case';
+import { createThreadUseCase } from '@/src/domains/threads/use-cases/create-thread.use-case';
 import {
   createApplicationController,
   getApplicationController,
   listEventApplicationsController,
+  listEventApplicationsWithScoreController,
   listMyApplicationsController,
+  getMyApplicationByEventController,
   updateApplicationStatusController,
   listScoringRulesController,
   createScoringRulesController,
@@ -117,6 +131,61 @@ container.bind(DI_SYMBOLS.IMessagesRepository).toClass(MessagesRepository);
 container.bind(DI_SYMBOLS.INotificationsRepository).toClass(NotificationsRepository);
 container.bind(DI_SYMBOLS.IApplicationsRepository).toClass(ApplicationsRepository);
 container.bind(DI_SYMBOLS.IScoringRulesRepository).toClass(ScoringRulesRepository);
+container.bind(DI_SYMBOLS.IThreadsRepository).toClass(ThreadsRepository);
+container.bind(DI_SYMBOLS.IMessagesRepository).toClass(ThreadsMessagesRepository);
+container.bind(DI_SYMBOLS.ICreateThreadUseCase).toHigherOrderFunction(createThreadUseCase, [
+  DI_SYMBOLS.IThreadsRepository,
+]);
+container.bind(DI_SYMBOLS.IThreadsGetThreadUseCase).toHigherOrderFunction(threadsGetThreadUseCase, [
+  DI_SYMBOLS.IThreadsRepository,
+  DI_SYMBOLS.IProfilesRepository,
+]);
+container.bind(DI_SYMBOLS.IThreadsGetMessagesUseCase).toHigherOrderFunction(getThreadMessagesUseCase, [
+  DI_SYMBOLS.IThreadsRepository,
+  DI_SYMBOLS.IProfilesRepository,
+  DI_SYMBOLS.IMessagesRepository,
+]);
+container.bind(DI_SYMBOLS.IThreadsSendMessageUseCase).toHigherOrderFunction(threadsSendMessageUseCase, [
+  DI_SYMBOLS.IThreadsRepository,
+  DI_SYMBOLS.IProfilesRepository,
+  DI_SYMBOLS.IMessagesRepository,
+  DI_SYMBOLS.INotificationsRepository,
+  DI_SYMBOLS.ICreateNotificationUseCase,
+]);
+container.bind(DI_SYMBOLS.IThreadsCloseThreadUseCase).toHigherOrderFunction(closeThreadUseCase, [
+  DI_SYMBOLS.IThreadsRepository,
+  DI_SYMBOLS.IProfilesRepository,
+]);
+container.bind(DI_SYMBOLS.IListThreadsUseCase).toHigherOrderFunction(listThreadsUseCase, [
+  DI_SYMBOLS.IThreadsRepository,
+  DI_SYMBOLS.IProfilesRepository,
+]);
+container.bind(DI_SYMBOLS.IGetThreadByApplicationUseCase).toHigherOrderFunction(getThreadByApplicationUseCase, [
+  DI_SYMBOLS.IThreadsRepository,
+  DI_SYMBOLS.IApplicationsRepository,
+  DI_SYMBOLS.IProfilesRepository,
+  DI_SYMBOLS.IEventsRepository,
+]);
+
+// Threads controllers
+container.bind(DI_SYMBOLS.IThreadsGetThreadController).toHigherOrderFunction(createThreadsGetThreadController, [
+  DI_SYMBOLS.IThreadsGetThreadUseCase,
+]);
+container.bind(DI_SYMBOLS.IThreadsGetMessagesController).toHigherOrderFunction(createThreadsGetMessagesController, [
+  DI_SYMBOLS.IThreadsGetMessagesUseCase,
+]);
+container.bind(DI_SYMBOLS.IThreadsSendMessageController).toHigherOrderFunction(createThreadsSendMessageController, [
+  DI_SYMBOLS.IThreadsSendMessageUseCase,
+]);
+container.bind(DI_SYMBOLS.IThreadsCloseThreadController).toHigherOrderFunction(createThreadsCloseThreadController, [
+  DI_SYMBOLS.IThreadsCloseThreadUseCase,
+]);
+container.bind(DI_SYMBOLS.IThreadsListController).toHigherOrderFunction(createThreadsListController, [
+  DI_SYMBOLS.IListThreadsUseCase,
+]);
+container.bind(DI_SYMBOLS.IThreadsGetByApplicationController).toHigherOrderFunction(createThreadsGetByApplicationController, [
+  DI_SYMBOLS.IGetThreadByApplicationUseCase,
+]);
 
 // --- Use Cases ---
 container.bind(DI_SYMBOLS.IGetUserUseCase).toHigherOrderFunction(getUserUseCase, [
@@ -228,6 +297,8 @@ container.bind(DI_SYMBOLS.ICreateApplicationUseCase).toHigherOrderFunction(creat
   DI_SYMBOLS.INotificationsRepository,
   DI_SYMBOLS.ICreateNotificationUseCase,
   DI_SYMBOLS.IUsersRepository,
+  DI_SYMBOLS.IScoringRulesRepository,
+  DI_SYMBOLS.IComputeScoreUseCase,
 ]);
 container.bind(DI_SYMBOLS.IGetApplicationUseCase).toHigherOrderFunction(getApplicationUseCase, [
   DI_SYMBOLS.IApplicationsRepository,
@@ -239,9 +310,19 @@ container.bind(DI_SYMBOLS.IListEventApplicationsUseCase).toHigherOrderFunction(l
   DI_SYMBOLS.IEventsRepository,
   DI_SYMBOLS.IProfilesRepository,
 ]);
+container.bind(DI_SYMBOLS.IListEventApplicationsWithScoreUseCase).toHigherOrderFunction(listEventApplicationsWithScoreUseCase, [
+  DI_SYMBOLS.IApplicationsRepository,
+  DI_SYMBOLS.IEventsRepository,
+  DI_SYMBOLS.IProfilesRepository,
+]);
 container.bind(DI_SYMBOLS.IListMyApplicationsUseCase).toHigherOrderFunction(listMyApplicationsUseCase, [
   DI_SYMBOLS.IApplicationsRepository,
   DI_SYMBOLS.IProfilesRepository,
+]);
+container.bind(DI_SYMBOLS.IGetMyApplicationByEventUseCase).toHigherOrderFunction(getMyApplicationByEventUseCase, [
+  DI_SYMBOLS.IApplicationsRepository,
+  DI_SYMBOLS.IProfilesRepository,
+  DI_SYMBOLS.IEventsRepository,
 ]);
 container.bind(DI_SYMBOLS.IUpdateApplicationStatusUseCase).toHigherOrderFunction(updateApplicationStatusUseCase, [
   DI_SYMBOLS.IApplicationsRepository,
@@ -250,6 +331,8 @@ container.bind(DI_SYMBOLS.IUpdateApplicationStatusUseCase).toHigherOrderFunction
   DI_SYMBOLS.INotificationsRepository,
   DI_SYMBOLS.ICreateNotificationUseCase,
   DI_SYMBOLS.IUsersRepository,
+  DI_SYMBOLS.IThreadsRepository,
+  DI_SYMBOLS.ICreateThreadUseCase,
 ]);
 container.bind(DI_SYMBOLS.IComputeScoreUseCase).toHigherOrderFunction(computeScoreUseCase, [
   DI_SYMBOLS.IApplicationsRepository,
@@ -369,8 +452,14 @@ container.bind(DI_SYMBOLS.IGetApplicationController).toHigherOrderFunction(getAp
 container.bind(DI_SYMBOLS.IListEventApplicationsController).toHigherOrderFunction(listEventApplicationsController, [
   DI_SYMBOLS.IListEventApplicationsUseCase,
 ]);
+container.bind(DI_SYMBOLS.IListEventApplicationsWithScoreController).toHigherOrderFunction(listEventApplicationsWithScoreController, [
+  DI_SYMBOLS.IListEventApplicationsWithScoreUseCase,
+]);
 container.bind(DI_SYMBOLS.IListMyApplicationsController).toHigherOrderFunction(listMyApplicationsController, [
   DI_SYMBOLS.IListMyApplicationsUseCase,
+]);
+container.bind(DI_SYMBOLS.IGetMyApplicationByEventController).toHigherOrderFunction(getMyApplicationByEventController, [
+  DI_SYMBOLS.IGetMyApplicationByEventUseCase,
 ]);
 container.bind(DI_SYMBOLS.IUpdateApplicationStatusController).toHigherOrderFunction(updateApplicationStatusController, [
   DI_SYMBOLS.IUpdateApplicationStatusUseCase,

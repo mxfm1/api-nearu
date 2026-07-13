@@ -20,6 +20,9 @@ export const getApplicationSchema = z.object({
 
 export const listEventApplicationsSchema = z.object({
   params: z.object({ eventId: z.string().min(1) }),
+  query: z.object({
+    status: z.enum(['pending', 'reviewing', 'accepted', 'rejected']).optional(),
+  }),
 });
 
 export const updateApplicationStatusSchema = z.object({

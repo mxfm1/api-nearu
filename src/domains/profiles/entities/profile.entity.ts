@@ -27,6 +27,7 @@ export interface Profile {
   employees: string | null;
   website: string | null;
   whatsapp: string | null;
+  isVerified: boolean;
   createdAt: Date;
   updatedAt: Date;
   socialLinks?: SocialLink[];

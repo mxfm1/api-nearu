@@ -1,12 +1,10 @@
-export type ApplicationStatus = 'pending' | 'reviewing' | 'accepted' | 'rejected';
-
 export interface Application {
   id: string;
   eventId: string;
   applicantProfileId: string;
   coverLetter: string | null;
   portfolioUrls: string[];
-  status: ApplicationStatus;
+  statusId: string;  // FK to statuses table
   createdAt: Date;
   updatedAt: Date;
 }
@@ -14,11 +12,33 @@ export interface Application {
 export interface ApplicationWithDetails extends Application {
   eventTitle: string;
   eventStartAt: Date | null;
-  eventStatusSlug: string | null;
+  eventStatusSlug: string | null;  // from statuses table
+  eventStatusName: string | null;   // from statuses table
   applicantName: string | null;
   applicantLogoUrl: string | null;
-  locationName: string | null;
+  regionName: string | null;       // region of the applicant
+  applicantIndustry: string | null; // industry from applicant profile
+  organizerProfileName: string | null; // name of the company that created the event
+  score?: {
+    totalScore: number;
+    maxPossible: number;
+    computedAt: Date | null;
+    breakdown: Array<{
+      ruleType: string;
+      pointsEarned: number;
+      pointsPossible: number;
+      reason: string | null;
+    }>;
+  };
 }
+
+// Application status IDs (for reference, not enforced in code)
+export const APPLICATION_STATUS_IDS = {
+  PENDING: 'application_pending',    // Will be created in DB
+  REVIEWING: 'application_reviewing', // Will be created in DB
+  APPROVED: 'application_approved',   // Will be created in DB (user used 'accepted' but approved is more standard)
+  REJECTED: 'application_rejected',   // Will be created in DB
+} as const;
 
 export interface ScoringRule {
   id: string;
@@ -32,21 +52,8 @@ export interface ScoringRule {
 export type RuleType =
   | 'VERIFIED_PROFILE'
   | 'SAME_REGION'
-  | 'HAS_PORTFOLIO'
-  | 'YEARS_EXPERIENCE'
   | 'HAS_WEBSITE'
-  | 'HAS_SOCIAL_LINKS'
-  | 'HAS_COMPANY_DESCRIPTION'
-  | 'HAS_LOGO'
-  | 'HAS_BANNER'
-  | 'HAS_PREVIOUS_FEEDBACK'
-  | 'AVERAGE_RATING'
-  | 'NUMBER_OF_COMPLETED_JOBS'
-  | 'NUMBER_OF_COMPLETED_EVENTS'
-  | 'HAS_RESPONSE_HISTORY'
-  | 'FAST_RESPONSE_TIME'
-  | 'IS_PREMIUM_COMPANY'
-  | 'CUSTOM_FIELD_MATCH';
+  | 'ACCOUNT_AGE';
 
 export interface ApplicationScore {
   id: string;

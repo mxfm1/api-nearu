@@ -4,9 +4,9 @@ import type { IEventsRepository } from '@/src/domains/events/repositories/events
 import type { IProfilesRepository } from '@/src/domains/profiles/repositories/profiles.repository.interface';
 import { NotFoundError, ForbiddenError } from '@/src/shared/errors/common';
 
-export type IListEventApplicationsUseCase = ReturnType<typeof listEventApplicationsUseCase>;
+export type IListEventApplicationsWithScoreUseCase = ReturnType<typeof listEventApplicationsWithScoreUseCase>;
 
-export const listEventApplicationsUseCase =
+export const listEventApplicationsWithScoreUseCase =
   (
     applicationsRepository: IApplicationsRepository,
     eventsRepository: IEventsRepository,
@@ -34,8 +34,8 @@ export const listEventApplicationsUseCase =
       throw new ForbiddenError('No tienes permiso para ver estas postulaciones');
     }
 
-    // List applications for event (already includes score and ordered by score)
-    const applications = await applicationsRepository.findByEventId(eventId, options);
+    // List applications with full score details
+    const applications = await applicationsRepository.findByEventIdWithScoreDetails(eventId, options);
 
     return applications;
   };

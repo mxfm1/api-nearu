@@ -19,6 +19,19 @@ export class NotificationsRepository implements INotificationsRepository {
     }
   }
 
+  async findByEntityId(entityId: string): Promise<Notification[]> {
+    try {
+      const result = await db
+        .select()
+        .from(notifications)
+        .where(eq(notifications.entityId, entityId));
+      return result as unknown as Notification[];
+    } catch (error) {
+      console.error('[NotificationsRepository.findByEntityId] Error:', error);
+      throw error;
+    }
+  }
+
   async create(data: {
     userId: string;
     type: NotificationType;

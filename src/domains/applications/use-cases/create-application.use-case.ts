@@ -5,6 +5,8 @@ import type { IProfilesRepository } from '@/src/domains/profiles/repositories/pr
 import type { INotificationsRepository } from '@/src/domains/notifications/repositories/notifications.repository.interface';
 import type { ICreateNotificationUseCase } from '@/src/domains/notifications/use-cases/create-notification.use-case';
 import type { IUsersRepository } from '@/src/domains/users/repositories/users.repository.interface';
+import type { IScoringRulesRepository } from '../repositories/scoring-rules.repository.interface';
+import type { IComputeScoreUseCase } from './compute-score.use-case';
 import { emailService } from '@/src/shared/email';
 import { InputParseError, NotFoundError, ApplicationAlreadyExistsError } from '@/src/shared/errors/common';
 
@@ -18,6 +20,8 @@ export const createApplicationUseCase =
     notificationsRepository: INotificationsRepository,
     createNotificationUseCase: ICreateNotificationUseCase,
     usersRepository: IUsersRepository,
+    scoringRulesRepository: IScoringRulesRepository,
+    computeScoreUseCase: IComputeScoreUseCase,
   ) =>
   async (input: {
     eventId: string;
@@ -64,6 +68,14 @@ export const createApplicationUseCase =
 
     // Increment event application count
     await eventsRepository.incrementApplicationCount(event.id, 1);
+
+    // Calculate score if event has scoring rules configured (fire-and-forget)
+    const rules = await scoringRulesRepository.findByEventId(event.id);
+    if (rules.length > 0) {
+      computeScoreUseCase(application.id).catch(() =>
+        console.warn('[CreateApplication] Failed to compute score')
+      );
+    }
 
     // Notify event organizer (fire-and-forget)
     const organizerProfile = await profilesRepository.findById(event.profileId);

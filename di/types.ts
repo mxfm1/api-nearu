@@ -47,12 +47,24 @@ import type { IApplicationsRepository } from '@/src/domains/applications/reposit
 import type { IScoringRulesRepository } from '@/src/domains/applications/repositories/scoring-rules.repository.interface';
 import type { ICreateApplicationUseCase } from '@/src/domains/applications/use-cases/create-application.use-case';
 import type { IGetApplicationUseCase } from '@/src/domains/applications/use-cases/get-application.use-case';
+import type { IThreadsRepository } from '@/src/domains/threads/repositories/threads.repository.interface';
+import type { ICreateThreadUseCase } from '@/src/domains/threads/use-cases/create-thread.use-case';
 import type { IListEventApplicationsUseCase } from '@/src/domains/applications/use-cases/list-event-applications.use-case';
+import type { IListEventApplicationsWithScoreUseCase } from '@/src/domains/applications/use-cases/list-event-applications-with-score.use-case';
 import type { IListMyApplicationsUseCase } from '@/src/domains/applications/use-cases/list-my-applications.use-case';
+import type { IGetMyApplicationByEventUseCase } from '@/src/domains/applications/use-cases/get-my-application-by-event.use-case';
 import type { IUpdateApplicationStatusUseCase } from '@/src/domains/applications/use-cases/update-application-status.use-case';
 import type { IComputeScoreUseCase } from '@/src/domains/applications/use-cases/compute-score.use-case';
 import type { ICreateScoringRulesUseCase } from '@/src/domains/applications/use-cases/create-scoring-rules.use-case';
-import type { ICreateApplicationController, IGetApplicationController, IListEventApplicationsController, IListMyApplicationsController, IUpdateApplicationStatusController, IListScoringRulesController, ICreateScoringRulesController } from '@/src/domains/applications/controllers/application.controller';
+import type { ICreateThreadUseCase } from '@/src/domains/threads/use-cases/create-thread.use-case';
+import type { IGetThreadUseCase } from '@/src/domains/threads/use-cases/get-thread.use-case';
+import type { IGetThreadMessagesUseCase } from '@/src/domains/threads/use-cases/get-thread-messages.use-case';
+import type { ISendMessageUseCase } from '@/src/domains/threads/use-cases/send-message.use-case';
+import type { ICloseThreadUseCase } from '@/src/domains/threads/use-cases/close-thread.use-case';
+import type { IListThreadsUseCase } from '@/src/domains/threads/use-cases/list-threads.use-case';
+import type { IGetThreadByApplicationUseCase } from '@/src/domains/threads/use-cases/get-thread-by-application.use-case';
+import type { ICreateApplicationController, IGetApplicationController, IListEventApplicationsController, IListEventApplicationsWithScoreController, IListMyApplicationsController, IGetMyApplicationByEventController, IUpdateApplicationStatusController, IListScoringRulesController, ICreateScoringRulesController } from '@/src/domains/applications/controllers/application.controller';
+import type { IThreadsGetThreadController, IThreadsGetMessagesController, IThreadsSendMessageController, IThreadsCloseThreadController, IThreadsListController, IThreadsGetByApplicationController } from '@/src/domains/threads/controllers/thread.controller.interface';
 
 export const DI_SYMBOLS = {
   IAuthenticationService: Symbol.for('IAuthenticationService'),
@@ -134,14 +146,33 @@ export const DI_SYMBOLS = {
   ICreateApplicationUseCase: Symbol.for('ICreateApplicationUseCase'),
   IGetApplicationUseCase: Symbol.for('IGetApplicationUseCase'),
   IListEventApplicationsUseCase: Symbol.for('IListEventApplicationsUseCase'),
+  IListEventApplicationsWithScoreUseCase: Symbol.for('IListEventApplicationsWithScoreUseCase'),
   IListMyApplicationsUseCase: Symbol.for('IListMyApplicationsUseCase'),
+  IGetMyApplicationByEventUseCase: Symbol.for('IGetMyApplicationByEventUseCase'),
   IUpdateApplicationStatusUseCase: Symbol.for('IUpdateApplicationStatusUseCase'),
+  // Threads
+  IThreadsRepository: Symbol.for('IThreadsRepository'),
+  ICreateThreadUseCase: Symbol.for('ICreateThreadUseCase'),
+  IThreadsGetThreadUseCase: Symbol.for('IThreadsGetThreadUseCase'),
+  IThreadsGetMessagesUseCase: Symbol.for('IThreadsGetMessagesUseCase'),
+  IThreadsSendMessageUseCase: Symbol.for('IThreadsSendMessageUseCase'),
+  IThreadsCloseThreadUseCase: Symbol.for('ICloseThreadUseCase'),
+  IThreadsGetThreadController: Symbol.for('IThreadsGetThreadController'),
+  IThreadsGetMessagesController: Symbol.for('IThreadsGetMessagesController'),
+  IThreadsSendMessageController: Symbol.for('IThreadsSendMessageController'),
+  IThreadsCloseThreadController: Symbol.for('IThreadsCloseThreadController'),
+  IListThreadsUseCase: Symbol.for('IListThreadsUseCase'),
+  IThreadsListController: Symbol.for('IThreadsListController'),
+  IGetThreadByApplicationUseCase: Symbol.for('IGetThreadByApplicationUseCase'),
+  IThreadsGetByApplicationController: Symbol.for('IThreadsGetByApplicationController'),
   IComputeScoreUseCase: Symbol.for('IComputeScoreUseCase'),
   ICreateScoringRulesUseCase: Symbol.for('ICreateScoringRulesUseCase'),
   ICreateApplicationController: Symbol.for('ICreateApplicationController'),
   IGetApplicationController: Symbol.for('IGetApplicationController'),
   IListEventApplicationsController: Symbol.for('IListEventApplicationsController'),
+  IListEventApplicationsWithScoreController: Symbol.for('IListEventApplicationsWithScoreController'),
   IListMyApplicationsController: Symbol.for('IListMyApplicationsController'),
+  IGetMyApplicationByEventController: Symbol.for('IGetMyApplicationByEventController'),
   IUpdateApplicationStatusController: Symbol.for('IUpdateApplicationStatusController'),
   IListScoringRulesController: Symbol.for('IListScoringRulesController'),
   ICreateScoringRulesController: Symbol.for('ICreateScoringRulesController'),
@@ -227,14 +258,33 @@ export interface DI_RETURN_TYPES {
   ICreateApplicationUseCase: ICreateApplicationUseCase;
   IGetApplicationUseCase: IGetApplicationUseCase;
   IListEventApplicationsUseCase: IListEventApplicationsUseCase;
+  IListEventApplicationsWithScoreUseCase: IListEventApplicationsWithScoreUseCase;
   IListMyApplicationsUseCase: IListMyApplicationsUseCase;
+  IGetMyApplicationByEventUseCase: IGetMyApplicationByEventUseCase;
   IUpdateApplicationStatusUseCase: IUpdateApplicationStatusUseCase;
+  // Threads
+  IThreadsRepository: IThreadsRepository;
+  ICreateThreadUseCase: ICreateThreadUseCase;
+  IThreadsGetThreadUseCase: IThreadsGetThreadUseCase;
+  IThreadsGetMessagesUseCase: IThreadsGetMessagesUseCase;
+  IThreadsSendMessageUseCase: ISendMessageUseCase;
+  IThreadsCloseThreadUseCase: ICloseThreadUseCase;
+  IThreadsGetThreadController: IThreadsGetThreadController;
+  IThreadsGetMessagesController: IThreadsGetMessagesController;
+  IThreadsSendMessageController: IThreadsSendMessageController;
+  IThreadsCloseThreadController: IThreadsCloseThreadController;
+  IListThreadsUseCase: IListThreadsUseCase;
+  IThreadsListController: IThreadsListController;
+  IGetThreadByApplicationUseCase: IGetThreadByApplicationUseCase;
+  IThreadsGetByApplicationController: IThreadsGetByApplicationController;
   IComputeScoreUseCase: IComputeScoreUseCase;
   ICreateScoringRulesUseCase: ICreateScoringRulesUseCase;
   ICreateApplicationController: ICreateApplicationController;
   IGetApplicationController: IGetApplicationController;
   IListEventApplicationsController: IListEventApplicationsController;
+  IListEventApplicationsWithScoreController: IListEventApplicationsWithScoreController;
   IListMyApplicationsController: IListMyApplicationsController;
+  IGetMyApplicationByEventController: IGetMyApplicationByEventController;
   IUpdateApplicationStatusController: IUpdateApplicationStatusController;
   IListScoringRulesController: IListScoringRulesController;
   ICreateScoringRulesController: ICreateScoringRulesController;

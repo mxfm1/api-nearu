@@ -4,9 +4,9 @@ export interface IListEventsFilters {
   profileId?: string;
   categoryId?: string;
   locationId?: string;
-  eventStatus?: string;
+  status?: string;
   search?: string;
-  upcoming?: boolean; // only future events
+  upcoming?: boolean;
 }
 
 export interface IEventsRepository {
@@ -19,21 +19,38 @@ export interface IEventsRepository {
     slug: string;
     title: string;
     description?: string | null;
+    requirements?: string | null;
     startAt?: Date | string | null;
+    applicationDeadline?: Date | string | null;
     locationId?: string | null;
     categoryId?: string | null;
     thumbnailUrl?: string | null;
-    eventStatus?: string;
+    bannerUrl?: string | null;
+    requiredCandidates?: number;
+    selectedCandidates?: number;
+    requiresVerifiedProfile?: boolean;
+    autoCloseWhenFilled?: boolean;
+    statusId?: string;
   }): Promise<Event>;
   update(id: string, data: Partial<{
     slug: string;
     title: string;
     description: string | null;
+    requirements: string | null;
     startAt: Date | string | null;
+    applicationDeadline: Date | string | null;
     locationId: string | null;
     categoryId: string | null;
     thumbnailUrl: string | null;
-    eventStatus: string;
+    bannerUrl: string | null;
+    requiredCandidates: number;
+    selectedCandidates: number;
+    requiresVerifiedProfile: boolean;
+    autoCloseWhenFilled: boolean;
+    statusId: string;
   }>): Promise<Event>;
+  incrementApplicationCount(eventId: string, delta: number): Promise<void>;
+  incrementSelectedCandidates(eventId: string): Promise<void>;
+  decrementSelectedCandidates(eventId: string): Promise<void>;
   delete(id: string): Promise<void>;
 }

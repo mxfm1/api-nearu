@@ -5,29 +5,22 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1782688706566,
-      "tag": "0000_short_firebrand",
+      "when": 1783911642752,
+      "tag": "0000_handy_micromacro",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "7",
-      "when": 1782699000642,
-      "tag": "0001_gifted_barracuda",
+      "when": 1783912044804,
+      "tag": "0001_wakeful_captain_america",
       "breakpoints": true
     },
     {
       "idx": 2,
       "version": "7",
-      "when": 1782792393005,
-      "tag": "0002_flat_speed_demon",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1782817168729,
-      "tag": "0003_numerous_pixie",
+      "when": 1783916839786,
+      "tag": "0002_supreme_living_mummy",
       "breakpoints": true
     }
   ]

@@ -65,9 +65,14 @@ test.describe('Events Endpoints', () => {
         slug: `mi-evento-${uniqueId}`,
         title: 'Mi Evento de Prueba',
         description: 'Descripción larga del evento con info relevante para los asistentes.',
+        requirements: 'Experiencia previa en organización de eventos',
         startAt: '2026-10-15T18:30:00-03:00',
+        applicationDeadline: '2026-10-01T23:59:59-03:00',
         thumbnailUrl: 'https://picsum.photos/seed/event/1200/400',
-        eventStatus: 'published',
+        bannerUrl: 'https://picsum.photos/seed/banner/1920/600',
+        requiredCandidates: 5,
+        requiresVerifiedProfile: true,
+        status: 'published',
       },
     });
 
@@ -78,9 +83,17 @@ test.describe('Events Endpoints', () => {
     expect(body.data.slug).toBe(`mi-evento-${uniqueId}`);
     expect(body.data.title).toBe('Mi Evento de Prueba');
     expect(body.data.description).toBe('Descripción larga del evento con info relevante para los asistentes.');
+    expect(body.data.requirements).toBe('Experiencia previa en organización de eventos');
     expect(body.data.startAt).toBe('2026-10-15T21:30:00.000Z');
+    expect(body.data.applicationDeadline).toBe('2026-10-02T02:59:59.000Z');
     expect(body.data.thumbnailUrl).toBe('https://picsum.photos/seed/event/1200/400');
-    expect(body.data.eventStatus).toBe('published');
+    expect(body.data.bannerUrl).toBe('https://picsum.photos/seed/banner/1920/600');
+    expect(body.data.requiredCandidates).toBe(5);
+    expect(body.data.selectedCandidates).toBe(0);
+    expect(body.data.applicationCount).toBe(0);
+    expect(body.data.requiresVerifiedProfile).toBe(true);
+    expect(body.data.autoCloseWhenFilled).toBe(true);
+    expect(body.data.status).toBeDefined();
     expect(body.data.createdAt).toBeDefined();
     expect(body.data.updatedAt).toBeDefined();
 
@@ -137,7 +150,10 @@ test.describe('Events Endpoints', () => {
       headers: { cookie: sessionCookie },
       data: {
         title: 'Evento Actualizado',
-        eventStatus: 'paused',
+        requirements: 'Nuevos requisitos del evento',
+        requiredCandidates: 10,
+        requiresVerifiedProfile: false,
+        status: 'paused',
       },
     });
 
@@ -145,7 +161,10 @@ test.describe('Events Endpoints', () => {
     const body = await res.json();
     expect(body.success).toBe(true);
     expect(body.data.title).toBe('Evento Actualizado');
-    expect(body.data.eventStatus).toBe('paused');
+    expect(body.data.requirements).toBe('Nuevos requisitos del evento');
+    expect(body.data.requiredCandidates).toBe(10);
+    expect(body.data.requiresVerifiedProfile).toBe(false);
+    expect(body.data.status).toBeDefined();
     // Fields not sent should remain
     expect(body.data.description).toBe('Descripción larga del evento con info relevante para los asistentes.');
   });

@@ -33,15 +33,24 @@ async function seedCatalog() {
     'After Office & Cocktails Corporativos',
   ];
 
+  const toSlug = (name: string) =>
+    name
+      .toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+
   const allCategories = [
     ...serviceCategories.map((name) => ({
       id: crypto.randomUUID(),
       name,
+      slug: toSlug(name),
       type: 'service' as const,
     })),
     ...eventCategories.map((name) => ({
       id: crypto.randomUUID(),
       name,
+      slug: toSlug(name),
       type: 'event' as const,
     })),
   ];
@@ -266,6 +275,7 @@ async function seedCatalog() {
         .map((name) => ({
           id: crypto.randomUUID(),
           name,
+          slug: toSlug(name),
           regionId,
         }));
 

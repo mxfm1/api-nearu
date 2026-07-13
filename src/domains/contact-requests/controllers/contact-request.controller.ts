@@ -4,6 +4,7 @@ import type { IGetInboxUseCase } from '../use-cases/get-inbox.use-case';
 import type { IGetContactRequestDetailUseCase } from '../use-cases/get-contact-request-detail.use-case';
 import type { IUpdateContactRequestStatusUseCase } from '../use-cases/update-contact-request-status.use-case';
 import { presentContactRequest, presentContactRequests } from '../presenters/contact-request.presenter';
+import { INTENCIONES } from '../validators/contact-request.validator';
 
 export type ICreateContactRequestController = ReturnType<typeof createContactRequestController>;
 export type IGetInboxController = ReturnType<typeof getInboxController>;
@@ -15,13 +16,14 @@ export const createContactRequestController =
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const authUser = (req as any).user;
-      const { servicioId, propietarioId, mensaje } = req.body;
+      const { slug, intencion, mensaje, attachments } = req.body;
 
       const request = await createContactRequestUseCase({
-        servicioId,
-        propietarioId,
+        slug,
+        intencion,
         remitenteId: authUser.id,
         mensaje,
+        attachments,
       });
 
       res.status(201).json({ success: true, data: request });
@@ -35,7 +37,8 @@ export const getInboxController =
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const authUser = (req as any).user;
-      const requests = await getInboxUseCase(authUser.id);
+      const tipo = req.query.tipo as string | undefined;
+      const requests = await getInboxUseCase(authUser.id, tipo);
       res.json({ success: true, data: presentContactRequests(requests) });
     } catch (error) {
       next(error);
@@ -65,3 +68,7 @@ export const updateContactRequestStatusController =
       next(error);
     }
   };
+
+export const listIntencionesController = (_req: Request, res: Response) => {
+  res.json({ success: true, data: INTENCIONES });
+};

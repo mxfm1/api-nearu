@@ -4,7 +4,7 @@ export interface IListServicesFilters {
   profileId?: string;
   categoryId?: string;
   locationId?: string;
-  serviceStatus?: string;
+  status?: string;
   search?: string;
 }
 
@@ -23,13 +23,12 @@ export interface IServicesRepository {
     priceMin?: number | null;
     priceMax?: number | null;
     availability?: string | null;
-    contactInfo?: Service['contactInfo'];
     bannerUrl?: string | null;
     logoUrl?: string | null;
     thumbnailUrl?: string | null;
     locationId?: string | null;
     categoryId?: string | null;
-    serviceStatus?: string;
+    statusId?: string;
   }): Promise<Service>;
   update(id: string, data: Partial<{
     slug: string;
@@ -40,13 +39,12 @@ export interface IServicesRepository {
     priceMin: number | null;
     priceMax: number | null;
     availability: string | null;
-    contactInfo: Service['contactInfo'];
     bannerUrl: string | null;
     logoUrl: string | null;
     thumbnailUrl: string | null;
     locationId: string | null;
     categoryId: string | null;
-    serviceStatus: string;
+    statusId: string;
   }>): Promise<Service>;
   delete(id: string): Promise<void>;
 }

@@ -61,7 +61,7 @@ test.describe('Profile & Custom Auth Endpoints', () => {
 
     const body = await res.json();
     expect(body.success).toBe(false);
-    expect(body.error.code).toBe('UNAUTHENTICATED');
+    expect(body.errorCode).toBe('UNAUTHENTICATED');
   });
 
   test('PATCH /api/users/me updates the user name', async ({ request }) => {

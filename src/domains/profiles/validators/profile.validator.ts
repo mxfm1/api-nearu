@@ -18,7 +18,7 @@ export const updateProfileSchema = z.object({
     industry: z.string().max(100).optional(),
     description: z.string().max(2000).nullable().optional(),
     tags: z.array(z.string().max(50)).max(20).optional(),
-    location: z.string().max(200).nullable().optional(),
+    locationId: z.string().nullable().optional(),
     founded: z.string().max(20).nullable().optional(),
     employees: z.string().max(50).nullable().optional(),
     website: z.string().max(500).nullable().optional(),

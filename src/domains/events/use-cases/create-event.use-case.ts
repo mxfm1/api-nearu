@@ -1,5 +1,6 @@
 import type { Event } from '../entities/event.entity';
 import type { IEventsRepository } from '../repositories/events.repository.interface';
+import type { IStatusesRepository } from '@/src/domains/statuses/repositories/statuses.repository.interface';
 import { slugifyUnique } from '@/src/shared/utils/slugify';
 
 export type ICreateEventUseCase = ReturnType<typeof createEventUseCase>;
@@ -9,20 +10,34 @@ export interface CreateEventInput {
   slug?: string;
   title: string;
   description?: string | null;
+  requirements?: string | null;
   startAt?: Date | string | null;
+  applicationDeadline?: Date | string | null;
   locationId?: string | null;
   categoryId?: string | null;
   thumbnailUrl?: string | null;
-  eventStatus?: string;
+  bannerUrl?: string | null;
+  requiredCandidates?: number;
+  requiresVerifiedProfile?: boolean;
+  status?: string;
 }
 
 export const createEventUseCase =
-  (eventsRepository: IEventsRepository) =>
+  (eventsRepository: IEventsRepository, statusesRepository: IStatusesRepository) =>
   async (input: CreateEventInput): Promise<Event> => {
     const slug = input.slug ?? await slugifyUnique(input.title, async (s) => {
       const existing = await eventsRepository.findBySlug(s);
       return existing !== null;
     });
 
-    return eventsRepository.create({ ...input, slug });
+    const status = await statusesRepository.findBySlug(input.status ?? 'draft');
+    const { status: _status, ...rest } = input;
+    return eventsRepository.create({
+      ...rest,
+      slug,
+      statusId: status.id,
+      applicationCount: 0,
+      selectedCandidates: 0,
+      autoCloseWhenFilled: input.autoCloseWhenFilled ?? true,
+    } as Parameters<typeof eventsRepository.create>[0]);
   };

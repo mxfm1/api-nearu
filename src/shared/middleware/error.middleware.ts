@@ -10,17 +10,15 @@ export function createErrorMiddleware() {
     }
 
     if (err instanceof AppError && err.isOperational) {
-      // Operational errors (400, 401, 404, 409, etc.) — log and return clean response
       console.log(`[API] ${err.statusCode} ${err.code}: ${err.message}`);
       const response: ApiResponse = {
         success: false,
-        error: { code: err.code, message: err.message },
+        errorCode: err.code,
       };
       res.status(err.statusCode).json(response);
       return;
     }
 
-    // Real unexpected errors — log full details and return 500
     console.error('\n=== UNEXPECTED ERROR ===');
     console.error('Type:', err.constructor.name);
     console.error('Message:', err.message);
@@ -29,10 +27,7 @@ export function createErrorMiddleware() {
 
     const response: ApiResponse = {
       success: false,
-      error: {
-        code: 'INTERNAL_SERVER_ERROR',
-        message: process.env.NODE_ENV !== 'production' ? err.message : 'An unexpected error occurred',
-      },
+      errorCode: 'INTERNAL_SERVER_ERROR',
     };
     res.status(500).json(response);
   };

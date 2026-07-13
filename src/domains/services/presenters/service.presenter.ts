@@ -12,7 +12,13 @@ export function presentService(service: ServiceWithDetails) {
     priceMin: service.priceMin,
     priceMax: service.priceMax,
     availability: service.availability,
-    contactInfo: service.contactInfo,
+    contacts: service.contacts.map((c) => ({
+      id: c.id,
+      type: c.type,
+      value: c.value,
+      readAt: c.readAt?.toISOString?.() ?? c.readAt,
+      respondedAt: c.respondedAt?.toISOString?.() ?? c.respondedAt,
+    })),
     bannerUrl: service.bannerUrl,
     logoUrl: service.logoUrl,
     thumbnailUrl: service.thumbnailUrl,
@@ -40,7 +46,11 @@ export function presentService(service: ServiceWithDetails) {
       description: item.description,
       orden: item.orden,
     })),
-    serviceStatus: service.serviceStatus,
+    status: {
+      id: service.statusId,
+      name: service.statusName,
+      slug: service.statusSlug,
+    },
     createdAt: service.createdAt?.toISOString?.() ?? service.createdAt,
     updatedAt: service.updatedAt?.toISOString?.() ?? service.updatedAt,
   };

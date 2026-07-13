@@ -1,7 +1,9 @@
 import type { ServiceWithDetails } from '../entities/service.entity';
 import type { IServicesRepository } from '../repositories/services.repository.interface';
 import type { IServicePortfolioRepository } from '../repositories/service-portfolio.repository.interface';
-import { NotFoundError, UnauthorizedError } from '@/src/shared/errors/common';
+import type { IServiceContactsRepository } from '../repositories/service-contacts.repository.interface';
+import type { IStatusesRepository } from '@/src/domains/statuses/repositories/statuses.repository.interface';
+import { NotFoundError } from '@/src/shared/errors/common';
 import { UnauthorizedError as AuthError } from '@/src/shared/errors/auth';
 
 export type IUpdateServiceUseCase = ReturnType<typeof updateServiceUseCase>;
@@ -12,8 +14,18 @@ export interface PortfolioInput {
   description?: string | null;
 }
 
+export interface ContactInput {
+  type: string;
+  value: string;
+}
+
 export const updateServiceUseCase =
-  (servicesRepository: IServicesRepository, portfolioRepository: IServicePortfolioRepository) =>
+  (
+    servicesRepository: IServicesRepository,
+    portfolioRepository: IServicePortfolioRepository,
+    contactsRepository: IServiceContactsRepository,
+    statusesRepository: IStatusesRepository,
+  ) =>
   async (
     id: string,
     userId: string,
@@ -26,13 +38,13 @@ export const updateServiceUseCase =
       priceMin: number | null;
       priceMax: number | null;
       availability: string | null;
-      contactInfo: ServiceWithDetails['contactInfo'];
       bannerUrl: string | null;
       logoUrl: string | null;
       thumbnailUrl: string | null;
       locationId: string | null;
       categoryId: string | null;
-      serviceStatus: string;
+      status: string;
+      contacts: ContactInput[];
       portfolio: PortfolioInput[];
     }>
   ): Promise<ServiceWithDetails> => {
@@ -54,8 +66,16 @@ export const updateServiceUseCase =
       }
     }
 
-    const { portfolio, ...serviceData } = data;
+    const { portfolio, contacts, status: _status, ...serviceData } = data;
+    if (_status) {
+      const status = await statusesRepository.findBySlug(_status);
+      serviceData.statusId = status.id as any;
+    }
     await servicesRepository.update(id, serviceData);
+
+    if (contacts !== undefined) {
+      await contactsRepository.replaceByServiceId(id, contacts);
+    }
 
     if (portfolio !== undefined) {
       await portfolioRepository.deleteByServiceId(id);

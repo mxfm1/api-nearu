@@ -23,7 +23,7 @@ async function getProfileCheck(userId: string): Promise<ProfileCheck> {
       description: profiles.description,
       bannerUrl: profiles.bannerUrl,
       industry: profiles.industry,
-      location: profiles.location,
+      locationId: profiles.locationId,
       website: profiles.website,
       whatsapp: profiles.whatsapp,
     })
@@ -57,21 +57,11 @@ export const createServiceController =
       const authUser = (req as any).user;
       const profile = await getProfileCheck(authUser.id);
       if (!profile.exists) {
-        res.status(400).json({
-          success: false,
-          error: { code: 'BAD_REQUEST', message: 'Debes crear un perfil de empresa antes de publicar servicios' },
-        });
+        res.status(400).json({ success: false, errorCode: 'BAD_REQUEST' });
         return;
       }
       if (!profile.isComplete) {
-        res.status(400).json({
-          success: false,
-          error: {
-            code: 'PROFILE_INCOMPLETE',
-            message: 'Completá tu perfil antes de publicar servicios',
-            missingFields: profile.missingFields,
-          },
-        });
+        res.status(400).json({ success: false, errorCode: 'PROFILE_INCOMPLETE' });
         return;
       }
       const service = await createServiceUseCase({ ...req.body, profileId: profile.profileId });
@@ -112,7 +102,7 @@ export const listServicesController =
         profileId: req.query.profileId as string | undefined,
         categoryId: req.query.categoryId as string | undefined,
         locationId: req.query.locationId as string | undefined,
-        serviceStatus: 'published',
+        status: 'published',
         search: req.query.search as string | undefined,
       };
 
@@ -170,10 +160,7 @@ export const myServicesController =
       const authUser = (req as any).user;
       const profile = await getProfileCheck(authUser.id);
       if (!profile.exists) {
-        res.status(400).json({
-          success: false,
-          error: { code: 'BAD_REQUEST', message: 'Debes crear un perfil de empresa antes de publicar servicios' },
-        });
+        res.status(400).json({ success: false, errorCode: 'BAD_REQUEST' });
         return;
       }
 

@@ -5,7 +5,7 @@ export const SIMPLE_REQUIRED_FIELDS = [
   'description',
   'bannerUrl',
   'industry',
-  'location',
+  'locationId',
 ] as const;
 
 export const CONTACT_QUERY_FIELDS = ['website', 'whatsapp'] as const;
@@ -20,12 +20,12 @@ export function getMissingFields(profile: {
   description: string | null;
   bannerUrl: string | null;
   industry: string;
-  location: string | null;
+  locationId: string | null;
   website: string | null;
   whatsapp: string | null;
   socialLinks?: SocialLink[];
 }): string[] {
-  const missing = SIMPLE_REQUIRED_FIELDS.filter((f) => !profile[f]);
+  const missing: string[] = SIMPLE_REQUIRED_FIELDS.filter((f) => !profile[f]);
   const hasContact =
     profile.website || profile.whatsapp || (profile.socialLinks && profile.socialLinks.length > 0);
   if (!hasContact) missing.push('contactFields');

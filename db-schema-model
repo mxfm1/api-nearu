@@ -1,0 +1,173 @@
+Table users {
+  id text [pk]
+  name text [not null]
+  email text [unique, not null]
+  email_verified boolean [default: false]
+  image text
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+}
+
+Table sessions {
+  id text [pk]
+  expires_at timestamp [not null]
+  token text [unique, not null]
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+  ip_address text
+  user_agent text
+  user_id text [ref: > users.id, not null]
+}
+
+Table accounts {
+  id text [pk]
+  account_id text [not null]
+  provider_id text [not null]
+  user_id text [ref: > users.id, not null]
+  access_token text
+  refresh_token text
+  id_token text
+  access_token_expires_at timestamp
+  refresh_token_expires_at timestamp
+  scope text
+  password text
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+}
+
+Table verifications {
+  id text [pk]
+  identifier text [not null]
+  value text [not null]
+  expires_at timestamp [not null]
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+}
+
+Table profiles {
+  id text [pk]
+  user_id text [unique, ref: > users.id, not null]
+  banner_url text
+  logo_url text
+  name text
+  industry text [not null, default: '']
+  description text
+  location_id text [ref: > locations.id]
+  founded text
+  employees text
+  website text
+  whatsapp text
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+}
+
+Table tags {
+  id text [pk]
+  name text [unique, not null]
+  slug text [unique, not null]
+  created_at timestamp [default: `now()`]
+}
+
+Table profiles_to_tags {
+  profile_id text [ref: > profiles.id, not null]
+  tag_id text [ref: > tags.id, not null]
+}
+
+Table profile_social_links {
+  id text [pk]
+  profile_id text [ref: > profiles.id, not null]
+  platform text [not null]
+  url text [not null]
+  orden int [default: 0]
+  created_at timestamp [default: `now()`]
+}
+
+Table regions {
+  id text [pk]
+  name text [not null]
+  slug text [unique, not null]
+  created_at timestamp [default: `now()`]
+}
+
+Table locations {
+  id text [pk]
+  name text [not null]
+  region_id text [ref: > regions.id, not null]
+  created_at timestamp [default: `now()`]
+}
+
+Table categories {
+  id text [pk]
+  name text [not null]
+  type text [not null] // 'service' | 'event'
+  created_at timestamp [default: `now()`]
+}
+
+Table services {
+  id text [pk]
+  profile_id text [ref: > profiles.id, not null]
+  slug text [unique, not null]
+  title text [not null]
+  marca text
+  description text
+  years_experience int
+  price_min int
+  price_max int
+  availability text
+  banner_url text
+  logo_url text
+  thumbnail_url text
+  location_id text [ref: > locations.id]
+  category_id text [ref: > categories.id]
+  service_status text [not null, default: 'draft'] // draft | published | paused | archived
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+}
+
+Table service_portfolio {
+  id text [pk]
+  service_id text [ref: > services.id, not null]
+  url text [not null]
+  title text
+  description text
+  orden int [default: 0]
+  created_at timestamp [default: `now()`]
+}
+
+Table service_contacts {
+  id text [pk]
+  service_id text [ref: > services.id, not null]
+  type text [not null]
+  value text [not null]
+  read_at timestamp
+  responded_at timestamp
+  created_at timestamp [default: `now()`]
+}
+
+Table solicitudes_contacto {
+  id text [pk]
+  servicio_id text [ref: > services.id, not null]
+  propietario_id text [ref: > users.id, not null]
+  remitente_id text [ref: > users.id, not null]
+  mensaje text
+  estado text [not null, default: 'pendiente']
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+}
+
+Table events {
+  id text [pk]
+  profile_id text [ref: > profiles.id, not null]
+  slug text [unique, not null]
+  title text [not null]
+  description text
+  start_at timestamp
+  location_id text [ref: > locations.id]
+  category_id text [ref: > categories.id]
+  thumbnail_url text
+  event_status text [not null, default: 'draft'] // draft | published | paused | archived
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+}
+
+

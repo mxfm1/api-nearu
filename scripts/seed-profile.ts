@@ -44,7 +44,6 @@ async function seedProfile() {
       userId,
       name: 'NearU Technologies',
       slug: 'nearu-technologies',
-      industry: 'Technology',
       description: 'Plataforma de conexión profesional que utiliza inteligencia artificial.',
       locationId,
       founded: '2024',
@@ -61,7 +60,6 @@ async function seedProfile() {
       .set({
         name: 'NearU Technologies',
         slug: 'nearu-technologies',
-        industry: 'Technology',
         description: 'Plataforma de conexión profesional que utiliza inteligencia artificial.',
         locationId,
         founded: '2024',

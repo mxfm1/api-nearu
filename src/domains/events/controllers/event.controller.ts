@@ -5,7 +5,7 @@ import type { IUpdateEventUseCase } from '../use-cases/update-event.use-case';
 import type { IListEventsUseCase } from '../use-cases/list-events.use-case';
 import type { IDeleteEventUseCase } from '../use-cases/delete-event.use-case';
 import { presentEvent, presentEvents } from '../presenters/event.presenter';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { db } from '@/src/shared/database';
 import { profiles } from '@/src/shared/database/schema';
 import { getMissingFields } from '@/src/domains/profiles/config/profile.constants';
@@ -15,22 +15,23 @@ type ProfileCheck =
   | { exists: true; profileId: string; isComplete: boolean; missingFields: string[] };
 
 async function getProfileCheck(userId: string): Promise<ProfileCheck> {
-  const result = await db
-    .select({
-      id: profiles.id,
-      name: profiles.name,
-      description: profiles.description,
-      bannerUrl: profiles.bannerUrl,
-      industry: profiles.industry,
-      locationId: profiles.locationId,
-      website: profiles.website,
-      whatsapp: profiles.whatsapp,
-    })
-    .from(profiles)
-    .where(eq(profiles.userId, userId))
-    .limit(1);
-  const profile = result[0];
-  if (!profile) return { exists: false };
+  const result = await db.execute(sql`
+    SELECT id, name, description, banner_url, region_id, website, whatsapp
+    FROM profiles
+    WHERE user_id = ${userId}
+    LIMIT 1
+  `);
+  const row = result.rows[0] as any;
+  if (!row) return { exists: false };
+  const profile = {
+    id: row.id,
+    name: row.name,
+    description: row.description,
+    bannerUrl: row.banner_url,
+    regionId: row.region_id,
+    website: row.website,
+    whatsapp: row.whatsapp,
+  };
   const missingFields = getMissingFields({ ...profile, socialLinks: [] });
   return {
     exists: true,
@@ -56,10 +57,6 @@ export const createEventController =
       const profile = await getProfileCheck(authUser.id);
       if (!profile.exists) {
         res.status(400).json({ success: false, errorCode: 'BAD_REQUEST' });
-        return;
-      }
-      if (!profile.isComplete) {
-        res.status(400).json({ success: false, errorCode: 'PROFILE_INCOMPLETE' });
         return;
       }
       const event = await createEventUseCase({

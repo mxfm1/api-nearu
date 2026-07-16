@@ -19,10 +19,9 @@ export interface Profile {
   bannerUrl: string | null;
   logoUrl: string | null;
   name: string | null;
-  industry: string;
   description: string | null;
   slug: string | null;
-  locationId: string | null;
+  regionId: string | null;
   founded: string | null;
   employees: string | null;
   website: string | null;
@@ -32,5 +31,5 @@ export interface Profile {
   updatedAt: Date;
   socialLinks?: SocialLink[];
   tags?: Tag[];
-  locationName?: string | null;
+  regionName?: string | null;
 }

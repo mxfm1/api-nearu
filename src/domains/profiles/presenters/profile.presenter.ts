@@ -11,11 +11,10 @@ export function presentProfile(profile: Profile) {
     logoUrl: profile.logoUrl,
     name: profile.name,
     slug: profile.slug,
-    industry: profile.industry,
     description: profile.description,
     tags: (profile.tags ?? []).map((t) => ({ id: t.id, name: t.name, slug: t.slug })),
-    location: profile.locationId
-      ? { id: profile.locationId, name: profile.locationName ?? null }
+    region: profile.regionId
+      ? { id: profile.regionId, name: profile.regionName ?? null }
       : null,
     founded: profile.founded,
     employees: profile.employees,

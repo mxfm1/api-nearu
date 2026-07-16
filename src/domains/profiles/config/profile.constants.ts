@@ -4,8 +4,7 @@ export const SIMPLE_REQUIRED_FIELDS = [
   'name',
   'description',
   'bannerUrl',
-  'industry',
-  'locationId',
+  'regionId',
 ] as const;
 
 export const CONTACT_QUERY_FIELDS = ['website', 'whatsapp'] as const;
@@ -19,8 +18,7 @@ export function getMissingFields(profile: {
   name: string | null;
   description: string | null;
   bannerUrl: string | null;
-  industry: string;
-  locationId: string | null;
+  regionId: string | null;
   website: string | null;
   whatsapp: string | null;
   socialLinks?: SocialLink[];

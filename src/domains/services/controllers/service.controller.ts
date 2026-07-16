@@ -22,8 +22,7 @@ async function getProfileCheck(userId: string): Promise<ProfileCheck> {
       name: profiles.name,
       description: profiles.description,
       bannerUrl: profiles.bannerUrl,
-      industry: profiles.industry,
-      locationId: profiles.locationId,
+      regionId: profiles.regionId,
       website: profiles.website,
       whatsapp: profiles.whatsapp,
     })

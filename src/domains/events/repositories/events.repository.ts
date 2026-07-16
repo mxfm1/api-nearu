@@ -15,13 +15,12 @@ export class EventsRepository implements IEventsRepository {
           profileName: profiles.name,
           profileSlug: profiles.slug,
           profileLocationName: sql<string>`(
-            SELECT l.name FROM locations l 
-            WHERE l.id = profiles.location_id
+            SELECT r.name FROM regions r 
+            WHERE r.id = profiles.region_id
           )`,
           profileRegionName: sql<string>`(
             SELECT r.name FROM regions r 
-            JOIN locations l ON l.region_id = r.id 
-            WHERE l.id = profiles.location_id
+            WHERE r.id = profiles.region_id
           )`,
           statusName: statuses.name,
           statusSlug: statuses.slug,
@@ -63,13 +62,12 @@ export class EventsRepository implements IEventsRepository {
           profileName: profiles.name,
           profileSlug: profiles.slug,
           profileLocationName: sql<string>`(
-            SELECT l.name FROM locations l 
-            WHERE l.id = profiles.location_id
+            SELECT r.name FROM regions r 
+            WHERE r.id = profiles.region_id
           )`,
           profileRegionName: sql<string>`(
             SELECT r.name FROM regions r 
-            JOIN locations l ON l.region_id = r.id 
-            WHERE l.id = profiles.location_id
+            WHERE r.id = profiles.region_id
           )`,
           statusName: statuses.name,
           statusSlug: statuses.slug,

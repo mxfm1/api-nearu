@@ -1,6 +1,6 @@
 import { eq, and, desc, sql } from 'drizzle-orm';
 import { db } from '@/src/shared/database';
-import { applications, events, profiles, users, locations, statuses, applicationScores, applicationScoreBreakdown, regions } from '@/src/shared/database/schema';
+import { applications, events, profiles, users, statuses, applicationScores, applicationScoreBreakdown, regions } from '@/src/shared/database/schema';
 import type { IApplicationsRepository } from './applications.repository.interface';
 import type { Application, ApplicationWithDetails, ApplicationScoreWithBreakdown } from '../entities/application.entity';
 
@@ -21,7 +21,6 @@ function mapApplicationRow(row: any): ApplicationWithDetails {
     applicantName: row.applicantName ?? null,
     applicantLogoUrl: row.applicantLogoUrl ?? null,
     regionName: row.regionName ?? null,
-    applicantIndustry: row.applicantIndustry ?? null,
     score: row.totalScore != null
       ? {
         totalScore: row.totalScore,
@@ -46,8 +45,6 @@ export class ApplicationsRepository implements IApplicationsRepository {
           eventStatusName: statuses.name,
           applicantName: profiles.name,
           applicantLogoUrl: profiles.logoUrl,
-          applicantIndustry: profiles.industry,
-          locationName: locations.name,
           regionName: regions.name,
         })
         .from(applications)
@@ -55,8 +52,7 @@ export class ApplicationsRepository implements IApplicationsRepository {
         .leftJoin(events, eq(applications.eventId, events.id))
         .leftJoin(statuses, eq(applications.statusId, statuses.id))
         .leftJoin(profiles, eq(applications.applicantProfileId, profiles.id))
-        .leftJoin(locations, eq(profiles.locationId, locations.id))
-        .leftJoin(regions, eq(locations.regionId, regions.id))
+        .leftJoin(regions, eq(profiles.regionId, regions.id))
         .limit(1);
 
       if (!result[0]) return null;
@@ -107,7 +103,6 @@ export class ApplicationsRepository implements IApplicationsRepository {
         applicantName: row.applicantName ?? null,
         applicantLogoUrl: row.applicantLogoUrl ?? null,
         regionName: row.regionName ?? null,
-        applicantIndustry: row.applicantIndustry ?? null,
         organizerProfileName: organizerProfileName,
         score: scoreResult[0]
           ? {
@@ -171,9 +166,7 @@ export class ApplicationsRepository implements IApplicationsRepository {
           eventStatusName: statuses.name,
           applicantName: profiles.name,
           applicantLogoUrl: profiles.logoUrl,
-          locationName: locations.name,
           regionName: regions.name,
-          applicantIndustry: profiles.industry,
           totalScore: applicationScores.totalScore,
           maxPossible: applicationScores.maxPossible,
         })
@@ -182,8 +175,7 @@ export class ApplicationsRepository implements IApplicationsRepository {
         .leftJoin(events, eq(applications.eventId, events.id))
         .leftJoin(statuses, eq(applications.statusId, statuses.id))
         .leftJoin(profiles, eq(applications.applicantProfileId, profiles.id))
-        .leftJoin(locations, eq(profiles.locationId, locations.id))
-        .leftJoin(regions, eq(locations.regionId, regions.id))
+        .leftJoin(regions, eq(profiles.regionId, regions.id))
         .leftJoin(applicationScores, eq(applications.id, applicationScores.applicationId))
         .orderBy(desc(applicationScores.totalScore), desc(applications.createdAt));
 
@@ -214,9 +206,7 @@ export class ApplicationsRepository implements IApplicationsRepository {
           eventStatusName: statuses.name,
           applicantName: profiles.name,
           applicantLogoUrl: profiles.logoUrl,
-          locationName: locations.name,
           regionName: regions.name,
-          applicantIndustry: profiles.industry,
           totalScore: applicationScores.totalScore,
           maxPossible: applicationScores.maxPossible,
           computedAt: applicationScores.computedAt,
@@ -227,8 +217,7 @@ export class ApplicationsRepository implements IApplicationsRepository {
         .leftJoin(events, eq(applications.eventId, events.id))
         .leftJoin(statuses, eq(applications.statusId, statuses.id))
         .leftJoin(profiles, eq(applications.applicantProfileId, profiles.id))
-        .leftJoin(locations, eq(profiles.locationId, locations.id))
-        .leftJoin(regions, eq(locations.regionId, regions.id))
+        .leftJoin(regions, eq(profiles.regionId, regions.id))
         .leftJoin(applicationScores, eq(applications.id, applicationScores.applicationId))
         .orderBy(desc(applicationScores.totalScore), desc(applications.createdAt));
 
@@ -260,7 +249,6 @@ export class ApplicationsRepository implements IApplicationsRepository {
             applicantName: row.applicantName ?? null,
             applicantLogoUrl: row.applicantLogoUrl ?? null,
             regionName: row.regionName ?? null,
-            applicantIndustry: row.applicantIndustry ?? null,
             score: row.totalScore != null
               ? {
                 totalScore: row.totalScore,
@@ -296,17 +284,14 @@ export class ApplicationsRepository implements IApplicationsRepository {
           eventStatusName: statuses.name,
           applicantName: profiles.name,
           applicantLogoUrl: profiles.logoUrl,
-          locationName: locations.name,
           regionName: regions.name,
-          applicantIndustry: profiles.industry,
         })
         .from(applications)
         .where(eq(applications.applicantProfileId, applicantProfileId))
         .leftJoin(events, eq(applications.eventId, events.id))
         .leftJoin(statuses, eq(applications.statusId, statuses.id))
         .leftJoin(profiles, eq(applications.applicantProfileId, profiles.id))
-        .leftJoin(locations, eq(profiles.locationId, locations.id))
-        .leftJoin(regions, eq(locations.regionId, regions.id))
+        .leftJoin(regions, eq(profiles.regionId, regions.id))
         .orderBy(desc(applications.createdAt));
 
       return result.map(mapApplicationRow);

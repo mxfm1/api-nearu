@@ -1,0 +1,424 @@
+// NearU API — Database Diagram (DBML)
+// Docs: https://dbml.dbdiagram.io/docs
+// Auto-generated from schema.ts
+
+// ──────────────────────────────────────────────
+// ENUMS
+// ──────────────────────────────────────────────
+
+Enum notification_type {
+  new_application
+  application_reviewing
+  application_accepted
+  application_rejected
+  email_changed
+  password_changed
+  profile_updated
+  account_change
+  profile_verified
+  profile_revalidation_required
+  event_closed
+  event_filled
+  new_message
+  system
+  new_contact_request
+}
+
+Enum entity_type {
+  application
+  event
+  message
+  conversation
+  profile
+  account
+  system
+  service
+}
+
+Enum rule_type {
+  VERIFIED_PROFILE
+  SAME_REGION
+  HAS_WEBSITE
+  ACCOUNT_AGE
+}
+
+Enum thread_status {
+  OPEN
+  CLOSED
+  ARCHIVED
+}
+
+Enum message_type {
+  TEXT
+  SYSTEM
+  FILE
+  IMAGE
+  MIXED
+}
+
+Enum attachment_type {
+  IMAGE
+  DOCUMENT
+  VIDEO
+  OTHER
+}
+
+// ──────────────────────────────────────────────
+// AUTH (Better Auth)
+// ──────────────────────────────────────────────
+
+Table users {
+  id text [pk]
+  name text [not null]
+  email text [not null, unique]
+  email_verified boolean [not null, default: false]
+  image text
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp [not null, default: `now()`]
+}
+
+Table sessions {
+  id text [pk]
+  expires_at timestamp [not null]
+  token text [not null, unique]
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp [not null, default: `now()`]
+  ip_address text
+  user_agent text
+  user_id text [not null, ref: > users.id, note: 'CASCADE delete']
+}
+
+Table accounts {
+  id text [pk]
+  account_id text [not null]
+  provider_id text [not null]
+  user_id text [not null, ref: > users.id, note: 'CASCADE delete']
+  access_token text
+  refresh_token text
+  id_token text
+  access_token_expires_at timestamp
+  refresh_token_expires_at timestamp
+  scope text
+  password text
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp [not null, default: `now()`]
+}
+
+Table verifications {
+  id text [pk]
+  identifier text [not null]
+  value text [not null]
+  expires_at timestamp [not null]
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp [not null, default: `now()`]
+}
+
+// ──────────────────────────────────────────────
+// PROFILES
+// ──────────────────────────────────────────────
+
+Table profiles {
+  id text [pk]
+  user_id text [not null, unique, ref: > users.id, note: 'CASCADE delete']
+  slug text [unique]
+  banner_url text
+  logo_url text
+  name text
+  description text
+  region_id text [ref: > regions.id]
+  founded text
+  employees text
+  website text
+  whatsapp text
+  is_verified boolean [not null, default: false]
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp [not null, default: `now()`]
+}
+
+Table tags {
+  id text [pk]
+  name text [not null, unique]
+  slug text [not null, unique]
+  created_at timestamp [not null, default: `now()`]
+}
+
+Table profiles_to_tags {
+  profile_id text [not null, ref: > profiles.id, note: 'CASCADE delete']
+  tag_id text [not null, ref: > tags.id, note: 'CASCADE delete']
+
+  indexes {
+    (profile_id, tag_id) [pk]
+  }
+}
+
+Table profile_social_links {
+  id text [pk]
+  profile_id text [not null, ref: > profiles.id, note: 'CASCADE delete']
+  platform text [not null]
+  url text [not null]
+  orden integer [not null, default: 0]
+  created_at timestamp [not null, default: `now()`]
+}
+
+// ──────────────────────────────────────────────
+// GEOGRAPHY
+// ──────────────────────────────────────────────
+
+Table regions {
+  id text [pk]
+  name text [not null]
+  slug text [not null, unique]
+  created_at timestamp [not null, default: `now()`]
+}
+
+Table locations {
+  id text [pk]
+  name text [not null]
+  slug text [not null, unique]
+  region_id text [not null, ref: > regions.id, note: 'CASCADE delete']
+  created_at timestamp [not null, default: `now()`]
+}
+
+// ──────────────────────────────────────────────
+// CATALOG
+// ──────────────────────────────────────────────
+
+Table statuses {
+  id text [pk]
+  name text [not null, unique]
+  slug text [not null, unique]
+  created_at timestamp [not null, default: `now()`]
+}
+
+Table categories {
+  id text [pk]
+  name text [not null]
+  slug text [not null, unique]
+  type text [not null, note: "'service' | 'event'"]
+  created_at timestamp [not null, default: `now()`]
+}
+
+// ──────────────────────────────────────────────
+// SERVICES
+// ──────────────────────────────────────────────
+
+Table services {
+  id text [pk]
+  profile_id text [not null, ref: > profiles.id, note: 'CASCADE delete']
+  slug text [not null, unique]
+  title text [not null]
+  marca text
+  description text
+  years_experience integer
+  price_min integer
+  price_max integer
+  availability text
+  banner_url text
+  logo_url text
+  thumbnail_url text
+  location_id text [ref: > locations.id]
+  category_id text [ref: > categories.id]
+  status_id text [not null, ref: > statuses.id]
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp [not null, default: `now()`]
+}
+
+Table service_portfolio {
+  id text [pk]
+  service_id text [not null, ref: > services.id, note: 'CASCADE delete']
+  url text [not null]
+  title text
+  description text
+  orden integer [not null, default: 0]
+  created_at timestamp [not null, default: `now()`]
+}
+
+Table service_contacts {
+  id text [pk]
+  service_id text [not null, ref: > services.id, note: 'CASCADE delete']
+  type text [not null]
+  value text [not null]
+  read_at timestamp
+  responded_at timestamp
+  created_at timestamp [not null, default: `now()`]
+}
+
+// ──────────────────────────────────────────────
+// EVENTS
+// ──────────────────────────────────────────────
+
+Table events {
+  id text [pk]
+  profile_id text [not null, ref: > profiles.id, note: 'CASCADE delete']
+  slug text [not null, unique]
+  title text [not null]
+  description text
+  requirements text
+  start_at timestamp
+  application_deadline timestamp
+  location_id text [ref: > locations.id]
+  category_id text [ref: > categories.id]
+  thumbnail_url text
+  banner_url text
+  required_candidates integer [not null, default: 1]
+  selected_candidates integer [not null, default: 0]
+  application_count integer [not null, default: 0]
+  requires_verified_profile boolean [not null, default: true]
+  auto_close_when_filled boolean [not null, default: true]
+  status_id text [not null, ref: > statuses.id]
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp [not null, default: `now()`]
+}
+
+// ──────────────────────────────────────────────
+// APPLICATIONS
+// ──────────────────────────────────────────────
+
+Table applications {
+  id text [pk]
+  event_id text [not null, ref: > events.id, note: 'CASCADE delete']
+  applicant_profile_id text [not null, ref: > profiles.id, note: 'CASCADE delete']
+  cover_letter text
+  portfolio_urls jsonb [not null, default: '[]']
+  status_id text [not null, default: '10000000-0000-0000-0000-000000000001', ref: > statuses.id, note: 'RESTRICT delete']
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp [not null, default: `now()`]
+}
+
+Table publication_scoring_rules {
+  id text [pk]
+  event_id text [not null, ref: > events.id, note: 'CASCADE delete']
+  rule_type rule_type [not null]
+  weight integer [not null, default: 1]
+  config jsonb
+  created_at timestamp [not null, default: `now()`]
+}
+
+Table application_scores {
+  id text [pk]
+  application_id text [not null, ref: > applications.id, note: 'CASCADE delete']
+  total_score integer [not null, default: 0]
+  max_possible integer [not null, default: 0]
+  computed_at timestamp [not null, default: `now()`]
+}
+
+Table application_score_breakdown {
+  id text [pk]
+  score_id text [not null, ref: > application_scores.id, note: 'CASCADE delete']
+  rule_type rule_type [not null]
+  points_earned integer [not null, default: 0]
+  points_possible integer [not null, default: 0]
+  reason text
+}
+
+Table application_scoring_fields {
+  id text [pk]
+  application_id text [not null, ref: > applications.id, note: 'CASCADE delete']
+  rule_type rule_type [not null]
+  value jsonb
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp [not null, default: `now()`]
+}
+
+// ──────────────────────────────────────────────
+// THREADS (post-acceptance chat)
+// ──────────────────────────────────────────────
+
+Table threads {
+  id text [pk]
+  application_id text [not null, ref: > applications.id, note: 'CASCADE delete']
+  status thread_status [not null, default: 'OPEN']
+  closed_at timestamp
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp [not null, default: `now()`]
+}
+
+Table messages {
+  id text [pk]
+  thread_id text [not null, ref: > threads.id, note: 'CASCADE delete']
+  sender_profile_id text [not null, ref: > profiles.id, note: 'CASCADE delete']
+  content text
+  message_type message_type [not null, default: 'TEXT']
+  read_at timestamp
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp [not null, default: `now()`]
+}
+
+Table message_attachments {
+  id text [pk]
+  message_id text [not null, ref: > messages.id, note: 'CASCADE delete']
+  file_url text [not null]
+  file_name text [not null]
+  mime_type text [not null]
+  attachment_type attachment_type [not null]
+  size_bytes integer [not null]
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp [not null, default: `now()`]
+}
+
+// ──────────────────────────────────────────────
+// CONTACT REQUESTS (inbox legacy)
+// ──────────────────────────────────────────────
+
+Table solicitudes_contacto {
+  id text [pk]
+  servicio_id text [ref: > services.id, note: 'CASCADE delete']
+  evento_id text [ref: > events.id, note: 'CASCADE delete']
+  propietario_id text [not null, ref: > users.id, note: 'CASCADE delete']
+  remitente_id text [not null, ref: > users.id, note: 'CASCADE delete']
+  intencion text [not null]
+  estado text [not null, default: 'pendiente']
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp [not null, default: `now()`]
+}
+
+Table inbox_messages {
+  id text [pk]
+  contact_request_id text [not null, ref: > solicitudes_contacto.id, note: 'CASCADE delete']
+  sender_id text [not null, ref: > users.id, note: 'CASCADE delete']
+  content text
+  attachments jsonb [not null, default: '[]']
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp [not null, default: `now()`]
+}
+
+// ──────────────────────────────────────────────
+// NOTIFICATIONS
+// ──────────────────────────────────────────────
+
+Table notifications {
+  id text [pk]
+  user_id text [not null, ref: > users.id, note: 'CASCADE delete']
+  actor_profile_id text
+  type notification_type [not null]
+  title text [not null]
+  body text [not null]
+  entity_type entity_type
+  entity_id text
+  action_url text
+  is_read boolean [not null, default: false]
+  read_at timestamp
+  email_sent_at timestamp
+  metadata jsonb
+  created_at timestamp [not null, default: `now()`]
+}
+
+Table notification_preferences {
+  id text [pk]
+  user_id text [not null, ref: > users.id, note: 'CASCADE delete']
+  type notification_type [not null]
+  email_enabled boolean [not null, default: true]
+  in_app_enabled boolean [not null, default: true]
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp [not null, default: `now()`]
+}
+
+Table user_notification_settings {
+  id text [pk]
+  user_id text [not null, unique, ref: > users.id, note: 'CASCADE delete']
+  email_notifications_enabled boolean [not null, default: true]
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp [not null, default: `now()`]
+}
+
+

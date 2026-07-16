@@ -1,0 +1,662 @@
+================================================================================
+                    REQUISITOS FUNCIONALES — NearU API
+================================================================================
+Proyecto:  NearU B2B Platform
+Versión:   1.0
+Fecha:     2026-07-13
+================================================================================
+
+--------------------------------------------------------------------------------
+MÓDULO 1: AUTENTICACIÓN
+--------------------------------------------------------------------------------
+Rol general: Usuario del sistema (registrado o visitante)
+
+--------------------------------------------------------------------------------
+
+[RF-001] Registro con email
+Rol:         Visitante
+Descripción: El sistema debe permitir al usuario registrarse proporcionando
+             nombre, email válido y contraseña de al menos 8 caracteres.
+Entradas:    name (2-100 chars), email (formato válido), password (mín. 8 chars)
+Salidas:     Usuario creado con sesión activa, cookie de sesión establecida.
+
+--------------------------------------------------------------------------------
+
+[RF-002] Creación automática de perfil
+Rol:         Sistema (automático al registrarse)
+Descripción: Al registrarse, el sistema debe crear automáticamente un perfil
+             vacío asociado al usuario.
+Entradas:    userId del usuario recién creado
+Salidas:     Profile creado en la base de datos con userId asociado.
+
+--------------------------------------------------------------------------------
+
+[RF-003] Login con email/password
+Rol:         Visitante
+Descripción: El sistema debe permitir al usuario iniciar sesión con email y
+             contraseña, retornando una cookie de sesión válida.
+Entradas:    email, password
+Salidas:     Cookie de sesión, redirección a área autenticada.
+
+--------------------------------------------------------------------------------
+
+[RF-004] Login con Google OAuth
+Rol:         Visitante
+Descripción: El sistema debe permitir autenticación mediante Google OAuth.
+             Redirige a Google y maneja el callback.
+Entradas:    Cuenta Google del usuario
+Salidas:     Usuario autenticado con sesión, cookie establecida.
+
+--------------------------------------------------------------------------------
+
+[RF-005] Logout
+Rol:         Usuario registrado
+Descripción: El sistema debe permitir al usuario cerrar sesión, invalidando
+             la cookie de sesión actual.
+Entradas:    Sesión activa
+Salidas:     Sesión invalidada, cookie eliminada.
+
+--------------------------------------------------------------------------------
+
+[RF-006] Olvidé mi contraseña
+Rol:         Visitante
+Descripción: El sistema debe permitir solicitar un enlace de recuperación de
+             contraseña. Debe retornar siempre un mensaje genérico para
+             prevenir enumeración de usuarios.
+Entradas:    Email del usuario
+Salidas:     Mensaje genérico indicando que si el email existe, se envió
+             el enlace.
+
+--------------------------------------------------------------------------------
+
+[RF-007] Restablecer contraseña
+Rol:         Visitante
+Descripción: El sistema debe permitir cambiar la contraseña mediante un token
+             válido recibido por email.
+Entradas:    Token de reset, nueva contraseña (mín. 8 chars)
+Salidas:     Contraseña actualizada, sesión válida.
+
+--------------------------------------------------------------------------------
+
+[RF-008] Cambiar contraseña
+Rol:         Usuario registrado
+Descripción: El sistema debe permitir al usuario autenticado cambiar su
+             contraseña proporcionando la actual y la nueva.
+Entradas:    currentPassword, newPassword (mín. 8 chars)
+Salidas:     Contraseña actualizada, sesión renovada.
+
+--------------------------------------------------------------------------------
+
+[RF-009] Cambiar email
+Rol:         Usuario registrado
+Descripción: El sistema debe permitir cambiar el email del usuario. Se envía
+             verificación a la NUEVA dirección de email.
+Entradas:    Nuevo email
+Salidas:     Email actualizado tras verificación, email de verificación
+             enviado a la nueva dirección.
+
+--------------------------------------------------------------------------------
+
+[RF-010] Verificar email
+Rol:         Visitante
+Descripción: El sistema debe verificar el email del usuario mediante un token
+             de verificación enviado por email.
+Entradas:    Token de verificación
+Salidas:     Email marcado como verificado en la base de datos.
+
+--------------------------------------------------------------------------------
+
+[RF-011] Obtener usuario actual
+Rol:         Usuario registrado
+Descripción: El sistema debe retornar los datos del usuario autenticado actual.
+Entradas:    Sesión/cookie del usuario
+Salidas:     Datos del usuario: id, name, email, emailVerified, createdAt.
+
+--------------------------------------------------------------------------------
+
+[RF-012] Cookies httpOnly y secure
+Rol:         Sistema
+Descripción: El sistema debe manejar sesiones mediante cookies httpOnly y
+             secure flags gestionadas por Better Auth.
+Entradas:    Credenciales válidas
+Salidas:     Cookie con atributos de seguridad configurados.
+
+--------------------------------------------------------------------------------
+MÓDULO 2: PERFILES
+--------------------------------------------------------------------------------
+Rol general: Empresa/Usuario registrado
+
+--------------------------------------------------------------------------------
+
+[RF-013] Upsert de perfil
+Rol:         Usuario registrado
+Descripción: El sistema debe crear un perfil si no existe o actualizarlo si
+             existe, identificándolo por el userId del usuario autenticado.
+Entradas:    Datos del perfil (name, description, regionId, etc.)
+Salidas:     Perfil creado o actualizado con todos los campos persistidos.
+
+--------------------------------------------------------------------------------
+
+[RF-014] Campos obligatorios del perfil
+Rol:         Usuario registrado
+Descripción: El sistema debe requerir los siguientes campos: name, description,
+             bannerUrl, regionId. Sin estos campos el perfil se considera
+             incompleto.
+Entradas:    name, description, bannerUrl, regionId
+Salidas:     Validación exitosa o error indicando campos faltantes.
+
+--------------------------------------------------------------------------------
+
+[RF-015] Campos opcionales del perfil
+Rol:         Usuario registrado
+Descripción: El sistema debe permitir configurar campos opcionales del perfil:
+             logoUrl, founded, employees, website, whatsapp.
+Entradas:    logoUrl, founded, employees, website, whatsapp (todos opcionales)
+Salidas:     Campos opcionales guardados si fueron proporcionados.
+
+--------------------------------------------------------------------------------
+
+[RF-016] Slug automático
+Rol:         Sistema
+Descripción: El sistema debe generar automáticamente un slug único a partir
+             del nombre del perfil, verificando unicidad en la base de datos.
+Entradas:    name del perfil
+Salidas:     Slug generado y guardado en el perfil.
+
+--------------------------------------------------------------------------------
+
+[RF-017] Gestión de tags
+Rol:         Usuario registrado
+Descripción: El sistema debe permitir agregar tags al perfil como array de
+             strings (máx. 50 caracteres por tag, máximo 20 tags).
+Entradas:    Array de nombres de tags
+Salidas:     Tags asociados al perfil, creados si no existen previamente.
+
+--------------------------------------------------------------------------------
+
+[RF-018] Resolución de tags por nombre
+Rol:         Sistema
+Descripción: El sistema debe buscar cada tag por nombre y crearlo si no
+             existe (findOrCreateByName).
+Entradas:    Nombre del tag
+Salidas:     Tag encontrado o creado con su ID.
+
+--------------------------------------------------------------------------------
+
+[RF-019] Social links
+Rol:         Usuario registrado
+Descripción: El sistema debe permitir agregar enlaces sociales al perfil como
+             array de objetos con platform, url y orden (máximo 20 links).
+Entradas:    Array de { platform, url, orden }
+Salidas:     Social links guardados en el perfil.
+
+--------------------------------------------------------------------------------
+
+[RF-020] Reemplazo completo de social links
+Rol:         Sistema
+Descripción: En cada actualización de perfil, los social links deben
+             eliminarse completamente y recrearse (replace semantics, no append).
+Entradas:    Nuevo array de social links
+Salidas:     Social links antiguos eliminados, nuevos insertados.
+
+--------------------------------------------------------------------------------
+
+[RF-021] Verificación de completitud del perfil
+Rol:         Sistema
+Descripción: El sistema debe verificar si el perfil tiene todos los campos
+             obligatorios (name, description, bannerUrl, regionId).
+Entradas:    Datos actuales del perfil
+Salidas:     isComplete: boolean, missingFields: array de campos faltantes.
+
+--------------------------------------------------------------------------------
+
+[RF-022] Bloqueo por perfil incompleto
+Rol:         Sistema
+Descripción: El sistema debe impedir la creación de servicios y eventos si
+             el perfil del usuario no está completo.
+Entradas:    Intento de crear servicio o evento
+Salidas:     Error 400 si el perfil está incompleto.
+
+--------------------------------------------------------------------------------
+
+[RF-023] Retorno de campos faltantes
+Rol:         Usuario registrado
+Descripción: La respuesta del perfil debe incluir un array missingFields[]
+             con los nombres de los campos requeridos que faltan completar.
+Entradas:    Solicitud de perfil
+Salidas:     Perfil con isComplete y missingFields[].
+
+--------------------------------------------------------------------------------
+MÓDULO 3: SERVICIOS
+--------------------------------------------------------------------------------
+Rol general: Empresa registrada con perfil completo
+
+--------------------------------------------------------------------------------
+
+[RF-024] Crear servicio
+Rol:         Usuario registrado con perfil completo
+Descripción: El sistema debe permitir crear un servicio con título (1-200 chars)
+             y slug único (regex ^[a-z0-9-]+$).
+Entradas:    slug, title, otros campos opcionales
+Salidas:     Servicio creado con todos los campos.
+
+--------------------------------------------------------------------------------
+
+[RF-025] Campos opcionales del servicio
+Rol:         Usuario registrado
+Descripción: El sistema debe permitir configurar: marca, description
+             (máx. 5000 chars), yearsExperience, priceMin/priceMax,
+             availability, bannerUrl/logoUrl/thumbnailUrl, locationId,
+             categoryId.
+Entradas:    Campos opcionales del servicio
+Salidas:     Campos guardados si fueron proporcionados.
+
+--------------------------------------------------------------------------------
+
+[RF-026] Status del servicio
+Rol:         Usuario registrado
+Descripción: El sistema debe permitir establecer el status del servicio entre:
+             draft, published, paused, archived. Default: draft.
+Entradas:    status (opcional, default: draft)
+Salidas:     Servicio con status configurado.
+
+--------------------------------------------------------------------------------
+
+[RF-027] Slug duplicado
+Rol:         Sistema
+Descripción: El sistema debe bloquear la creación de un servicio con slug
+             duplicado, lanzando un error genérico.
+Entradas:    Slug del servicio
+Salidas:     Error genérico (no revela que el slug ya existe).
+
+--------------------------------------------------------------------------------
+
+[RF-028] Prerequisito de perfil completo
+Rol:         Sistema
+Descripción: El sistema debe requerir un perfil completo antes de permitir
+             la creación de servicios.
+Entradas:    Intento de crear servicio
+Salidas:     Error 400 si el perfil está incompleto.
+
+--------------------------------------------------------------------------------
+
+[RF-029] Listado de servicios con filtros
+Rol:         Visitante o usuario registrado
+Descripción: El sistema debe permitir listar servicios con filtros públicos:
+             profileId, categoryId, locationId, status, search.
+Entradas:    Parámetros de query: profileId, categoryId, locationId,
+             status, search
+Salidas:     Lista de servicios que coinciden con los filtros.
+
+--------------------------------------------------------------------------------
+
+[RF-030] Servicios publicados por defecto
+Rol:         Sistema
+Descripción: El sistema debe mostrar solo servicios con status published
+             cuando se listan servicios sin filtro de status.
+Entradas:    Solicitud de listado de servicios
+Salidas:     Lista de solo servicios published.
+
+--------------------------------------------------------------------------------
+
+[RF-031] Obtener servicio por slug o ID
+Rol:         Visitante o usuario registrado
+Descripción: El sistema debe permitir obtener un servicio por su slug o ID
+             (fallback: intenta slug primero, luego ID).
+Entradas:    slugOrId del servicio
+Salidas:     Datos completos del servicio o error 404.
+
+--------------------------------------------------------------------------------
+
+[RF-032] Agregar item de portfolio
+Rol:         Usuario registrado (owner del servicio)
+Descripción: El sistema debe permitir agregar items al portfolio del servicio:
+             url (URL válida), title (máx. 200 chars), description (máx. 2000).
+Entradas:    url, title, description, orden
+Salidas:     Item de portfolio creado y asociado al servicio.
+
+--------------------------------------------------------------------------------
+
+[RF-033] Eliminar item de portfolio
+Rol:         Usuario registrado (owner del servicio)
+Descripción: El sistema debe permitir eliminar items del portfolio del servicio.
+Entradas:    ID del item de portfolio
+Salidas:     Item eliminado, count de portfolio actualizado.
+
+--------------------------------------------------------------------------------
+
+[RF-034] Gestión de contactos del servicio
+Rol:         Usuario registrado (owner del servicio)
+Descripción: El sistema debe permitir gestionar contactos del servicio como
+             array de { type, value }. Se reemplazan completamente en cada
+             update (replace semantics).
+Entradas:    Array de contactos { type, value }
+Salidas:     Contactos antiguos eliminados, nuevos insertados.
+
+--------------------------------------------------------------------------------
+MÓDULO 4: EVENTOS
+--------------------------------------------------------------------------------
+Rol general: Empresa registrada con perfil completo
+
+--------------------------------------------------------------------------------
+
+[RF-035] Crear evento
+Rol:         Usuario registrado con perfil completo
+Descripción: El sistema debe permitir crear un evento con título obligatorio
+             (1-200 chars) y descripción opcional (10-10000 chars).
+Entradas:    title, description (opcional), otros campos
+Salidas:     Evento creado con contadores inicializados en 0.
+
+--------------------------------------------------------------------------------
+
+[RF-036] Slug automático del evento
+Rol:         Sistema
+Descripción: El sistema debe generar automáticamente un slug único a partir
+             del título del evento si no se provee.
+Entradas:    title del evento
+Salidas:     Slug único generado y guardado.
+
+--------------------------------------------------------------------------------
+
+[RF-037] Fechas del evento
+Rol:         Usuario registrado
+Descripción: El sistema debe aceptar fechas de inicio (startAt) y deadline
+             de postulación (applicationDeadline) en formato ISO string o
+             objeto Date, transformándolos internamente.
+Entradas:    startAt, applicationDeadline (ISO string o Date)
+Salidas:     Fechas transformadas y guardadas como timestamp.
+
+--------------------------------------------------------------------------------
+
+[RF-038] Location y categoría del evento
+Rol:         Usuario registrado
+Descripción: El sistema debe permitir asociar locationId (región) y categoryId
+             al evento, ambos opcionales.
+Entradas:    locationId (opcional), categoryId (opcional)
+Salidas:     Evento con location y/o category asociados.
+
+--------------------------------------------------------------------------------
+
+[RF-039] Imágenes del evento
+Rol:         Usuario registrado
+Descripción: El sistema debe permitir configurar thumbnailUrl y bannerUrl como
+             URLs válidas.
+Entradas:    thumbnailUrl (URL), bannerUrl (URL)
+Salidas:     URLs guardadas en el evento.
+
+--------------------------------------------------------------------------------
+
+[RF-040] Candidatos requeridos
+Rol:         Usuario registrado
+Descripción: El sistema debe permitir configurar la cantidad de candidatos
+             requeridos: mínimo 1, máximo 1000. Default: 1.
+Entradas:    requiredCandidates (int 1-1000, default: 1)
+Salidas:     Evento con requiredCandidates configurado.
+
+--------------------------------------------------------------------------------
+
+[RF-041] Perfil verificado requerido
+Rol:         Usuario registrado
+Descripción: El sistema debe permitir indicar si el evento requiere que los
+             postulantes tengan perfil verificado. Default: true.
+Entradas:    requiresVerifiedProfile (boolean, default: true)
+Salidas:     Evento con flag configurado.
+
+--------------------------------------------------------------------------------
+
+[RF-042] Cierre automático
+Rol:         Usuario registrado
+Descripción: El sistema debe permitir indicar si el evento se cierra
+             automáticamente cuando se llena. Default: true.
+Entradas:    autoCloseWhenFilled (boolean, default: true)
+Salidas:     Evento con flag configurado.
+
+--------------------------------------------------------------------------------
+
+[RF-043] Status del evento
+Rol:         Usuario registrado
+Descripción: El sistema debe permitir establecer el status del evento entre:
+             draft, published, paused, archived. Default: draft.
+Entradas:    status (opcional, default: draft)
+Salidas:     Evento con status configurado.
+
+--------------------------------------------------------------------------------
+
+[RF-044] Inicialización de contadores
+Rol:         Sistema
+Descripción: Al crear un evento, applicationCount y selectedCandidates
+             deben inicializarse en 0.
+Entradas:    Creación de evento
+Salidas:     Contadores en 0.
+
+--------------------------------------------------------------------------------
+
+[RF-045] Prerequisito de perfil completo
+Rol:         Sistema
+Descripción: El sistema debe requerir un perfil completo antes de permitir
+             la creación de eventos.
+Entradas:    Intento de crear evento
+Salidas:     Error 400 si el perfil está incompleto.
+
+--------------------------------------------------------------------------------
+
+[RF-046] Listado de eventos con filtros
+Rol:         Visitante o usuario registrado
+Descripción: El sistema debe permitir listar eventos con filtros públicos:
+             profileId, categoryId, locationId, status, search, upcoming.
+Entradas:    Parámetros de query: profileId, categoryId, locationId,
+             status, search, upcoming
+Salidas:     Lista de eventos que coinciden con los filtros.
+
+--------------------------------------------------------------------------------
+
+[RF-047] Eventos publicados por defecto
+Rol:         Sistema
+Descripción: El sistema debe mostrar solo eventos con status published
+             cuando se listan eventos sin filtro de status.
+Entradas:    Solicitud de listado de eventos
+Salidas:     Lista de solo eventos published.
+
+--------------------------------------------------------------------------------
+
+[RF-048] Obtener evento por slug o ID
+Rol:         Visitante o usuario registrado
+Descripción: El sistema debe permitir obtener un evento por su slug o ID
+             (fallback: intenta slug primero, luego ID).
+Entradas:    slugOrId del evento
+Salidas:     Datos completos del evento o error 404.
+
+--------------------------------------------------------------------------------
+MÓDULO 5: APLICACIONES (POSTULACIONES)
+--------------------------------------------------------------------------------
+Rol general: Empresa/usuario postulante con perfil completo
+
+--------------------------------------------------------------------------------
+
+[RF-049] Crear postulación
+Rol:         Usuario registrado con perfil completo
+Descripción: El sistema debe permitir a un usuario postulante crear una
+             postulación a un evento proporcionando el eventId.
+Entradas:    eventId
+Salidas:     Aplicación creada con status pending.
+
+--------------------------------------------------------------------------------
+
+[RF-050] Carta de presentación
+Rol:         Usuario registrado
+Descripción: El sistema debe permitir adjuntar una carta de presentación
+             opcional (coverLetter) de máximo 5000 caracteres.
+Entradas:    coverLetter (string, máx. 5000 chars, nullable)
+Salidas:     Cover letter guardada en la aplicación.
+
+--------------------------------------------------------------------------------
+
+[RF-051] URLs de portfolio
+Rol:         Usuario registrado
+Descripción: El sistema debe permitir adjuntar URLs de portfolio (máximo 10).
+Entradas:    portfolioUrls (array de URLs válidas, máx. 10)
+Salidas:     Array de URLs guardado en la aplicación.
+
+--------------------------------------------------------------------------------
+
+[RF-052] No postulación propia
+Rol:         Sistema
+Descripción: El sistema debe bloquear la postulación de un usuario a su
+             propio evento (profile.userId === event.profileId).
+Entradas:    Intento de postulación
+Salidas:     Error 403 si el usuario es el dueño del evento.
+
+--------------------------------------------------------------------------------
+
+[RF-053] Bloqueo de duplicados
+Rol:         Sistema
+Descripción: El sistema debe bloquear que un usuario se postule dos veces
+             al mismo evento. Una postulación activa por evento+perfil.
+Entradas:    Intento de segunda postulación
+Salidas:     Error 409 si ya existe postulación activa.
+
+--------------------------------------------------------------------------------
+
+[RF-054] Status default de postulación
+Rol:         Sistema
+Descripción: Las nuevas postulaciones deben tener status pending con UUID
+             fijo 10000000-0000-0000-0000-000000000001.
+Entradas:    Creación de postulación
+Salidas:     Aplicación con status pending.
+
+--------------------------------------------------------------------------------
+
+[RF-055] Transiciones de estado
+Rol:         Owner del evento
+Descripción: El sistema debe permitir cambiar el estado de postulación según:
+             pending → reviewing → accepted/rejected.
+Entradas:    Nuevo status_id
+Salidas:     Aplicación con status actualizado.
+
+--------------------------------------------------------------------------------
+
+[RF-056] Permisos de cambio de estado
+Rol:         Sistema
+Descripción: Solo el owner del evento puede cambiar el status de una
+             postulación. Otros usuarios reciben ForbiddenError.
+Entradas:    Intento de cambio de status
+Salidas:     Error 403 si no es el owner del evento.
+
+--------------------------------------------------------------------------------
+
+[RF-057] Incremento de candidatos al aceptar
+Rol:         Sistema
+Descripción: Al aceptar una postulación (status → accepted), el sistema
+             debe incrementar selectedCandidates del evento en 1.
+Entradas:    Cambio de status a accepted
+Salidas:     selectedCandidates del evento incrementado en 1.
+
+--------------------------------------------------------------------------------
+
+[RF-058] Creación de thread al aceptar
+Rol:         Sistema
+Descripción: Al aceptar una postulación, el sistema debe crear
+             automáticamente un thread de chat.
+Entradas:    Cambio de status a accepted
+Salidas:     Thread creado con application_id asociado.
+
+--------------------------------------------------------------------------------
+
+[RF-059] Decremento al rechazar
+Rol:         Sistema
+Descripción: Al rechazar una postulación que estaba accepted, el sistema
+             debe decrementar selectedCandidates del evento en 1.
+Entradas:    Cambio de status de accepted a rejected
+Salidas:     selectedCandidates del evento decrementado en 1.
+
+--------------------------------------------------------------------------------
+
+[RF-060] Notificación al applicant
+Rol:         Sistema
+Descripción: Al cambiar status a accepted/rejected, el sistema debe
+             notificar al applicant (in-app y email).
+Entradas:    Cambio de status a accepted o rejected
+Salidas:     Notificación creada y email enviado (si preferences lo permiten).
+
+--------------------------------------------------------------------------------
+
+[RF-061] Listado de postulaciones por evento
+Rol:         Owner del evento
+Descripción: El sistema debe permitir listar todas las postulaciones de
+             un evento, filtradas por status.
+Entradas:    eventId, status (opcional)
+Salidas:     Lista de postulaciones del evento.
+
+--------------------------------------------------------------------------------
+
+[RF-062] Filtrado por estado
+Rol:         Owner del evento
+Descripción: El sistema debe permitir filtrar postulaciones por estado:
+             pending, reviewing, accepted, rejected.
+Entradas:    Parámetro status
+Salidas:     Lista filtrada por status.
+
+--------------------------------------------------------------------------------
+
+[RF-063] Mis postulaciones
+Rol:         Usuario registrado
+Descripción: El sistema debe permitir al usuario ver todas sus
+             postulaciones en todos los eventos.
+Entradas:    Usuario autenticado
+Salidas:     Lista de postulaciones del usuario.
+
+--------------------------------------------------------------------------------
+
+[RF-064] Sistema de scoring con 4 tipos de regla
+Rol:         Sistema
+Descripción: El sistema debe soportar 4 tipos de regla de scoring:
+             VERIFIED_PROFILE, SAME_REGION, HAS_WEBSITE, ACCOUNT_AGE.
+Entradas:    Scoring rules configuradas por evento
+Salidas:     Puntuación calculada por postulación.
+
+--------------------------------------------------------------------------------
+
+[RF-065] Ponderación de reglas
+Rol:         Owner del evento
+Descripción: Cada regla de scoring tiene un weight (int 1-100) que
+             representa los puntos posibles.
+Entradas:    weight de cada regla
+Salidas:     Puntos posibles = weight de la regla.
+
+--------------------------------------------------------------------------------
+
+[RF-066] Cálculo de puntos por regla
+Rol:         Sistema
+Descripción: Cada regla otorga el peso completo si se cumple la condición,
+             0 si no se cumple.
+Entradas:    Datos del perfil y evento
+Salidas:     Puntos earned por cada regla.
+
+--------------------------------------------------------------------------------
+
+[RF-067] Score se upsert
+Rol:         Sistema
+Descripción: El score se actualiza si ya existía, no se crea duplicado.
+Entradas:    Aplicación con scoring rules existentes
+Salidas:     Score recalculado y actualizado.
+
+--------------------------------------------------------------------------------
+
+[RF-068] Scoring fire-and-forget
+Rol:         Sistema
+Descripción: El cálculo de score se ejecuta de forma asíncrona solo si
+             el evento tiene scoring rules configuradas.
+Entradas:    Aplicación creada/actualizada, evento con reglas
+Salidas:     Score calculado en background.
+
+--------------------------------------------------------------------------------
+
+[RF-069] Mínimo una regla de scoring
+Rol:         Sistema
+Descripción: El sistema debe rechazar la creación de scoring rules vacías.
+Entradas:    Array vacío de reglas
+Salidas:     Error 400 SCORING_RULES_EMPTY.
+
+================================================================================
+                            FIN DEL DOCUMENTO
+================================================================================

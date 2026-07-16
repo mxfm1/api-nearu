@@ -17,7 +17,6 @@ export interface ApplicationWithDetails extends Application {
   applicantName: string | null;
   applicantLogoUrl: string | null;
   regionName: string | null;       // region of the applicant
-  applicantIndustry: string | null; // industry from applicant profile
   organizerProfileName: string | null; // name of the company that created the event
   score?: {
     totalScore: number;

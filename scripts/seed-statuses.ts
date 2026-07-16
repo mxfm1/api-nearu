@@ -6,10 +6,16 @@ async function seedStatuses() {
   console.log('Seeding statuses...');
 
   const defaultStatuses = [
+    // Services / Events
     { name: 'Borrador', slug: 'draft' },
     { name: 'Publicado', slug: 'published' },
     { name: 'Pausado', slug: 'paused' },
     { name: 'Archivado', slug: 'archived' },
+    // Applications (fixed UUIDs — hardcoded in code)
+    { id: '10000000-0000-0000-0000-000000000001', name: 'Pendiente', slug: 'pending' },
+    { id: '10000000-0000-0000-0000-000000000002', name: 'En revisión', slug: 'reviewing' },
+    { id: '10000000-0000-0000-0000-000000000003', name: 'Aceptada', slug: 'accepted' },
+    { id: '10000000-0000-0000-0000-000000000004', name: 'Rechazada', slug: 'rejected' },
   ];
 
   for (const status of defaultStatuses) {

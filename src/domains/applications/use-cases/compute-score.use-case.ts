@@ -91,12 +91,11 @@ async function evaluateRule(
       break;
 
     case 'SAME_REGION':
-      if (profile.locationId && event?.locationId) {
-        const profileLocation = await db.select().from(locations).where(eq(locations.id, profile.locationId)).limit(1);
+      if (profile.regionId && event?.locationId) {
         const eventLocation = await db.select().from(locations).where(eq(locations.id, event.locationId)).limit(1);
 
-        if (profileLocation[0]?.regionId && eventLocation[0]?.regionId) {
-          if (profileLocation[0].regionId === eventLocation[0].regionId) {
+        if (eventLocation[0]?.regionId) {
+          if (profile.regionId === eventLocation[0].regionId) {
             earned = weight;
             reason = 'Misma región que el evento';
           }

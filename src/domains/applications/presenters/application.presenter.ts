@@ -37,7 +37,6 @@ export function presentApplication(application: ApplicationWithDetails & { score
     applicantProfile: {
       name: application.applicantName,
       logoUrl: application.applicantLogoUrl,
-      industry: application.applicantIndustry,
     },
     organizerProfileName: application.organizerProfileName,
     region: application.regionName,

@@ -11,10 +11,9 @@ export type UpsertProfileInput = {
   bannerUrl?: string | null;
   logoUrl?: string | null;
   name?: string | null;
-  industry?: string;
   description?: string | null;
   tags?: string[];
-  locationId?: string | null;
+  regionId?: string | null;
   founded?: string | null;
   employees?: string | null;
   website?: string | null;

@@ -1,6 +1,6 @@
 import { eq, sql } from 'drizzle-orm';
 import { db } from '@/src/shared/database';
-import { profiles, profileSocialLinks, profilesToTags, tags, locations } from '@/src/shared/database/schema';
+import { profiles, profileSocialLinks, profilesToTags, tags, regions } from '@/src/shared/database/schema';
 import type { IProfilesRepository } from './profiles.repository.interface';
 import type { Profile } from '../entities/profile.entity';
 import type { SocialLink } from '../entities/profile.entity';
@@ -18,7 +18,7 @@ export class ProfilesRepository implements IProfilesRepository {
       const profile = result[0] as Profile | undefined;
       if (!profile) return null;
 
-      const [socialLinks, profileTags, location] = await Promise.all([
+      const [socialLinks, profileTags, region] = await Promise.all([
         db
           .select()
           .from(profileSocialLinks)
@@ -29,11 +29,11 @@ export class ProfilesRepository implements IProfilesRepository {
           .from(tags)
           .innerJoin(profilesToTags, eq(profilesToTags.tagId, tags.id))
           .where(eq(profilesToTags.profileId, profile.id)),
-        profile.locationId
+        profile.regionId
           ? db
-              .select({ name: locations.name })
-              .from(locations)
-              .where(eq(locations.id, profile.locationId))
+              .select({ name: regions.name })
+              .from(regions)
+              .where(eq(regions.id, profile.regionId))
               .limit(1)
           : Promise.resolve([]),
       ]);
@@ -42,7 +42,7 @@ export class ProfilesRepository implements IProfilesRepository {
         ...profile,
         socialLinks: socialLinks as SocialLink[],
         tags: profileTags as Tag[],
-        locationName: location[0]?.name ?? null,
+        regionName: region[0]?.name ?? null,
       };
     } catch (error) {
       console.error('[ProfilesRepository.findByUserId] Error:', error);
@@ -114,9 +114,8 @@ export class ProfilesRepository implements IProfilesRepository {
           logoUrl: data.logoUrl ?? null,
           name: data.name ?? null,
           slug: data.slug ?? null,
-          industry: data.industry ?? '',
           description: data.description ?? null,
-          locationId: data.locationId ?? null,
+          regionId: data.regionId ?? null,
           founded: data.founded ?? null,
           employees: data.employees ?? null,
           website: data.website ?? null,

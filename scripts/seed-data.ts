@@ -153,7 +153,6 @@ async function seedData() {
       userId: ownerExists[0]?.id ?? ownerId,
       name: 'EventPro Chile',
       slug: 'eventpro-chile',
-      industry: 'Producción de Eventos',
       description: 'Empresa líder en producción de eventos corporativos y sociales en Santiago.',
       locationId: santiagoLoc?.id ?? null,
       founded: '2018',

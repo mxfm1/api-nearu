@@ -88,9 +88,8 @@ export const profiles = pgTable(
     bannerUrl: text('banner_url'),
     logoUrl: text('logo_url'),
     name: text('name'),
-    industry: text('industry').notNull().default(''),
     description: text('description'),
-    locationId: text('location_id').references(() => locations.id),
+    regionId: text('region_id').references(() => regions.id),
     founded: text('founded'),
     employees: text('employees'),
     website: text('website'),
@@ -739,9 +738,9 @@ export const profilesRelations = relations(profiles, ({ one, many }) => ({
     fields: [profiles.userId],
     references: [users.id],
   }),
-  location: one(locations, {
-    fields: [profiles.locationId],
-    references: [locations.id],
+  region: one(regions, {
+    fields: [profiles.regionId],
+    references: [regions.id],
   }),
   socialLinks: many(profileSocialLinks),
   tags: many(profilesToTags),
@@ -782,6 +781,7 @@ export const profileSocialLinksRelations = relations(profileSocialLinks, ({ one 
 
 export const regionsRelations = relations(regions, ({ many }) => ({
   locations: many(locations),
+  profiles: many(profiles),
 }));
 
 export const categoriesRelations = relations(categories, ({ many }) => ({
@@ -910,7 +910,6 @@ export const locationsRelations = relations(locations, ({ one, many }) => ({
   }),
   services: many(services),
   events: many(events),
-  profiles: many(profiles),
 }));
 
 export const applicationsRelations = relations(applications, ({ one, many }) => ({

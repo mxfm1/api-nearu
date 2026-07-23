@@ -1,0 +1,28 @@
+MessageThreadResponse:
+  type: object
+  properties:
+    id:
+      type: string
+    contactRequestId:
+      type: string
+    messages:
+      type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: string
+          senderId:
+            type: string
+          content:
+            type: string
+            nullable: true
+          attachments:
+            type: array
+            items:
+              type: string
+          createdAt:
+            type: string
+            format: date-time
+    contactRequest:
+      $ref: '#/components/schemas/ContactRequestResponse'

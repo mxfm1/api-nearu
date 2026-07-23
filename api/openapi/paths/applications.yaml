@@ -1,0 +1,186 @@
+/api/applications:
+  post:
+    summary: Postular a un evento
+    tags: [Applications]
+    security:
+      - cookieAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [eventId]
+            properties:
+              eventId:
+                type: string
+              coverLetter:
+                type: string
+                maxLength: 5000
+              portfolioUrls:
+                type: array
+                items:
+                  type: string
+                  format: uri
+                maxItems: 10
+    responses:
+      '201':
+        description: Postulación creada
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yaml#/components/schemas/ApplicationResponse'
+      '400':
+        $ref: '../openapi.yaml#/components/responses/InputParseError'
+      '401':
+        $ref: '../openapi.yaml#/components/responses/Unauthenticated'
+
+/api/applications/{id}:
+  get:
+    summary: Obtener postulación por ID
+    tags: [Applications]
+    security:
+      - cookieAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    responses:
+      '200':
+        description: Postulación encontrada
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yaml#/components/schemas/ApplicationResponse'
+      '401':
+        $ref: '../openapi.yaml#/components/responses/Unauthenticated'
+      '404':
+        $ref: '../openapi.yaml#/components/responses/NotFound'
+
+/api/events/{eventId}/applications:
+  get:
+    summary: Listar postulaciones de un evento
+    description: Lista las postulaciones de un evento (solo el creador del evento)
+    tags: [Applications]
+    security:
+      - cookieAuth: []
+    parameters:
+      - name: eventId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+          enum: [pending, reviewing, accepted, rejected]
+    responses:
+      '200':
+        description: Lista de postulaciones
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yaml#/components/schemas/ApplicationsResponse'
+      '401':
+        $ref: '../openapi.yaml#/components/responses/Unauthenticated'
+
+/api/events/{eventId}/applications/score-details:
+  get:
+    summary: Listar postulaciones con puntaje detallado
+    tags: [Applications]
+    security:
+      - cookieAuth: []
+    parameters:
+      - name: eventId
+        in: path
+        required: true
+        schema:
+          type: string
+    responses:
+      '200':
+        description: Lista de postulaciones con score
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yaml#/components/schemas/ApplicationsResponse'
+      '401':
+        $ref: '../openapi.yaml#/components/responses/Unauthenticated'
+
+/api/events/{eventId}/my-application:
+  get:
+    summary: Obtener mi postulación a un evento
+    tags: [Applications]
+    security:
+      - cookieAuth: []
+    parameters:
+      - name: eventId
+        in: path
+        required: true
+        schema:
+          type: string
+    responses:
+      '200':
+        description: Mi postulación
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yaml#/components/schemas/ApplicationResponse'
+      '401':
+        $ref: '../openapi.yaml#/components/responses/Unauthenticated'
+      '404':
+        $ref: '../openapi.yaml#/components/responses/NotFound'
+
+/api/applications/{id}/status:
+  patch:
+    summary: Actualizar estado de postulación
+    tags: [Applications]
+    security:
+      - cookieAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [status]
+            properties:
+              status:
+                type: string
+                enum: [pending, reviewing, accepted, rejected]
+    responses:
+      '200':
+        description: Estado actualizado
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yaml#/components/schemas/ApplicationResponse'
+      '401':
+        $ref: '../openapi.yaml#/components/responses/Unauthenticated'
+      '403':
+        $ref: '../openapi.yaml#/components/responses/Unauthorized'
+
+/api/mis-aplicaciones:
+  get:
+    summary: Listar mis postulaciones
+    tags: [Applications]
+    security:
+      - cookieAuth: []
+    responses:
+      '200':
+        description: Lista de mis postulaciones
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yaml#/components/schemas/ApplicationsResponse'
+      '401':
+        $ref: '../openapi.yaml#/components/responses/Unauthenticated'

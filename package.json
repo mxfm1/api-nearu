@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "tsup src/server.ts --out-dir dist --format esm --clean",
+    "build": "npm run generate:types && tsup src/server.ts --out-dir dist --format esm --clean",
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit",
     "test:e2e": "npx playwright test",
@@ -13,7 +13,9 @@
     "db:generate": "npx drizzle-kit generate",
     "db:push": "npx drizzle-kit push",
     "db:studio": "npx drizzle-kit studio",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "bundle:openapi": "node scripts/bundle-openapi.mjs",
+    "generate:types": "npm run bundle:openapi && openapi-typescript api/openapi/.bundle.yaml --output src/shared/types/api.d.ts && node scripts/version-types.mjs"
   },
   "dependencies": {
     "@evyweb/ioctopus": "^1.4.1",
@@ -29,13 +31,16 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.61.1",
+    "@redocly/cli": "^2.40.0",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "@types/node": "^22.0.0",
     "@types/pg": "^8.11.0",
     "drizzle-kit": "^0.31.10",
+    "openapi-typescript": "^7.13.0",
     "tsup": "^8.5.1",
     "tsx": "^4.19.0",
-    "typescript": "^5.7.0"
+    "typescript": "^5.7.0",
+    "yaml": "^2.9.0"
   }
 }

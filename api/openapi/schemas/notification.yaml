@@ -1,0 +1,38 @@
+Notification:
+  type: object
+  properties:
+    id:
+      type: string
+    userId:
+      type: string
+    type:
+      type: string
+    title:
+      type: string
+    message:
+      type: string
+    data:
+      type: object
+    readAt:
+      type: string
+      format: date-time
+      nullable: true
+    createdAt:
+      type: string
+      format: date-time
+
+NotificationsResponse:
+  type: object
+  properties:
+    success:
+      type: boolean
+    data:
+      type: array
+      items:
+        $ref: '#/components/schemas/Notification'
+
+NotificationSettings:
+  type: object
+  properties:
+    emailNotificationsEnabled:
+      type: boolean

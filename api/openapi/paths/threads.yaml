@@ -1,0 +1,140 @@
+/api/threads:
+  get:
+    summary: Listar threads del usuario
+    tags: [Threads]
+    security:
+      - cookieAuth: []
+    responses:
+      '200':
+        description: Lista de threads
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yaml#/components/schemas/ThreadsResponse'
+      '401':
+        $ref: '../openapi.yaml#/components/responses/Unauthenticated'
+
+/api/threads/application/{applicationId}:
+  get:
+    summary: Obtener thread por application ID
+    tags: [Threads]
+    security:
+      - cookieAuth: []
+    parameters:
+      - name: applicationId
+        in: path
+        required: true
+        schema:
+          type: string
+    responses:
+      '200':
+        description: Thread encontrado
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                data:
+                  $ref: '../openapi.yaml#/components/schemas/Thread'
+      '401':
+        $ref: '../openapi.yaml#/components/responses/Unauthenticated'
+
+/api/threads/{threadId}:
+  get:
+    summary: Obtener thread por ID
+    tags: [Threads]
+    security:
+      - cookieAuth: []
+    parameters:
+      - name: threadId
+        in: path
+        required: true
+        schema:
+          type: string
+    responses:
+      '200':
+        description: Thread encontrado
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                data:
+                  $ref: '../openapi.yaml#/components/schemas/Thread'
+      '401':
+        $ref: '../openapi.yaml#/components/responses/Unauthenticated'
+
+/api/threads/{threadId}/messages:
+  get:
+    summary: Obtener mensajes de un thread
+    tags: [Threads]
+    security:
+      - cookieAuth: []
+    parameters:
+      - name: threadId
+        in: path
+        required: true
+        schema:
+          type: string
+    responses:
+      '200':
+        description: Mensajes del thread
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yaml#/components/schemas/ThreadMessagesResponse'
+      '401':
+        $ref: '../openapi.yaml#/components/responses/Unauthenticated'
+
+  post:
+    summary: Enviar mensaje en thread
+    tags: [Threads]
+    security:
+      - cookieAuth: []
+    parameters:
+      - name: threadId
+        in: path
+        required: true
+        schema:
+          type: string
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              content:
+                type: string
+              attachments:
+                type: array
+                items:
+                  type: string
+                  format: uri
+    responses:
+      '201':
+        description: Mensaje enviado
+      '401':
+        $ref: '../openapi.yaml#/components/responses/Unauthenticated'
+
+/api/threads/{threadId}/close:
+  patch:
+    summary: Cerrar thread
+    tags: [Threads]
+    security:
+      - cookieAuth: []
+    parameters:
+      - name: threadId
+        in: path
+        required: true
+        schema:
+          type: string
+    responses:
+      '200':
+        description: Thread cerrado
+      '401':
+        $ref: '../openapi.yaml#/components/responses/Unauthenticated'

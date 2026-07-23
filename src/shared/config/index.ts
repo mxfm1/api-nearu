@@ -9,7 +9,15 @@ export const config = {
     return Number(process.env.PORT ?? 3000);
   },
   get databaseUrl() {
-    return process.env.DATABASE_URL!;
+    const enviroment = this.nodeEnv
+    let dbURL = ''
+    if (enviroment === 'development') dbURL = process.env.DATABASE_URL!;
+    if (enviroment === 'production') dbURL = process.env.PRODUCTION_DB_URL!
+    if (enviroment === 'test') dbURL = process.env.TEST_DB_URL!
+
+    console.log('dbURL', dbURL);
+
+    return dbURL;
   },
   get betterAuthSecret() {
     return process.env.BETTER_AUTH_SECRET!;

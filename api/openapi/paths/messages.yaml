@@ -1,0 +1,57 @@
+/api/mensajes:
+  post:
+    summary: Enviar mensaje
+    tags: [Mensajes]
+    security:
+      - cookieAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [contactRequestId]
+            properties:
+              contactRequestId:
+                type: string
+              content:
+                type: string
+                maxLength: 5000
+              attachments:
+                type: array
+                items:
+                  type: string
+                  format: uri
+                maxItems: 6
+    responses:
+      '201':
+        description: Mensaje enviado
+      '401':
+        $ref: '../openapi.yaml#/components/responses/Unauthenticated'
+
+/api/mensajes/{contactRequestId}:
+  get:
+    summary: Obtener thread de mensajes
+    tags: [Mensajes]
+    security:
+      - cookieAuth: []
+    parameters:
+      - name: contactRequestId
+        in: path
+        required: true
+        schema:
+          type: string
+    responses:
+      '200':
+        description: Thread de mensajes
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                data:
+                  $ref: '../openapi.yaml#/components/schemas/MessageThreadResponse'
+      '401':
+        $ref: '../openapi.yaml#/components/responses/Unauthenticated'

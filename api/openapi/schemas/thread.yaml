@@ -1,0 +1,70 @@
+Thread:
+  type: object
+  properties:
+    id:
+      type: string
+    applicationId:
+      type: string
+      nullable: true
+    contactRequestId:
+      type: string
+      nullable: true
+    participantIds:
+      type: array
+      items:
+        type: string
+    isOpen:
+      type: boolean
+    closedAt:
+      type: string
+      format: date-time
+      nullable: true
+    createdAt:
+      type: string
+      format: date-time
+    updatedAt:
+      type: string
+      format: date-time
+
+ThreadMessage:
+  type: object
+  properties:
+    id:
+      type: string
+    threadId:
+      type: string
+    senderId:
+      type: string
+    senderName:
+      type: string
+    content:
+      type: string
+      nullable: true
+    attachments:
+      type: array
+      items:
+        type: string
+        format: uri
+    createdAt:
+      type: string
+      format: date-time
+
+ThreadsResponse:
+  type: object
+  properties:
+    success:
+      type: boolean
+    data:
+      type: array
+      items:
+        $ref: '#/components/schemas/Thread'
+
+ThreadMessagesResponse:
+  type: object
+  properties:
+    success:
+      type: boolean
+    data:
+      type: array
+      items:
+        $ref: '#/components/schemas/ThreadMessage'

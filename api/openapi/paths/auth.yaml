@@ -1,0 +1,192 @@
+/api/auth/sign-up/email:
+  post:
+    summary: Registrar usuario con email
+    description: Crea un usuario y genera un perfil vacío asociado.
+    tags: [Auth]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [name, email, password]
+            properties:
+              name:
+                type: string
+                minLength: 2
+                maxLength: 100
+              email:
+                type: string
+                format: email
+              password:
+                type: string
+                minLength: 8
+    responses:
+      '201':
+        description: Usuario creado
+      '400':
+        $ref: '../openapi.yaml#/components/responses/InputParseError'
+      '409':
+        $ref: '../openapi.yaml#/components/responses/Conflict'
+
+/api/auth/sign-in/email:
+  post:
+    summary: Iniciar sesión con email
+    tags: [Auth]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [email, password]
+            properties:
+              email:
+                type: string
+                format: email
+              password:
+                type: string
+    responses:
+      '200':
+        description: Sesión iniciada
+        headers:
+          Set-Cookie:
+            schema:
+              type: string
+            description: better-auth-session cookie
+      '401':
+        $ref: '../openapi.yaml#/components/responses/Unauthenticated'
+
+/api/auth/sign-out:
+  post:
+    summary: Cerrar sesión
+    tags: [Auth]
+    responses:
+      '200':
+        description: Sesión cerrada
+
+/api/auth/forgot-password:
+  post:
+    summary: Solicitar recuperación de contraseña
+    tags: [Auth]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [email]
+            properties:
+              email:
+                type: string
+                format: email
+    responses:
+      '200':
+        description: Email de recuperación enviado
+
+/api/auth/verify-email:
+  post:
+    summary: Verificar email
+    tags: [Auth]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [token]
+            properties:
+              token:
+                type: string
+    responses:
+      '200':
+        description: Email verificado
+
+/api/auth/reset-password:
+  post:
+    summary: Resetear contraseña con token
+    tags: [Auth]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [token, password]
+            properties:
+              token:
+                type: string
+              password:
+                type: string
+                minLength: 8
+    responses:
+      '200':
+        description: Contraseña reseteada
+
+/api/auth/me:
+  get:
+    summary: Obtener usuario autenticado actual
+    tags: [Auth]
+    security:
+      - cookieAuth: []
+    responses:
+      '200':
+        description: Usuario autenticado
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yaml#/components/schemas/AuthMeResponse'
+      '401':
+        $ref: '../openapi.yaml#/components/responses/Unauthenticated'
+
+/api/auth/change-password:
+  post:
+    summary: Cambiar contraseña
+    tags: [Auth]
+    security:
+      - cookieAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [password, newPassword]
+            properties:
+              password:
+                type: string
+              newPassword:
+                type: string
+                minLength: 8
+    responses:
+      '200':
+        description: Contraseña cambiada
+      '400':
+        $ref: '../openapi.yaml#/components/responses/InputParseError'
+      '401':
+        $ref: '../openapi.yaml#/components/responses/Unauthenticated'
+
+/api/auth/change-email:
+  post:
+    summary: Cambiar email
+    tags: [Auth]
+    security:
+      - cookieAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [email]
+            properties:
+              email:
+                type: string
+                format: email
+    responses:
+      '200':
+        description: Email cambiado
+      '400':
+        $ref: '../openapi.yaml#/components/responses/InputParseError'
+      '401':
+        $ref: '../openapi.yaml#/components/responses/Unauthenticated'

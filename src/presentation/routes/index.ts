@@ -1,4 +1,6 @@
 import { Router } from 'express';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { toNodeHandler } from 'better-auth/node';
 import { auth } from '@/src/shared/auth';
 import { getInjection } from '@di/container';
@@ -33,6 +35,13 @@ export function createRouter() {
   // Health
   router.get('/api/health', (_req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  });
+
+  // OpenAPI spec (single source of truth for frontend type generation)
+  router.get('/api/openapi.json', (_req, res) => {
+    const specPath = resolve(process.cwd(), 'api', 'openapi', '.bundle.json');
+    const spec = JSON.parse(readFileSync(specPath, 'utf-8'));
+    res.json(spec);
   });
   router.get('/api/categorias', listCategoriesController);
   router.get('/api/regiones', listRegionsController);

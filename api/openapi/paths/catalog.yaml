@@ -1,0 +1,66 @@
+/api/categorias:
+  get:
+    summary: Listar categorías
+    description: Devuelve las categorías disponibles. Opcionalmente filtra por type.
+    tags: [Catálogo]
+    parameters:
+      - name: type
+        in: query
+        required: false
+        schema:
+          type: string
+          enum: [service, event]
+    responses:
+      '200':
+        description: Lista de categorías
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yaml#/components/schemas/CategoriasResponse'
+
+/api/regiones:
+  get:
+    summary: Listar regiones con sus ubicaciones
+    description: Devuelve todas las regiones con sus ubicaciones anidadas.
+    tags: [Catálogo]
+    responses:
+      '200':
+        description: Regiones con ubicaciones
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yaml#/components/schemas/RegionesResponse'
+
+/api/ubicaciones:
+  get:
+    summary: Listar ubicaciones planas
+    description: Devuelve todas las ubicaciones con su región asociada.
+    tags: [Catálogo]
+    responses:
+      '200':
+        description: Ubicaciones
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yaml#/components/schemas/UbicacionesResponse'
+
+/api/scoring-rules/catalog:
+  get:
+    summary: Catálogo de reglas de scoring disponibles
+    tags: [Catálogo]
+    responses:
+      '200':
+        description: Lista de tipos de reglas
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: array
+                  items:
+                    type: string
+                  example: [VERIFIED_PROFILE, SAME_REGION, HAS_WEBSITE, ACCOUNT_AGE]

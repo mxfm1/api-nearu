@@ -1,0 +1,206 @@
+EventStatus:
+  type: object
+  properties:
+    id:
+      type: string
+    name:
+      type: string
+    slug:
+      type: string
+
+Event:
+  type: object
+  properties:
+    id:
+      type: string
+    profileId:
+      type: string
+    slug:
+      type: string
+    title:
+      type: string
+    description:
+      type: string
+      nullable: true
+    requirements:
+      type: string
+      nullable: true
+    startAt:
+      type: string
+      format: date-time
+      nullable: true
+    applicationDeadline:
+      type: string
+      format: date-time
+      nullable: true
+    thumbnailUrl:
+      type: string
+      nullable: true
+      format: uri
+    bannerUrl:
+      type: string
+      nullable: true
+      format: uri
+    requiredCandidates:
+      type: integer
+    requiresVerifiedProfile:
+      type: boolean
+    autoCloseWhenFilled:
+      type: boolean
+    location:
+      type: object
+      nullable: true
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+          nullable: true
+    category:
+      type: object
+      nullable: true
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+          nullable: true
+    profile:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+          nullable: true
+        slug:
+          type: string
+          nullable: true
+    status:
+      $ref: '#/components/schemas/EventStatus'
+    createdAt:
+      type: string
+      format: date-time
+    updatedAt:
+      type: string
+      format: date-time
+
+EventResponse:
+  type: object
+  properties:
+    success:
+      type: boolean
+    data:
+      $ref: '#/components/schemas/Event'
+
+EventosResponse:
+  type: object
+  properties:
+    success:
+      type: boolean
+    data:
+      type: array
+      items:
+        $ref: '#/components/schemas/Event'
+
+CreateEventInput:
+  type: object
+  required: [title]
+  properties:
+    slug:
+      type: string
+      pattern: '^[a-z0-9-]+$'
+    title:
+      type: string
+      minLength: 1
+      maxLength: 200
+    description:
+      type: string
+      minLength: 10
+      maxLength: 10000
+    requirements:
+      type: string
+      minLength: 10
+      maxLength: 10000
+    startAt:
+      type: string
+      format: date-time
+    applicationDeadline:
+      type: string
+      format: date-time
+    locationId:
+      type: string
+    categoryId:
+      type: string
+    thumbnailUrl:
+      type: string
+      format: uri
+    bannerUrl:
+      type: string
+      format: uri
+    requiredCandidates:
+      type: integer
+      minimum: 1
+      maximum: 1000
+      default: 1
+    requiresVerifiedProfile:
+      type: boolean
+      default: true
+    autoCloseWhenFilled:
+      type: boolean
+      default: true
+    status:
+      type: string
+      enum: [draft, published, paused, archived]
+    eventStatus:
+      type: string
+      enum: [draft, published, paused, archived]
+
+UpdateEventInput:
+  type: object
+  properties:
+    slug:
+      type: string
+      pattern: '^[a-z0-9-]+$'
+    title:
+      type: string
+      minLength: 1
+      maxLength: 200
+    description:
+      type: string
+      minLength: 10
+      maxLength: 10000
+    requirements:
+      type: string
+      minLength: 10
+      maxLength: 10000
+    startAt:
+      type: string
+      format: date-time
+    applicationDeadline:
+      type: string
+      format: date-time
+    locationId:
+      type: string
+    categoryId:
+      type: string
+    thumbnailUrl:
+      type: string
+      format: uri
+    bannerUrl:
+      type: string
+      format: uri
+    requiredCandidates:
+      type: integer
+      minimum: 1
+      maximum: 1000
+    requiresVerifiedProfile:
+      type: boolean
+    autoCloseWhenFilled:
+      type: boolean
+    status:
+      type: string
+      enum: [draft, published, paused, archived]
+    eventStatus:
+      type: string
+      enum: [draft, published, paused, archived]

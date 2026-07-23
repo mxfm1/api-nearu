@@ -1,0 +1,214 @@
+/api/servicios:
+  get:
+    summary: Listar servicios públicos
+    description: Lista servicios con filtro status='published' por defecto
+    tags: [Servicios]
+    parameters:
+      - name: profileId
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: categoryId
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: locationId
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: search
+        in: query
+        required: false
+        schema:
+          type: string
+    responses:
+      '200':
+        description: Lista de servicios
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yaml#/components/schemas/ServiciosResponse'
+
+  post:
+    summary: Crear servicio
+    description: Crea un nuevo servicio para el perfil del usuario autenticado.
+    tags: [Servicios]
+    security:
+      - cookieAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '../openapi.yaml#/components/schemas/CreateServiceInput'
+    responses:
+      '201':
+        description: Servicio creado
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yaml#/components/schemas/ServiceResponse'
+      '400':
+        $ref: '../openapi.yaml#/components/responses/InputParseError'
+      '401':
+        $ref: '../openapi.yaml#/components/responses/Unauthenticated'
+      '403':
+        $ref: '../openapi.yaml#/components/responses/ProfileIncomplete'
+
+/api/servicios/{slugOrId}:
+  get:
+    summary: Obtener servicio por slug o ID
+    tags: [Servicios]
+    parameters:
+      - name: slugOrId
+        in: path
+        required: true
+        schema:
+          type: string
+    responses:
+      '200':
+        description: Servicio encontrado
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yaml#/components/schemas/ServiceResponse'
+      '404':
+        $ref: '../openapi.yaml#/components/responses/NotFound'
+
+/api/servicios/{id}:
+  patch:
+    summary: Actualizar servicio
+    tags: [Servicios]
+    security:
+      - cookieAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '../openapi.yaml#/components/schemas/UpdateServiceInput'
+    responses:
+      '200':
+        description: Servicio actualizado
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yaml#/components/schemas/ServiceResponse'
+      '401':
+        $ref: '../openapi.yaml#/components/responses/Unauthenticated'
+      '403':
+        $ref: '../openapi.yaml#/components/responses/Unauthorized'
+
+  delete:
+    summary: Eliminar servicio
+    tags: [Servicios]
+    security:
+      - cookieAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    responses:
+      '204':
+        description: Servicio eliminado
+      '401':
+        $ref: '../openapi.yaml#/components/responses/Unauthenticated'
+      '403':
+        $ref: '../openapi.yaml#/components/responses/Unauthorized'
+
+/api/mis-servicios:
+  get:
+    summary: Listar mis servicios
+    description: Lista todos los servicios del perfil del usuario autenticado
+    tags: [Servicios]
+    security:
+      - cookieAuth: []
+    responses:
+      '200':
+        description: Lista de servicios del usuario
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yaml#/components/schemas/ServiciosResponse'
+      '401':
+        $ref: '../openapi.yaml#/components/responses/Unauthenticated'
+
+/api/servicios/{id}/portfolio:
+  post:
+    summary: Agregar item al portfolio
+    tags: [Servicios]
+    security:
+      - cookieAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [url]
+            properties:
+              url:
+                type: string
+                format: uri
+              title:
+                type: string
+                maxLength: 200
+              description:
+                type: string
+                maxLength: 2000
+              orden:
+                type: integer
+    responses:
+      '201':
+        description: Portfolio item creado
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                data:
+                  $ref: '../openapi.yaml#/components/schemas/PortfolioItem'
+      '401':
+        $ref: '../openapi.yaml#/components/responses/Unauthenticated'
+
+/api/servicios/{id}/portfolio/{portfolioId}:
+  delete:
+    summary: Eliminar item del portfolio
+    tags: [Servicios]
+    security:
+      - cookieAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: portfolioId
+        in: path
+        required: true
+        schema:
+          type: string
+    responses:
+      '204':
+        description: Portfolio item eliminado
+      '401':
+        $ref: '../openapi.yaml#/components/responses/Unauthenticated'

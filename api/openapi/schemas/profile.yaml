@@ -1,0 +1,125 @@
+Profile:
+  type: object
+  properties:
+    id:
+      type: string
+    userId:
+      type: string
+    bannerUrl:
+      type: string
+      nullable: true
+      format: uri
+    logoUrl:
+      type: string
+      nullable: true
+      format: uri
+    name:
+      type: string
+      nullable: true
+    industry:
+      type: string
+    description:
+      type: string
+      nullable: true
+    tags:
+      type: array
+      items:
+        type: string
+    location:
+      type: string
+      nullable: true
+    founded:
+      type: string
+      nullable: true
+    employees:
+      type: string
+      nullable: true
+    website:
+      type: string
+      nullable: true
+      format: uri
+    whatsapp:
+      type: string
+      nullable: true
+    socialLinks:
+      type: array
+      items:
+        $ref: '#/components/schemas/SocialLink'
+    createdAt:
+      type: string
+      format: date-time
+    updatedAt:
+      type: string
+      format: date-time
+    isComplete:
+      type: boolean
+    missingFields:
+      type: array
+      items:
+        type: string
+
+SocialLink:
+  type: object
+  properties:
+    id:
+      type: string
+    platform:
+      type: string
+    url:
+      type: string
+      format: uri
+    orden:
+      type: integer
+
+ProfileResponse:
+  type: object
+  properties:
+    success:
+      type: boolean
+      example: true
+    data:
+      $ref: '#/components/schemas/Profile'
+
+ProfileUpdateInput:
+  type: object
+  properties:
+    name:
+      type: string
+    industry:
+      type: string
+    description:
+      type: string
+    tags:
+      type: array
+      items:
+        type: string
+    location:
+      type: string
+    founded:
+      type: string
+    employees:
+      type: string
+    website:
+      type: string
+    whatsapp:
+      type: string
+    bannerUrl:
+      type: string
+      format: uri
+    logoUrl:
+      type: string
+      format: uri
+    socialLinks:
+      type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: string
+          platform:
+            type: string
+          url:
+            type: string
+            format: uri
+          orden:
+            type: integer

@@ -1,0 +1,76 @@
+Categoria:
+  type: object
+  properties:
+    id:
+      type: string
+    name:
+      type: string
+    type:
+      type: string
+      enum: [service, event]
+
+Region:
+  type: object
+  properties:
+    id:
+      type: string
+    name:
+      type: string
+    slug:
+      type: string
+    locations:
+      type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: string
+          name:
+            type: string
+
+Ubicacion:
+  type: object
+  properties:
+    id:
+      type: string
+    name:
+      type: string
+    region:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        slug:
+          type: string
+
+CategoriasResponse:
+  type: object
+  properties:
+    success:
+      type: boolean
+    data:
+      type: array
+      items:
+        $ref: '#/components/schemas/Categoria'
+
+RegionesResponse:
+  type: object
+  properties:
+    success:
+      type: boolean
+    data:
+      type: array
+      items:
+        $ref: '#/components/schemas/Region'
+
+UbicacionesResponse:
+  type: object
+  properties:
+    success:
+      type: boolean
+    data:
+      type: array
+      items:
+        $ref: '#/components/schemas/Ubicacion'

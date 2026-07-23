@@ -1,0 +1,66 @@
+/api/events/{eventId}/scoring-rules:
+  get:
+    summary: Listar reglas de scoring de un evento
+    tags: [Scoring]
+    security:
+      - cookieAuth: []
+    parameters:
+      - name: eventId
+        in: path
+        required: true
+        schema:
+          type: string
+    responses:
+      '200':
+        description: Reglas de scoring
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                data:
+                  type: array
+                  items:
+                    $ref: '../openapi.yaml#/components/schemas/ScoringRule'
+      '401':
+        $ref: '../openapi.yaml#/components/responses/Unauthenticated'
+
+  post:
+    summary: Crear reglas de scoring para un evento
+    tags: [Scoring]
+    security:
+      - cookieAuth: []
+    parameters:
+      - name: eventId
+        in: path
+        required: true
+        schema:
+          type: string
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [rules]
+            properties:
+              rules:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    ruleType:
+                      type: string
+                    weight:
+                      type: integer
+                      minimum: 1
+                      maximum: 100
+                    config:
+                      type: object
+    responses:
+      '201':
+        description: Reglas creadas
+      '401':
+        $ref: '../openapi.yaml#/components/responses/Unauthenticated'

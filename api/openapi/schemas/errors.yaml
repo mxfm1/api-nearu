@@ -1,0 +1,79 @@
+ApiError:
+  type: object
+  properties:
+    success:
+      type: boolean
+      example: false
+    error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+
+responses:
+  Unauthenticated:
+    description: No autenticado
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/ApiError'
+
+  Unauthorized:
+    description: Sin permisos
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/ApiError'
+
+  NotFound:
+    description: Recurso no encontrado
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/ApiError'
+
+  Conflict:
+    description: Conflicto
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/ApiError'
+
+  InputParseError:
+    description: Datos inválidos
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/ApiError'
+
+  ProfileIncomplete:
+    description: Perfil incompleto
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            success:
+              type: boolean
+              example: false
+            error:
+              type: object
+              properties:
+                code:
+                  type: string
+                  example: PROFILE_INCOMPLETE
+                message:
+                  type: string
+                missingFields:
+                  type: array
+                  items:
+                    type: string
+
+  InternalError:
+    description: Error inesperado
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/ApiError'

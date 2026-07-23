@@ -1,0 +1,285 @@
+openapi: 3.0.3
+info:
+  title: NearU API
+  version: 0.2.0
+  description: API de NearU — plataforma de servicios y eventos
+  contact:
+    name: NearU Team
+
+servers:
+  - url: http://localhost:3000
+    description: Desarrollo local
+  - url: https://api-nearu-production.up.railway.app
+    description: Producción (Railway)
+
+# ──────────────────────────────────────────────
+# PATHS — referenciados desde ./paths/
+# ──────────────────────────────────────────────
+paths:
+  # Auth
+  /api/auth/sign-up/email:
+    $ref: './paths/auth.yaml#/api/auth~1sign-up~1email'
+  /api/auth/sign-in/email:
+    $ref: './paths/auth.yaml#/api/auth~1sign-in~1email'
+  /api/auth/sign-out:
+    $ref: './paths/auth.yaml#/api/auth~1sign-out'
+  /api/auth/forgot-password:
+    $ref: './paths/auth.yaml#/api/auth~1forgot-password'
+  /api/auth/verify-email:
+    $ref: './paths/auth.yaml#/api/auth~1verify-email'
+  /api/auth/reset-password:
+    $ref: './paths/auth.yaml#/api/auth~1reset-password'
+  /api/auth/me:
+    $ref: './paths/auth.yaml#/api/auth~1me'
+  /api/auth/change-password:
+    $ref: './paths/auth.yaml#/api/auth~1change-password'
+  /api/auth/change-email:
+    $ref: './paths/auth.yaml#/api/auth~1change-email'
+
+  # Users
+  /api/users:
+    $ref: './paths/users.yaml#/api/users'
+  /api/users/me:
+    $ref: './paths/users.yaml#/api/users~1me'
+  /api/users/{id}:
+    $ref: './paths/users.yaml#/api/users~1{id}'
+
+  # Profiles
+  /api/profiles/{userId}:
+    $ref: './paths/profiles.yaml#/api/profiles~1{userId}'
+  /api/profiles/me:
+    $ref: './paths/profiles.yaml#/api/profiles~1me'
+
+  # Catalog
+  /api/categorias:
+    $ref: './paths/catalog.yaml#/api/categorias'
+  /api/regiones:
+    $ref: './paths/catalog.yaml#/api/regiones'
+  /api/ubicaciones:
+    $ref: './paths/catalog.yaml#/api/ubicaciones'
+  /api/scoring-rules/catalog:
+    $ref: './paths/catalog.yaml#/api/scoring-rules~1catalog'
+
+  # Services
+  /api/servicios:
+    $ref: './paths/services.yaml#/api/servicios'
+  /api/servicios/{slugOrId}:
+    $ref: './paths/services.yaml#/api/servicios~1{slugOrId}'
+  /api/servicios/{id}:
+    $ref: './paths/services.yaml#/api/servicios~1{id}'
+  /api/mis-servicios:
+    $ref: './paths/services.yaml#/api/mis-servicios'
+  /api/servicios/{id}/portfolio:
+    $ref: './paths/services.yaml#/api/servicios~1{id}~1portfolio'
+  /api/servicios/{id}/portfolio/{portfolioId}:
+    $ref: './paths/services.yaml#/api/servicios~1{id}~1portfolio~1{portfolioId}'
+
+  # Events
+  /api/eventos:
+    $ref: './paths/events.yaml#/api/eventos'
+  /api/eventos/{slugOrId}:
+    $ref: './paths/events.yaml#/api/eventos~1{slugOrId}'
+  /api/eventos/{id}:
+    $ref: './paths/events.yaml#/api/eventos~1{id}'
+  /api/mis-eventos:
+    $ref: './paths/events.yaml#/api/mis-eventos'
+  /api/mis-eventos/{id}:
+    $ref: './paths/events.yaml#/api/mis-eventos~1{id}'
+
+  # Applications
+  /api/applications:
+    $ref: './paths/applications.yaml#/api/applications'
+  /api/applications/{id}:
+    $ref: './paths/applications.yaml#/api/applications~1{id}'
+  /api/events/{eventId}/applications:
+    $ref: './paths/applications.yaml#/api/events~1{eventId}~1applications'
+  /api/events/{eventId}/applications/score-details:
+    $ref: './paths/applications.yaml#/api/events~1{eventId}~1applications~1score-details'
+  /api/events/{eventId}/my-application:
+    $ref: './paths/applications.yaml#/api/events~1{eventId}~1my-application'
+  /api/applications/{id}/status:
+    $ref: './paths/applications.yaml#/api/applications~1{id}~1status'
+  /api/mis-aplicaciones:
+    $ref: './paths/applications.yaml#/api/mis-aplicaciones'
+
+  # Scoring
+  /api/events/{eventId}/scoring-rules:
+    $ref: './paths/scoring.yaml#/api/events~1{eventId}~1scoring-rules'
+
+  # Contacts
+  /api/contactos/intenciones:
+    $ref: './paths/contacts.yaml#/api/contactos~1intenciones'
+  /api/contactos/inbox:
+    $ref: './paths/contacts.yaml#/api/contactos~1inbox'
+  /api/contactos/{id}:
+    $ref: './paths/contacts.yaml#/api/contactos~1{id}'
+  /api/contactos:
+    $ref: './paths/contacts.yaml#/api/contactos'
+  /api/contactos/{id}/estado:
+    $ref: './paths/contacts.yaml#/api/contactos~1{id}~1estado'
+
+  # Messages
+  /api/mensajes:
+    $ref: './paths/messages.yaml#/api/mensajes'
+  /api/mensajes/{contactRequestId}:
+    $ref: './paths/messages.yaml#/api/mensajes~1{contactRequestId}'
+
+  # Notifications
+  /api/notificaciones:
+    $ref: './paths/notifications.yaml#/api/notificaciones'
+  /api/notificaciones/{id}/read:
+    $ref: './paths/notifications.yaml#/api/notificaciones~1{id}~1read'
+  /api/notificaciones/read-all:
+    $ref: './paths/notifications.yaml#/api/notificaciones~1read-all'
+  /api/notificaciones/config:
+    $ref: './paths/notifications.yaml#/api/notificaciones~1config'
+
+  # Threads
+  /api/threads:
+    $ref: './paths/threads.yaml#/api/threads'
+  /api/threads/application/{applicationId}:
+    $ref: './paths/threads.yaml#/api/threads~1application~1{applicationId}'
+  /api/threads/{threadId}:
+    $ref: './paths/threads.yaml#/api/threads~1{threadId}'
+  /api/threads/{threadId}/messages:
+    $ref: './paths/threads.yaml#/api/threads~1{threadId}~1messages'
+  /api/threads/{threadId}/close:
+    $ref: './paths/threads.yaml#/api/threads~1{threadId}~1close'
+
+# ──────────────────────────────────────────────
+# COMPONENTS — schemas y responses desde ./schemas/
+# ──────────────────────────────────────────────
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: better-auth-session
+
+  schemas:
+    # ── Errors ──
+    ApiError:
+      $ref: './schemas/errors.yaml#/ApiError'
+
+    # ── User ──
+    User:
+      $ref: './schemas/user.yaml#/User'
+    UserResponse:
+      $ref: './schemas/user.yaml#/UserResponse'
+    AuthMeResponse:
+      $ref: './schemas/user.yaml#/AuthMeResponse'
+
+    # ── Profile ──
+    Profile:
+      $ref: './schemas/profile.yaml#/Profile'
+    SocialLink:
+      $ref: './schemas/profile.yaml#/SocialLink'
+    ProfileResponse:
+      $ref: './schemas/profile.yaml#/ProfileResponse'
+    ProfileUpdateInput:
+      $ref: './schemas/profile.yaml#/ProfileUpdateInput'
+
+    # ── Catalog ──
+    Categoria:
+      $ref: './schemas/catalog.yaml#/Categoria'
+    Region:
+      $ref: './schemas/catalog.yaml#/Region'
+    Ubicacion:
+      $ref: './schemas/catalog.yaml#/Ubicacion'
+    CategoriasResponse:
+      $ref: './schemas/catalog.yaml#/CategoriasResponse'
+    RegionesResponse:
+      $ref: './schemas/catalog.yaml#/RegionesResponse'
+    UbicacionesResponse:
+      $ref: './schemas/catalog.yaml#/UbicacionesResponse'
+
+    # ── Service ──
+    ServiceContact:
+      $ref: './schemas/service.yaml#/ServiceContact'
+    PortfolioItem:
+      $ref: './schemas/service.yaml#/PortfolioItem'
+    ServiceStatus:
+      $ref: './schemas/service.yaml#/ServiceStatus'
+    Service:
+      $ref: './schemas/service.yaml#/Service'
+    ServiceResponse:
+      $ref: './schemas/service.yaml#/ServiceResponse'
+    ServiciosResponse:
+      $ref: './schemas/service.yaml#/ServiciosResponse'
+    CreateServiceInput:
+      $ref: './schemas/service.yaml#/CreateServiceInput'
+    UpdateServiceInput:
+      $ref: './schemas/service.yaml#/UpdateServiceInput'
+
+    # ── Event ──
+    EventStatus:
+      $ref: './schemas/event.yaml#/EventStatus'
+    Event:
+      $ref: './schemas/event.yaml#/Event'
+    EventResponse:
+      $ref: './schemas/event.yaml#/EventResponse'
+    EventosResponse:
+      $ref: './schemas/event.yaml#/EventosResponse'
+    CreateEventInput:
+      $ref: './schemas/event.yaml#/CreateEventInput'
+    UpdateEventInput:
+      $ref: './schemas/event.yaml#/UpdateEventInput'
+
+    # ── Application ──
+    ApplicationScoreBreakdown:
+      $ref: './schemas/application.yaml#/ApplicationScoreBreakdown'
+    ApplicationScore:
+      $ref: './schemas/application.yaml#/ApplicationScore'
+    Application:
+      $ref: './schemas/application.yaml#/Application'
+    ApplicationResponse:
+      $ref: './schemas/application.yaml#/ApplicationResponse'
+    ApplicationsResponse:
+      $ref: './schemas/application.yaml#/ApplicationsResponse'
+    ScoringRule:
+      $ref: './schemas/application.yaml#/ScoringRule'
+
+    # ── Contact ──
+    ContactRequestResponse:
+      $ref: './schemas/contact.yaml#/ContactRequestResponse'
+    ContactRequestsResponse:
+      $ref: './schemas/contact.yaml#/ContactRequestsResponse'
+
+    # ── Message ──
+    MessageThreadResponse:
+      $ref: './schemas/message.yaml#/MessageThreadResponse'
+
+    # ── Notification ──
+    Notification:
+      $ref: './schemas/notification.yaml#/Notification'
+    NotificationsResponse:
+      $ref: './schemas/notification.yaml#/NotificationsResponse'
+    NotificationSettings:
+      $ref: './schemas/notification.yaml#/NotificationSettings'
+
+    # ── Thread ──
+    Thread:
+      $ref: './schemas/thread.yaml#/Thread'
+    ThreadMessage:
+      $ref: './schemas/thread.yaml#/ThreadMessage'
+    ThreadsResponse:
+      $ref: './schemas/thread.yaml#/ThreadsResponse'
+    ThreadMessagesResponse:
+      $ref: './schemas/thread.yaml#/ThreadMessagesResponse'
+
+  # ── Responses (compartidos) ──
+  responses:
+    Unauthenticated:
+      $ref: './schemas/errors.yaml#/responses/Unauthenticated'
+    Unauthorized:
+      $ref: './schemas/errors.yaml#/responses/Unauthorized'
+    NotFound:
+      $ref: './schemas/errors.yaml#/responses/NotFound'
+    Conflict:
+      $ref: './schemas/errors.yaml#/responses/Conflict'
+    InputParseError:
+      $ref: './schemas/errors.yaml#/responses/InputParseError'
+    ProfileIncomplete:
+      $ref: './schemas/errors.yaml#/responses/ProfileIncomplete'
+    InternalError:
+      $ref: './schemas/errors.yaml#/responses/InternalError'

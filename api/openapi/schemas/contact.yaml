@@ -1,0 +1,63 @@
+ContactRequestResponse:
+  type: object
+  properties:
+    id:
+      type: string
+    slug:
+      type: string
+    intencion:
+      type: string
+    mensaje:
+      type: string
+      nullable: true
+    attachments:
+      type: array
+      items:
+        type: string
+        format: uri
+    estado:
+      type: string
+    createdAt:
+      type: string
+      format: date-time
+    service:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        slug:
+          type: string
+    fromProfile:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+          nullable: true
+        logoUrl:
+          type: string
+          nullable: true
+    toProfile:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+          nullable: true
+        logoUrl:
+          type: string
+          nullable: true
+
+ContactRequestsResponse:
+  type: object
+  properties:
+    success:
+      type: boolean
+    data:
+      type: array
+      items:
+        $ref: '#/components/schemas/ContactRequestResponse'

@@ -1,0 +1,177 @@
+/api/eventos:
+  get:
+    summary: Listar eventos públicos
+    description: Lista eventos con filtro status='published' por defecto
+    tags: [Eventos]
+    parameters:
+      - name: profileId
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: categoryId
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: locationId
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: search
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: upcoming
+        in: query
+        required: false
+        schema:
+          type: boolean
+    responses:
+      '200':
+        description: Lista de eventos
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yaml#/components/schemas/EventosResponse'
+
+  post:
+    summary: Crear evento
+    description: Crea un nuevo evento para el perfil del usuario autenticado.
+    tags: [Eventos]
+    security:
+      - cookieAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '../openapi.yaml#/components/schemas/CreateEventInput'
+    responses:
+      '201':
+        description: Evento creado
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yaml#/components/schemas/EventResponse'
+      '400':
+        $ref: '../openapi.yaml#/components/responses/InputParseError'
+      '401':
+        $ref: '../openapi.yaml#/components/responses/Unauthenticated'
+      '403':
+        $ref: '../openapi.yaml#/components/responses/ProfileIncomplete'
+
+/api/eventos/{slugOrId}:
+  get:
+    summary: Obtener evento por slug o ID
+    tags: [Eventos]
+    parameters:
+      - name: slugOrId
+        in: path
+        required: true
+        schema:
+          type: string
+    responses:
+      '200':
+        description: Evento encontrado
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yaml#/components/schemas/EventResponse'
+      '404':
+        $ref: '../openapi.yaml#/components/responses/NotFound'
+
+/api/eventos/{id}:
+  patch:
+    summary: Actualizar evento
+    tags: [Eventos]
+    security:
+      - cookieAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '../openapi.yaml#/components/schemas/UpdateEventInput'
+    responses:
+      '200':
+        description: Evento actualizado
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yaml#/components/schemas/EventResponse'
+      '401':
+        $ref: '../openapi.yaml#/components/responses/Unauthenticated'
+      '403':
+        $ref: '../openapi.yaml#/components/responses/Unauthorized'
+
+  delete:
+    summary: Eliminar evento
+    tags: [Eventos]
+    security:
+      - cookieAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    responses:
+      '204':
+        description: Evento eliminado
+      '401':
+        $ref: '../openapi.yaml#/components/responses/Unauthenticated'
+      '403':
+        $ref: '../openapi.yaml#/components/responses/Unauthorized'
+
+/api/mis-eventos:
+  get:
+    summary: Listar mis eventos
+    description: Lista todos los eventos del perfil del usuario autenticado
+    tags: [Eventos]
+    security:
+      - cookieAuth: []
+    responses:
+      '200':
+        description: Lista de eventos del usuario
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yaml#/components/schemas/EventosResponse'
+      '401':
+        $ref: '../openapi.yaml#/components/responses/Unauthenticated'
+
+/api/mis-eventos/{id}:
+  get:
+    summary: Obtener mi evento por ID
+    description: Obtiene un evento solo si pertenece al perfil del usuario
+    tags: [Eventos]
+    security:
+      - cookieAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    responses:
+      '200':
+        description: Evento encontrado
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yaml#/components/schemas/EventResponse'
+      '401':
+        $ref: '../openapi.yaml#/components/responses/Unauthenticated'
+      '403':
+        $ref: '../openapi.yaml#/components/responses/Unauthorized'
+      '404':
+        $ref: '../openapi.yaml#/components/responses/NotFound'

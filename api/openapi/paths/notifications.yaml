@@ -1,0 +1,87 @@
+/api/notificaciones:
+  get:
+    summary: Listar notificaciones
+    tags: [Notificaciones]
+    security:
+      - cookieAuth: []
+    responses:
+      '200':
+        description: Lista de notificaciones
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yaml#/components/schemas/NotificationsResponse'
+      '401':
+        $ref: '../openapi.yaml#/components/responses/Unauthenticated'
+
+/api/notificaciones/{id}/read:
+  patch:
+    summary: Marcar notificación como leída
+    tags: [Notificaciones]
+    security:
+      - cookieAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    responses:
+      '200':
+        description: Notificación marcada como leída
+      '401':
+        $ref: '../openapi.yaml#/components/responses/Unauthenticated'
+
+/api/notificaciones/read-all:
+  patch:
+    summary: Marcar todas las notificaciones como leídas
+    tags: [Notificaciones]
+    security:
+      - cookieAuth: []
+    responses:
+      '200':
+        description: Notificaciones marcadas como leídas
+      '401':
+        $ref: '../openapi.yaml#/components/responses/Unauthenticated'
+
+/api/notificaciones/config:
+  get:
+    summary: Obtener configuración de notificaciones
+    tags: [Notificaciones]
+    security:
+      - cookieAuth: []
+    responses:
+      '200':
+        description: Configuración actual
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                data:
+                  $ref: '../openapi.yaml#/components/schemas/NotificationSettings'
+      '401':
+        $ref: '../openapi.yaml#/components/responses/Unauthenticated'
+
+  patch:
+    summary: Actualizar configuración de notificaciones
+    tags: [Notificaciones]
+    security:
+      - cookieAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [emailNotificationsEnabled]
+            properties:
+              emailNotificationsEnabled:
+                type: boolean
+    responses:
+      '200':
+        description: Configuración actualizada
+      '401':
+        $ref: '../openapi.yaml#/components/responses/Unauthenticated'

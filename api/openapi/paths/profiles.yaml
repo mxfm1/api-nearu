@@ -1,0 +1,45 @@
+/api/profiles/{userId}:
+  get:
+    summary: Obtener perfil por ID de usuario
+    description: Devuelve el perfil de empresa asociado al userId.
+    tags: [Profiles]
+    parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: string
+    responses:
+      '200':
+        description: Perfil encontrado
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yaml#/components/schemas/ProfileResponse'
+      '404':
+        $ref: '../openapi.yaml#/components/responses/NotFound'
+
+/api/profiles/me:
+  patch:
+    summary: Actualizar perfil propio
+    description: Actualiza o crea el perfil del usuario autenticado.
+    tags: [Profiles]
+    security:
+      - cookieAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '../openapi.yaml#/components/schemas/ProfileUpdateInput'
+    responses:
+      '200':
+        description: Perfil actualizado
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yaml#/components/schemas/ProfileResponse'
+      '400':
+        $ref: '../openapi.yaml#/components/responses/InputParseError'
+      '401':
+        $ref: '../openapi.yaml#/components/responses/Unauthenticated'

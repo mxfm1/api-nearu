@@ -11,15 +11,16 @@ import type { IGetThreadByApplicationUseCase } from '../use-cases/get-thread-by-
 export const createThreadsGetThreadController = (getThreadUseCase: IGetThreadUseCase): IThreadsGetThreadController => {
   return async (request: FastifyRequest<{ Params: { threadId: string } }>, reply: FastifyReply) => {
     try {
+      console.log('=== DEBUG GET /api/threads/:threadId request.params:', JSON.stringify(request.params));
       const { threadId } = request.params;
-      const userId = request.user.id;
+      const userId = (request as any).user?.id;
 
       console.log(`[GET /api/threads/:threadId] threadId=${threadId}, userId=${userId}`);
       const thread = await getThreadUseCase(threadId, userId);
       return reply.status(200).send(thread);
     } catch (error) {
       console.error(`[GET /api/threads/:threadId] ERROR:`, error);
-      request.log.error(error);
+      console.error('Stack:', error instanceof Error ? error.stack : undefined);
       return reply.status(500).send({
         error: 'Internal server error',
         message: error instanceof Error ? error.message : String(error),
@@ -32,8 +33,11 @@ export const createThreadsGetThreadController = (getThreadUseCase: IGetThreadUse
 export const createThreadsGetMessagesController = (getThreadMessagesUseCase: IGetThreadMessagesUseCase): IThreadsGetMessagesController => {
   return async (request: FastifyRequest<{ Params: { threadId: string } }>, reply: FastifyReply) => {
     try {
+      console.log('=== DEBUG request.params:', JSON.stringify(request.params));
+      console.log('=== DEBUG request.query:', JSON.stringify(request.query));
+      console.log('=== DEBUG request.url:', request.url);
       const { threadId } = request.params;
-      const userId = request.user.id;
+      const userId = (request as any).user?.id;
 
       console.log(`[GET /api/threads/:threadId/messages] threadId=${threadId}, userId=${userId}`);
       const messages = await getThreadMessagesUseCase(threadId, userId);
@@ -41,7 +45,7 @@ export const createThreadsGetMessagesController = (getThreadMessagesUseCase: IGe
       return reply.status(200).send(messages);
     } catch (error) {
       console.error(`[GET /api/threads/:threadId/messages] ERROR:`, error);
-      request.log.error(error);
+      console.error('Stack:', error instanceof Error ? error.stack : undefined);
       return reply.status(500).send({
         error: 'Internal server error',
         message: error instanceof Error ? error.message : String(error),

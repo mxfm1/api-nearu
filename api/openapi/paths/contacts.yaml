@@ -1,0 +1,144 @@
+/api/contactos/intenciones:
+  get:
+    summary: Listar intenciones de contacto disponibles
+    tags: [Contactos]
+    responses:
+      '200':
+        description: Lista de intenciones
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: array
+                  items:
+                    type: string
+
+/api/contactos/inbox:
+  get:
+    summary: Listar bandeja de entrada
+    description: Lista mensajes recibidos o enviados por el usuario
+    tags: [Contactos]
+    security:
+      - cookieAuth: []
+    parameters:
+      - name: tipo
+        in: query
+        required: false
+        schema:
+          type: string
+          enum: [recibidos, enviados]
+    responses:
+      '200':
+        description: Lista de mensajes
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                data:
+                  type: array
+                  items:
+                    $ref: '../openapi.yaml#/components/schemas/ContactRequestResponse'
+      '401':
+        $ref: '../openapi.yaml#/components/responses/Unauthenticated'
+
+/api/contactos/{id}:
+  get:
+    summary: Obtener detalle de contacto
+    tags: [Contactos]
+    security:
+      - cookieAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    responses:
+      '200':
+        description: Detalle del contacto
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                data:
+                  $ref: '../openapi.yaml#/components/schemas/ContactRequestResponse'
+      '401':
+        $ref: '../openapi.yaml#/components/responses/Unauthenticated'
+      '404':
+        $ref: '../openapi.yaml#/components/responses/NotFound'
+
+/api/contactos:
+  post:
+    summary: Crear solicitud de contacto
+    tags: [Contactos]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [slug, intencion]
+            properties:
+              slug:
+                type: string
+              intencion:
+                type: string
+                enum:
+                  - Solicitar una cotización
+                  - Solicitar una propuesta comercial
+                  - Consultar disponibilidad
+                  - Realizar una consulta sobre el servicio
+              mensaje:
+                type: string
+                maxLength: 2000
+              attachments:
+                type: array
+                items:
+                  type: string
+                  format: uri
+                maxItems: 6
+    responses:
+      '201':
+        description: Contacto creado
+      '400':
+        $ref: '../openapi.yaml#/components/responses/InputParseError'
+
+/api/contactos/{id}/estado:
+  patch:
+    summary: Actualizar estado de contacto
+    tags: [Contactos]
+    security:
+      - cookieAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [estado]
+            properties:
+              estado:
+                type: string
+                enum: [pendiente, en_curso, cerrada]
+    responses:
+      '200':
+        description: Estado actualizado
+      '401':
+        $ref: '../openapi.yaml#/components/responses/Unauthenticated'

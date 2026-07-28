@@ -83,6 +83,14 @@ export const auth = betterAuth({
   advanced: {
     disableOriginCheck: !config.isProd,
     disableCSRFCheck: !config.isProd,
+    ...(config.isProd ? {
+      defaultCookieAttributes: {
+        sameSite: "none",
+        secure: true,
+        partitioned: true,
+        httpOnly: true,
+      },
+    } : {}),
   },
 });
 

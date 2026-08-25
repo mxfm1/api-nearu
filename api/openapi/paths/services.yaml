@@ -24,6 +24,21 @@
         required: false
         schema:
           type: string
+      - name: priceMin
+        in: query
+        schema: { type: integer, minimum: 0 }
+      - name: priceMax
+        in: query
+        schema: { type: integer, minimum: 0 }
+      - name: modality
+        in: query
+        schema: { type: string, enum: [in_person, online, hybrid] }
+      - name: availability
+        in: query
+        schema: { type: string, enum: [immediate, not_immediate] }
+      - name: sort
+        in: query
+        schema: { type: string, enum: [relevance, newest, oldest], default: newest }
     responses:
       '200':
         description: Lista de servicios

@@ -8,8 +8,9 @@ import type { IProfileSocialLinksRepository } from '@/src/domains/profiles/repos
 import type { ITagsRepository } from '@/src/domains/profiles/repositories/tags.repository.interface';
 import type { IServiceContactsRepository } from '@/src/domains/services/repositories/service-contacts.repository.interface';
 import type { IGetProfileUseCase } from '@/src/domains/profiles/use-cases/get-profile.use-case';
+import type { IListProfilesUseCase } from '@/src/domains/profiles/use-cases/list-profiles.use-case';
 import type { IUpsertProfileUseCase } from '@/src/domains/profiles/use-cases/upsert-profile.use-case';
-import type { IGetProfileController, IUpsertProfileController } from '@/src/domains/profiles/controllers/profile.controller';
+import type { IGetProfileController, IUpsertProfileController, IListProfilesController } from '@/src/domains/profiles/controllers/profile.controller';
 import type { IStatusesRepository } from '@/src/domains/statuses/repositories/statuses.repository.interface';
 import type { IContactRequestsRepository } from '@/src/domains/contact-requests/repositories/contact-requests.repository.interface';
 import type { ICreateContactRequestUseCase } from '@/src/domains/contact-requests/use-cases/create-contact-request.use-case';
@@ -42,7 +43,18 @@ import type { ICreateNotificationUseCase } from '@/src/domains/notifications/use
 import type { IMarkNotificationReadUseCase, IMarkAllNotificationsReadUseCase } from '@/src/domains/notifications/use-cases/mark-read.use-case';
 import type { IGetNotificationSettingsUseCase } from '@/src/domains/notifications/use-cases/get-settings.use-case';
 import type { IUpdateNotificationSettingsUseCase } from '@/src/domains/notifications/use-cases/update-settings.use-case';
-import type { IListNotificationsController, IMarkNotificationReadController, IMarkAllNotificationsReadController, IGetNotificationSettingsController, IUpdateNotificationSettingsController } from '@/src/domains/notifications/controllers/notification.controller';
+import type { ICountUnreadNotificationsUseCase } from '@/src/domains/notifications/use-cases/count-unread.use-case';
+import type { IListNotificationsController, IMarkNotificationReadController, IMarkAllNotificationsReadController, IGetNotificationSettingsController, IUpdateNotificationSettingsController, ICountUnreadNotificationsController } from '@/src/domains/notifications/controllers/notification.controller';
+import type { IRequestsRepository } from '@/src/domains/requests/repositories/requests.repository.interface';
+import type { ICreateRequestUseCase } from '@/src/domains/requests/use-cases/create-request.use-case';
+import type { IListRequestsUseCase } from '@/src/domains/requests/use-cases/list-requests.use-case';
+import type { IListMyRequestsUseCase } from '@/src/domains/requests/use-cases/list-my-requests.use-case';
+import type { IUpdateRequestStatusUseCase } from '@/src/domains/requests/use-cases/update-request-status.use-case';
+import type { IGetProfileVerificationChecklistUseCase } from '@/src/domains/requests/use-cases/get-profile-verification-checklist.use-case';
+import type { ICreateRequestController, IListRequestsController, IListMyRequestsController, IUpdateRequestStatusController, IGetProfileVerificationChecklistController } from '@/src/domains/requests/controllers/request.controller';
+import type { IRecommendationsRepository } from '@/src/domains/recommendations/repositories/recommendations.repository.interface';
+import type { IGetRecommendationsUseCase } from '@/src/domains/recommendations/use-cases/get-recommendations.use-case';
+import type { IGetRecommendationsController } from '@/src/domains/recommendations/controllers/recommendation.controller';
 import type { IApplicationsRepository } from '@/src/domains/applications/repositories/applications.repository.interface';
 import type { IScoringRulesRepository } from '@/src/domains/applications/repositories/scoring-rules.repository.interface';
 import type { ICreateApplicationUseCase } from '@/src/domains/applications/use-cases/create-application.use-case';
@@ -78,9 +90,11 @@ export const DI_SYMBOLS = {
   ITagsRepository: Symbol.for('ITagsRepository'),
   IServiceContactsRepository: Symbol.for('IServiceContactsRepository'),
   IGetProfileUseCase: Symbol.for('IGetProfileUseCase'),
+  IListProfilesUseCase: Symbol.for('IListProfilesUseCase'),
   IUpsertProfileUseCase: Symbol.for('IUpsertProfileUseCase'),
   IGetProfileController: Symbol.for('IGetProfileController'),
   IUpsertProfileController: Symbol.for('IUpsertProfileController'),
+  IListProfilesController: Symbol.for('IListProfilesController'),
   IStatusesRepository: Symbol.for('IStatusesRepository'),
   IContactRequestsRepository: Symbol.for('IContactRequestsRepository'),
   ICreateContactRequestUseCase: Symbol.for('ICreateContactRequestUseCase'),
@@ -140,6 +154,24 @@ export const DI_SYMBOLS = {
   IMarkAllNotificationsReadController: Symbol.for('IMarkAllNotificationsReadController'),
   IGetNotificationSettingsController: Symbol.for('IGetNotificationSettingsController'),
   IUpdateNotificationSettingsController: Symbol.for('IUpdateNotificationSettingsController'),
+  ICountUnreadNotificationsUseCase: Symbol.for('ICountUnreadNotificationsUseCase'),
+  ICountUnreadNotificationsController: Symbol.for('ICountUnreadNotificationsController'),
+  // Requests
+  IRequestsRepository: Symbol.for('IRequestsRepository'),
+  ICreateRequestUseCase: Symbol.for('ICreateRequestUseCase'),
+  IListRequestsUseCase: Symbol.for('IListRequestsUseCase'),
+  IListMyRequestsUseCase: Symbol.for('IListMyRequestsUseCase'),
+  IUpdateRequestStatusUseCase: Symbol.for('IUpdateRequestStatusUseCase'),
+  IGetProfileVerificationChecklistUseCase: Symbol.for('IGetProfileVerificationChecklistUseCase'),
+  ICreateRequestController: Symbol.for('ICreateRequestController'),
+  IListRequestsController: Symbol.for('IListRequestsController'),
+  IListMyRequestsController: Symbol.for('IListMyRequestsController'),
+  IUpdateRequestStatusController: Symbol.for('IUpdateRequestStatusController'),
+  IGetProfileVerificationChecklistController: Symbol.for('IGetProfileVerificationChecklistController'),
+  // Recommendations
+  IRecommendationsRepository: Symbol.for('IRecommendationsRepository'),
+  IGetRecommendationsUseCase: Symbol.for('IGetRecommendationsUseCase'),
+  IGetRecommendationsController: Symbol.for('IGetRecommendationsController'),
   // Applications
   IApplicationsRepository: Symbol.for('IApplicationsRepository'),
   IScoringRulesRepository: Symbol.for('IScoringRulesRepository'),
@@ -190,9 +222,11 @@ export interface DI_RETURN_TYPES {
   ITagsRepository: ITagsRepository;
   IServiceContactsRepository: IServiceContactsRepository;
   IGetProfileUseCase: IGetProfileUseCase;
+  IListProfilesUseCase: IListProfilesUseCase;
   IUpsertProfileUseCase: IUpsertProfileUseCase;
   IGetProfileController: IGetProfileController;
   IUpsertProfileController: IUpsertProfileController;
+  IListProfilesController: IListProfilesController;
   IStatusesRepository: IStatusesRepository;
   IContactRequestsRepository: IContactRequestsRepository;
   ICreateContactRequestUseCase: ICreateContactRequestUseCase;
@@ -252,6 +286,24 @@ export interface DI_RETURN_TYPES {
   IMarkAllNotificationsReadController: IMarkAllNotificationsReadController;
   IGetNotificationSettingsController: IGetNotificationSettingsController;
   IUpdateNotificationSettingsController: IUpdateNotificationSettingsController;
+  ICountUnreadNotificationsUseCase: ICountUnreadNotificationsUseCase;
+  ICountUnreadNotificationsController: ICountUnreadNotificationsController;
+  // Requests
+  IRequestsRepository: IRequestsRepository;
+  ICreateRequestUseCase: ICreateRequestUseCase;
+  IListRequestsUseCase: IListRequestsUseCase;
+  IListMyRequestsUseCase: IListMyRequestsUseCase;
+  IUpdateRequestStatusUseCase: IUpdateRequestStatusUseCase;
+  IGetProfileVerificationChecklistUseCase: IGetProfileVerificationChecklistUseCase;
+  ICreateRequestController: ICreateRequestController;
+  IListRequestsController: IListRequestsController;
+  IListMyRequestsController: IListMyRequestsController;
+  IUpdateRequestStatusController: IUpdateRequestStatusController;
+  IGetProfileVerificationChecklistController: IGetProfileVerificationChecklistController;
+  // Recommendations
+  IRecommendationsRepository: IRecommendationsRepository;
+  IGetRecommendationsUseCase: IGetRecommendationsUseCase;
+  IGetRecommendationsController: IGetRecommendationsController;
   // Applications
   IApplicationsRepository: IApplicationsRepository;
   IScoringRulesRepository: IScoringRulesRepository;

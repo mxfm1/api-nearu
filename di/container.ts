@@ -11,8 +11,9 @@ import { ProfileSocialLinksRepository } from '@/src/domains/profiles/repositorie
 import { TagsRepository } from '@/src/domains/profiles/repositories/tags.repository';
 import { StatusesRepository } from '@/src/domains/statuses/repositories/statuses.repository';
 import { getProfileUseCase } from '@/src/domains/profiles/use-cases/get-profile.use-case';
+import { listProfilesUseCase } from '@/src/domains/profiles/use-cases/list-profiles.use-case';
 import { upsertProfileUseCase } from '@/src/domains/profiles/use-cases/upsert-profile.use-case';
-import { getProfileController, upsertProfileController } from '@/src/domains/profiles/controllers/profile.controller';
+import { getProfileController, upsertProfileController, listProfilesController } from '@/src/domains/profiles/controllers/profile.controller';
 import { ContactRequestsRepository } from '@/src/domains/contact-requests/repositories/contact-requests.repository';
 import { createContactRequestUseCase } from '@/src/domains/contact-requests/use-cases/create-contact-request.use-case';
 import { getInboxUseCase } from '@/src/domains/contact-requests/use-cases/get-inbox.use-case';
@@ -84,7 +85,25 @@ import {
   markAllNotificationsReadController,
   getNotificationSettingsController,
   updateNotificationSettingsController,
+  countUnreadNotificationsController,
 } from '@/src/domains/notifications/controllers/notification.controller';
+import { RequestsRepository } from '@/src/domains/requests/repositories/requests.repository';
+import { createRequestUseCase } from '@/src/domains/requests/use-cases/create-request.use-case';
+import { listRequestsUseCase } from '@/src/domains/requests/use-cases/list-requests.use-case';
+import { listMyRequestsUseCase } from '@/src/domains/requests/use-cases/list-my-requests.use-case';
+import { updateRequestStatusUseCase } from '@/src/domains/requests/use-cases/update-request-status.use-case';
+import { getProfileVerificationChecklistUseCase } from '@/src/domains/requests/use-cases/get-profile-verification-checklist.use-case';
+import {
+  createRequestController,
+  listRequestsController,
+  listMyRequestsController,
+  updateRequestStatusController,
+  getProfileVerificationChecklistController,
+} from '@/src/domains/requests/controllers/request.controller';
+import { RecommendationsRepository } from '@/src/domains/recommendations/repositories/recommendations.repository';
+import { getRecommendationsUseCase } from '@/src/domains/recommendations/use-cases/get-recommendations.use-case';
+import { getRecommendationsController } from '@/src/domains/recommendations/controllers/recommendation.controller';
+import { countUnreadNotificationsUseCase } from '@/src/domains/notifications/use-cases/count-unread.use-case';
 import { ApplicationsRepository } from '@/src/domains/applications/repositories/applications.repository';
 import { ScoringRulesRepository } from '@/src/domains/applications/repositories/scoring-rules.repository';
 import { ThreadsRepository } from '@/src/domains/threads/repositories/threads.repository';
@@ -128,7 +147,9 @@ container.bind(DI_SYMBOLS.IServicesRepository).toClass(ServicesRepository);
 container.bind(DI_SYMBOLS.IServicePortfolioRepository).toClass(ServicePortfolioRepository);
 container.bind(DI_SYMBOLS.IEventsRepository).toClass(EventsRepository);
 container.bind(DI_SYMBOLS.IMessagesRepository).toClass(MessagesRepository);
-container.bind(DI_SYMBOLS.INotificationsRepository).toClass(NotificationsRepository);
+  container.bind(DI_SYMBOLS.INotificationsRepository).toClass(NotificationsRepository);
+  container.bind(DI_SYMBOLS.IRequestsRepository).toClass(RequestsRepository);
+  container.bind(DI_SYMBOLS.IRecommendationsRepository).toClass(RecommendationsRepository);
 container.bind(DI_SYMBOLS.IApplicationsRepository).toClass(ApplicationsRepository);
 container.bind(DI_SYMBOLS.IScoringRulesRepository).toClass(ScoringRulesRepository);
 container.bind(DI_SYMBOLS.IThreadsRepository).toClass(ThreadsRepository);
@@ -195,6 +216,9 @@ container.bind(DI_SYMBOLS.IDeleteUserUseCase).toHigherOrderFunction(deleteUserUs
   DI_SYMBOLS.IUsersRepository,
 ]);
 container.bind(DI_SYMBOLS.IGetProfileUseCase).toHigherOrderFunction(getProfileUseCase, [
+  DI_SYMBOLS.IProfilesRepository,
+]);
+container.bind(DI_SYMBOLS.IListProfilesUseCase).toHigherOrderFunction(listProfilesUseCase, [
   DI_SYMBOLS.IProfilesRepository,
 ]);
 container.bind(DI_SYMBOLS.IUpsertProfileUseCase).toHigherOrderFunction(upsertProfileUseCase, [
@@ -289,6 +313,37 @@ container.bind(DI_SYMBOLS.IGetNotificationSettingsUseCase).toHigherOrderFunction
 container.bind(DI_SYMBOLS.IUpdateNotificationSettingsUseCase).toHigherOrderFunction(updateNotificationSettingsUseCase, [
   DI_SYMBOLS.INotificationsRepository,
 ]);
+container.bind(DI_SYMBOLS.ICountUnreadNotificationsUseCase).toHigherOrderFunction(countUnreadNotificationsUseCase, [
+  DI_SYMBOLS.INotificationsRepository,
+]);
+// Requests use cases
+container.bind(DI_SYMBOLS.ICreateRequestUseCase).toHigherOrderFunction(createRequestUseCase, [
+  DI_SYMBOLS.IRequestsRepository,
+  DI_SYMBOLS.IProfilesRepository,
+  DI_SYMBOLS.IUsersRepository,
+  DI_SYMBOLS.ICreateNotificationUseCase,
+]);
+container.bind(DI_SYMBOLS.IListRequestsUseCase).toHigherOrderFunction(listRequestsUseCase, [
+  DI_SYMBOLS.IRequestsRepository,
+]);
+container.bind(DI_SYMBOLS.IListMyRequestsUseCase).toHigherOrderFunction(listMyRequestsUseCase, [
+  DI_SYMBOLS.IRequestsRepository,
+  DI_SYMBOLS.IProfilesRepository,
+]);
+container.bind(DI_SYMBOLS.IUpdateRequestStatusUseCase).toHigherOrderFunction(updateRequestStatusUseCase, [
+  DI_SYMBOLS.IRequestsRepository,
+  DI_SYMBOLS.IProfilesRepository,
+  DI_SYMBOLS.IUsersRepository,
+  DI_SYMBOLS.ICreateNotificationUseCase,
+]);
+container.bind(DI_SYMBOLS.IGetProfileVerificationChecklistUseCase).toHigherOrderFunction(getProfileVerificationChecklistUseCase, [
+  DI_SYMBOLS.IProfilesRepository,
+  DI_SYMBOLS.IUsersRepository,
+]);
+container.bind(DI_SYMBOLS.IGetRecommendationsUseCase).toHigherOrderFunction(getRecommendationsUseCase, [
+  DI_SYMBOLS.IProfilesRepository,
+  DI_SYMBOLS.IRecommendationsRepository,
+]);
 // Applications use cases
 container.bind(DI_SYMBOLS.ICreateApplicationUseCase).toHigherOrderFunction(createApplicationUseCase, [
   DI_SYMBOLS.IApplicationsRepository,
@@ -358,6 +413,9 @@ container.bind(DI_SYMBOLS.IGetProfileController).toHigherOrderFunction(getProfil
 ]);
 container.bind(DI_SYMBOLS.IUpsertProfileController).toHigherOrderFunction(upsertProfileController, [
   DI_SYMBOLS.IUpsertProfileUseCase,
+]);
+container.bind(DI_SYMBOLS.IListProfilesController).toHigherOrderFunction(listProfilesController, [
+  DI_SYMBOLS.IListProfilesUseCase,
 ]);
 container.bind(DI_SYMBOLS.ICreateContactRequestController).toHigherOrderFunction(createContactRequestController, [
   DI_SYMBOLS.ICreateContactRequestUseCase,
@@ -440,6 +498,27 @@ container.bind(DI_SYMBOLS.IGetNotificationSettingsController).toHigherOrderFunct
 ]);
 container.bind(DI_SYMBOLS.IUpdateNotificationSettingsController).toHigherOrderFunction(updateNotificationSettingsController, [
   DI_SYMBOLS.IUpdateNotificationSettingsUseCase,
+]);
+container.bind(DI_SYMBOLS.ICountUnreadNotificationsController).toHigherOrderFunction(countUnreadNotificationsController, [
+  DI_SYMBOLS.ICountUnreadNotificationsUseCase,
+]);
+container.bind(DI_SYMBOLS.ICreateRequestController).toHigherOrderFunction(createRequestController, [
+  DI_SYMBOLS.ICreateRequestUseCase,
+]);
+container.bind(DI_SYMBOLS.IListRequestsController).toHigherOrderFunction(listRequestsController, [
+  DI_SYMBOLS.IListRequestsUseCase,
+]);
+container.bind(DI_SYMBOLS.IListMyRequestsController).toHigherOrderFunction(listMyRequestsController, [
+  DI_SYMBOLS.IListMyRequestsUseCase,
+]);
+container.bind(DI_SYMBOLS.IUpdateRequestStatusController).toHigherOrderFunction(updateRequestStatusController, [
+  DI_SYMBOLS.IUpdateRequestStatusUseCase,
+]);
+container.bind(DI_SYMBOLS.IGetProfileVerificationChecklistController).toHigherOrderFunction(getProfileVerificationChecklistController, [
+  DI_SYMBOLS.IGetProfileVerificationChecklistUseCase,
+]);
+container.bind(DI_SYMBOLS.IGetRecommendationsController).toHigherOrderFunction(getRecommendationsController, [
+  DI_SYMBOLS.IGetRecommendationsUseCase,
 ]);
 // Applications controllers
 container.bind(DI_SYMBOLS.ICreateApplicationController).toHigherOrderFunction(createApplicationController, [

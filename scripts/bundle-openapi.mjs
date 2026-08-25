@@ -99,6 +99,8 @@ function main() {
     'schemas/contact.yaml',
     'schemas/message.yaml',
     'schemas/notification.yaml',
+    'schemas/request.yaml',
+    'schemas/recommendation.yaml',
     'schemas/thread.yaml',
   ];
 
@@ -133,6 +135,8 @@ function main() {
     'paths/contacts.yaml',
     'paths/messages.yaml',
     'paths/notifications.yaml',
+    'paths/requests.yaml',
+    'paths/recommendations.yaml',
     'paths/threads.yaml',
   ];
 

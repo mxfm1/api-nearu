@@ -1,7 +1,7 @@
 /**
  * Auto-generated API types for NearU
  * API Version: 0.2.0
- * Generated: 2026-07-21T21:52:42.977Z
+ * Generated: 2026-08-25T14:24:22.425Z
  *
  * DO NOT EDIT MANUALLY
  * Run: npm run generate:types
@@ -339,6 +339,8 @@ export interface paths {
                                     /** Format: email */
                                     email?: string;
                                     emailVerified?: boolean;
+                                    /** @enum {string} */
+                                    role?: "user" | "admin";
                                     image?: string | null;
                                     /** Format: date-time */
                                     createdAt?: string;
@@ -572,6 +574,8 @@ export interface paths {
                                 /** Format: email */
                                 email?: string;
                                 emailVerified?: boolean;
+                                /** @enum {string} */
+                                role?: "user" | "admin";
                                 image?: string | null;
                                 /** Format: date-time */
                                 createdAt?: string;
@@ -727,6 +731,8 @@ export interface paths {
                                 /** Format: email */
                                 email?: string;
                                 emailVerified?: boolean;
+                                /** @enum {string} */
+                                role?: "user" | "admin";
                                 image?: string | null;
                                 /** Format: date-time */
                                 createdAt?: string;
@@ -814,6 +820,85 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/profiles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Buscar perfiles de empresas */
+        get: {
+            parameters: {
+                query?: {
+                    search?: string;
+                    regionId?: string;
+                    categoryId?: string;
+                    verified?: boolean;
+                    employeesMin?: number;
+                    employeesMax?: number;
+                    sort?: "relevance" | "newest" | "oldest";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Perfiles encontrados */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            success?: boolean;
+                            data?: {
+                                id?: string;
+                                userId?: string;
+                                /** Format: uri */
+                                bannerUrl?: string | null;
+                                /** Format: uri */
+                                logoUrl?: string | null;
+                                name?: string | null;
+                                categoryId?: string | null;
+                                industry?: string;
+                                description?: string | null;
+                                tags?: string[];
+                                location?: string | null;
+                                founded?: string | null;
+                                employees?: number | null;
+                                isVerified?: boolean;
+                                /** Format: uri */
+                                website?: string | null;
+                                whatsapp?: string | null;
+                                socialLinks?: {
+                                    id?: string;
+                                    platform?: string;
+                                    /** Format: uri */
+                                    url?: string;
+                                    orden?: number;
+                                }[];
+                                /** Format: date-time */
+                                createdAt?: string;
+                                /** Format: date-time */
+                                updatedAt?: string;
+                                isComplete?: boolean;
+                                missingFields?: string[];
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/profiles/{userId}": {
         parameters: {
             query?: never;
@@ -853,12 +938,14 @@ export interface paths {
                                 /** Format: uri */
                                 logoUrl?: string | null;
                                 name?: string | null;
+                                categoryId?: string | null;
                                 industry?: string;
                                 description?: string | null;
                                 tags?: string[];
                                 location?: string | null;
                                 founded?: string | null;
-                                employees?: string | null;
+                                employees?: number | null;
+                                isVerified?: boolean;
                                 /** Format: uri */
                                 website?: string | null;
                                 whatsapp?: string | null;
@@ -938,7 +1025,8 @@ export interface paths {
                         tags?: string[];
                         location?: string;
                         founded?: string;
-                        employees?: string;
+                        employees?: number | null;
+                        categoryId?: string | null;
                         website?: string;
                         whatsapp?: string;
                         /** Format: uri */
@@ -973,12 +1061,14 @@ export interface paths {
                                 /** Format: uri */
                                 logoUrl?: string | null;
                                 name?: string | null;
+                                categoryId?: string | null;
                                 industry?: string;
                                 description?: string | null;
                                 tags?: string[];
                                 location?: string | null;
                                 founded?: string | null;
-                                employees?: string | null;
+                                employees?: number | null;
+                                isVerified?: boolean;
                                 /** Format: uri */
                                 website?: string | null;
                                 whatsapp?: string | null;
@@ -1250,6 +1340,11 @@ export interface paths {
                     categoryId?: string;
                     locationId?: string;
                     search?: string;
+                    priceMin?: number;
+                    priceMax?: number;
+                    modality?: "in_person" | "online" | "hybrid";
+                    availability?: "immediate" | "not_immediate";
+                    sort?: "relevance" | "newest" | "oldest";
                 };
                 header?: never;
                 path?: never;
@@ -1275,7 +1370,11 @@ export interface paths {
                                 yearsExperience?: number | null;
                                 priceMin?: number | null;
                                 priceMax?: number | null;
-                                availability?: string | null;
+                                /** @enum {string|null} */
+                                availability?: "immediate" | "not_immediate" | null;
+                                availabilityDetails?: string | null;
+                                /** @enum {string|null} */
+                                modality?: "in_person" | "online" | "hybrid" | null;
                                 contacts?: {
                                     id?: string;
                                     type?: string;
@@ -1342,14 +1441,17 @@ export interface paths {
             requestBody: {
                 content: {
                     "application/json": {
-                        slug?: string;
                         title: string;
                         marca?: string;
                         description?: string;
                         yearsExperience?: number;
                         priceMin?: number;
                         priceMax?: number;
-                        availability?: string;
+                        /** @enum {string} */
+                        availability?: "immediate" | "not_immediate";
+                        availabilityDetails?: string;
+                        /** @enum {string} */
+                        modality?: "in_person" | "online" | "hybrid";
                         /** Format: uri */
                         bannerUrl?: string;
                         /** Format: uri */
@@ -1395,7 +1497,11 @@ export interface paths {
                                 yearsExperience?: number | null;
                                 priceMin?: number | null;
                                 priceMax?: number | null;
-                                availability?: string | null;
+                                /** @enum {string|null} */
+                                availability?: "immediate" | "not_immediate" | null;
+                                availabilityDetails?: string | null;
+                                /** @enum {string|null} */
+                                modality?: "in_person" | "online" | "hybrid" | null;
                                 contacts?: {
                                     id?: string;
                                     type?: string;
@@ -1540,7 +1646,11 @@ export interface paths {
                                 yearsExperience?: number | null;
                                 priceMin?: number | null;
                                 priceMax?: number | null;
-                                availability?: string | null;
+                                /** @enum {string|null} */
+                                availability?: "immediate" | "not_immediate" | null;
+                                availabilityDetails?: string | null;
+                                /** @enum {string|null} */
+                                modality?: "in_person" | "online" | "hybrid" | null;
                                 contacts?: {
                                     id?: string;
                                     type?: string;
@@ -1698,10 +1808,14 @@ export interface paths {
                         title?: string;
                         marca?: string;
                         description?: string;
+                        /** @enum {string} */
+                        availability?: "immediate" | "not_immediate";
+                        availabilityDetails?: string;
+                        /** @enum {string} */
+                        modality?: "in_person" | "online" | "hybrid";
                         yearsExperience?: number;
                         priceMin?: number;
                         priceMax?: number;
-                        availability?: string;
                         /** Format: uri */
                         bannerUrl?: string;
                         /** Format: uri */
@@ -1744,7 +1858,11 @@ export interface paths {
                                 yearsExperience?: number | null;
                                 priceMin?: number | null;
                                 priceMax?: number | null;
-                                availability?: string | null;
+                                /** @enum {string|null} */
+                                availability?: "immediate" | "not_immediate" | null;
+                                availabilityDetails?: string | null;
+                                /** @enum {string|null} */
+                                modality?: "in_person" | "online" | "hybrid" | null;
                                 contacts?: {
                                     id?: string;
                                     type?: string;
@@ -1868,7 +1986,11 @@ export interface paths {
                                 yearsExperience?: number | null;
                                 priceMin?: number | null;
                                 priceMax?: number | null;
-                                availability?: string | null;
+                                /** @enum {string|null} */
+                                availability?: "immediate" | "not_immediate" | null;
+                                availabilityDetails?: string | null;
+                                /** @enum {string|null} */
+                                modality?: "in_person" | "online" | "hybrid" | null;
                                 contacts?: {
                                     id?: string;
                                     type?: string;
@@ -2090,6 +2212,9 @@ export interface paths {
                     locationId?: string;
                     search?: string;
                     upcoming?: boolean;
+                    from?: string;
+                    to?: string;
+                    sort?: "relevance" | "newest" | "oldest" | "start_date";
                 };
                 header?: never;
                 path?: never;
@@ -4208,6 +4333,7 @@ export interface paths {
                                 title?: string;
                                 message?: string;
                                 data?: Record<string, never>;
+                                actionUrl?: string | null;
                                 /** Format: date-time */
                                 readAt?: string | null;
                                 /** Format: date-time */
@@ -4344,6 +4470,63 @@ export interface paths {
         };
         trace?: never;
     };
+    "/api/notificaciones/unread-count": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Obtener cantidad de notificaciones no leídas */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Contador de notificaciones no leídas */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            success?: boolean;
+                            data?: {
+                                count: number;
+                            };
+                        };
+                    };
+                };
+                /** @description No autenticado */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @example false */
+                            success?: boolean;
+                            error?: {
+                                code?: string;
+                                message?: string;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/notificaciones/config": {
         parameters: {
             query?: never;
@@ -4439,6 +4622,570 @@ export interface paths {
                 };
             };
         };
+        trace?: never;
+    };
+    "/api/requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Listar solicitudes del perfil actual */
+        get: {
+            parameters: {
+                query?: {
+                    status?: "pending" | "in_review" | "approved" | "rejected" | "resolved" | "cancelled";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Solicitudes del perfil */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            success?: boolean;
+                            data?: {
+                                id: string;
+                                profileId: string;
+                                /** @enum {string} */
+                                type: "profile_verification" | "profile_report" | "publication_report" | "withdrawal" | "general_question" | "feedback";
+                                /** @enum {string} */
+                                status: "pending" | "in_review" | "approved" | "rejected" | "resolved" | "cancelled";
+                                title: string;
+                                description?: string | null;
+                                metadata?: {
+                                    [key: string]: unknown;
+                                } | null;
+                                targetEntityType?: string | null;
+                                targetEntityId?: string | null;
+                                reviewerUserId?: string | null;
+                                reviewerComment?: string | null;
+                                /** Format: date-time */
+                                createdAt: string;
+                                /** Format: date-time */
+                                updatedAt: string;
+                                /** Format: date-time */
+                                reviewedAt?: string | null;
+                            }[];
+                        };
+                    };
+                };
+                /** @description No autenticado */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @example false */
+                            success?: boolean;
+                            error?: {
+                                code?: string;
+                                message?: string;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Crear una solicitud asociada al perfil actual */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        type: "profile_verification" | "profile_report" | "publication_report" | "withdrawal" | "general_question" | "feedback";
+                        title: string;
+                        description?: string | null;
+                        metadata?: {
+                            [key: string]: unknown;
+                        } | null;
+                        targetEntityType?: string | null;
+                        targetEntityId?: string | null;
+                    };
+                };
+            };
+            responses: {
+                /** @description Solicitud creada */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            success?: boolean;
+                            data?: {
+                                id: string;
+                                profileId: string;
+                                /** @enum {string} */
+                                type: "profile_verification" | "profile_report" | "publication_report" | "withdrawal" | "general_question" | "feedback";
+                                /** @enum {string} */
+                                status: "pending" | "in_review" | "approved" | "rejected" | "resolved" | "cancelled";
+                                title: string;
+                                description?: string | null;
+                                metadata?: {
+                                    [key: string]: unknown;
+                                } | null;
+                                targetEntityType?: string | null;
+                                targetEntityId?: string | null;
+                                reviewerUserId?: string | null;
+                                reviewerComment?: string | null;
+                                /** Format: date-time */
+                                createdAt: string;
+                                /** Format: date-time */
+                                updatedAt: string;
+                                /** Format: date-time */
+                                reviewedAt?: string | null;
+                            };
+                        };
+                    };
+                };
+                /** @description Requisitos de verificación de perfil no cumplidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @example false */
+                            success?: boolean;
+                            /** @enum {string} */
+                            errorCode?: "PROFILE_VERIFICATION_REQUIREMENTS_NOT_MET";
+                            details?: {
+                                checklist?: {
+                                    eligible: boolean;
+                                    checks: {
+                                        /** @enum {string} */
+                                        key: "HAS_PROFILE" | "HAS_NAME" | "HAS_DESCRIPTION" | "HAS_REGION" | "HAS_CATEGORY" | "HAS_LOGO" | "HAS_WEBSITE" | "HAS_WHATSAPP" | "HAS_SOCIAL_LINK" | "ACCOUNT_AGE";
+                                        label: string;
+                                        description: string;
+                                        required: boolean;
+                                        passed: boolean;
+                                        message: string;
+                                    }[];
+                                };
+                            };
+                        };
+                    };
+                };
+                /** @description No autenticado */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @example false */
+                            success?: boolean;
+                            error?: {
+                                code?: string;
+                                message?: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Conflicto */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @example false */
+                            success?: boolean;
+                            error?: {
+                                code?: string;
+                                message?: string;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/requests/profile-verification/checklist": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Obtener checklist de verificación de perfil
+         * @description Evalúa si el perfil del usuario autenticado cumple los requisitos obligatorios para solicitar verificación.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Checklist de verificación del perfil */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            success?: boolean;
+                            data?: {
+                                eligible: boolean;
+                                checks: {
+                                    /** @enum {string} */
+                                    key: "HAS_PROFILE" | "HAS_NAME" | "HAS_DESCRIPTION" | "HAS_REGION" | "HAS_CATEGORY" | "HAS_LOGO" | "HAS_WEBSITE" | "HAS_WHATSAPP" | "HAS_SOCIAL_LINK" | "ACCOUNT_AGE";
+                                    label: string;
+                                    description: string;
+                                    required: boolean;
+                                    passed: boolean;
+                                    message: string;
+                                }[];
+                            };
+                        };
+                    };
+                };
+                /** @description No autenticado */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @example false */
+                            success?: boolean;
+                            error?: {
+                                code?: string;
+                                message?: string;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Listar solicitudes para revisión administrativa */
+        get: {
+            parameters: {
+                query?: {
+                    status?: "pending" | "in_review" | "approved" | "rejected" | "resolved" | "cancelled";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Solicitudes */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            success?: boolean;
+                            data?: {
+                                id: string;
+                                profileId: string;
+                                /** @enum {string} */
+                                type: "profile_verification" | "profile_report" | "publication_report" | "withdrawal" | "general_question" | "feedback";
+                                /** @enum {string} */
+                                status: "pending" | "in_review" | "approved" | "rejected" | "resolved" | "cancelled";
+                                title: string;
+                                description?: string | null;
+                                metadata?: {
+                                    [key: string]: unknown;
+                                } | null;
+                                targetEntityType?: string | null;
+                                targetEntityId?: string | null;
+                                reviewerUserId?: string | null;
+                                reviewerComment?: string | null;
+                                /** Format: date-time */
+                                createdAt: string;
+                                /** Format: date-time */
+                                updatedAt: string;
+                                /** Format: date-time */
+                                reviewedAt?: string | null;
+                            }[];
+                        };
+                    };
+                };
+                /** @description No autenticado */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @example false */
+                            success?: boolean;
+                            error?: {
+                                code?: string;
+                                message?: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Sin permisos */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @example false */
+                            success?: boolean;
+                            error?: {
+                                code?: string;
+                                message?: string;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/requests/{id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Cambiar el estado de una solicitud */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        status: "pending" | "in_review" | "approved" | "rejected" | "resolved" | "cancelled";
+                        comment?: string | null;
+                    };
+                };
+            };
+            responses: {
+                /** @description Estado actualizado */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            success?: boolean;
+                            data?: {
+                                id: string;
+                                profileId: string;
+                                /** @enum {string} */
+                                type: "profile_verification" | "profile_report" | "publication_report" | "withdrawal" | "general_question" | "feedback";
+                                /** @enum {string} */
+                                status: "pending" | "in_review" | "approved" | "rejected" | "resolved" | "cancelled";
+                                title: string;
+                                description?: string | null;
+                                metadata?: {
+                                    [key: string]: unknown;
+                                } | null;
+                                targetEntityType?: string | null;
+                                targetEntityId?: string | null;
+                                reviewerUserId?: string | null;
+                                reviewerComment?: string | null;
+                                /** Format: date-time */
+                                createdAt: string;
+                                /** Format: date-time */
+                                updatedAt: string;
+                                /** Format: date-time */
+                                reviewedAt?: string | null;
+                            };
+                        };
+                    };
+                };
+                /** @description No autenticado */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @example false */
+                            success?: boolean;
+                            error?: {
+                                code?: string;
+                                message?: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Sin permisos */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @example false */
+                            success?: boolean;
+                            error?: {
+                                code?: string;
+                                message?: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Recurso no encontrado */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @example false */
+                            success?: boolean;
+                            error?: {
+                                code?: string;
+                                message?: string;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/recommendations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Obtener recomendaciones por región y categoría */
+        get: {
+            parameters: {
+                query?: {
+                    limit?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Recomendaciones de perfiles, servicios y eventos */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            success?: boolean;
+                            data?: {
+                                profiles?: {
+                                    [key: string]: unknown;
+                                }[];
+                                services?: {
+                                    [key: string]: unknown;
+                                }[];
+                                events?: {
+                                    [key: string]: unknown;
+                                }[];
+                            };
+                        };
+                    };
+                };
+                /** @description No autenticado */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @example false */
+                            success?: boolean;
+                            error?: {
+                                code?: string;
+                                message?: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Recurso no encontrado */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @example false */
+                            success?: boolean;
+                            error?: {
+                                code?: string;
+                                message?: string;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/threads": {
@@ -4825,6 +5572,8 @@ export interface components {
             /** Format: email */
             email?: string;
             emailVerified?: boolean;
+            /** @enum {string} */
+            role?: "user" | "admin";
             image?: string | null;
             /** Format: date-time */
             createdAt?: string;
@@ -4840,6 +5589,8 @@ export interface components {
                 /** Format: email */
                 email?: string;
                 emailVerified?: boolean;
+                /** @enum {string} */
+                role?: "user" | "admin";
                 image?: string | null;
                 /** Format: date-time */
                 createdAt?: string;
@@ -4857,6 +5608,8 @@ export interface components {
                     /** Format: email */
                     email?: string;
                     emailVerified?: boolean;
+                    /** @enum {string} */
+                    role?: "user" | "admin";
                     image?: string | null;
                     /** Format: date-time */
                     createdAt?: string;
@@ -4878,12 +5631,14 @@ export interface components {
             /** Format: uri */
             logoUrl?: string | null;
             name?: string | null;
+            categoryId?: string | null;
             industry?: string;
             description?: string | null;
             tags?: string[];
             location?: string | null;
             founded?: string | null;
-            employees?: string | null;
+            employees?: number | null;
+            isVerified?: boolean;
             /** Format: uri */
             website?: string | null;
             whatsapp?: string | null;
@@ -4919,12 +5674,14 @@ export interface components {
                 /** Format: uri */
                 logoUrl?: string | null;
                 name?: string | null;
+                categoryId?: string | null;
                 industry?: string;
                 description?: string | null;
                 tags?: string[];
                 location?: string | null;
                 founded?: string | null;
-                employees?: string | null;
+                employees?: number | null;
+                isVerified?: boolean;
                 /** Format: uri */
                 website?: string | null;
                 whatsapp?: string | null;
@@ -4943,6 +5700,42 @@ export interface components {
                 missingFields?: string[];
             };
         };
+        ProfilesResponse: {
+            success?: boolean;
+            data?: {
+                id?: string;
+                userId?: string;
+                /** Format: uri */
+                bannerUrl?: string | null;
+                /** Format: uri */
+                logoUrl?: string | null;
+                name?: string | null;
+                categoryId?: string | null;
+                industry?: string;
+                description?: string | null;
+                tags?: string[];
+                location?: string | null;
+                founded?: string | null;
+                employees?: number | null;
+                isVerified?: boolean;
+                /** Format: uri */
+                website?: string | null;
+                whatsapp?: string | null;
+                socialLinks?: {
+                    id?: string;
+                    platform?: string;
+                    /** Format: uri */
+                    url?: string;
+                    orden?: number;
+                }[];
+                /** Format: date-time */
+                createdAt?: string;
+                /** Format: date-time */
+                updatedAt?: string;
+                isComplete?: boolean;
+                missingFields?: string[];
+            }[];
+        };
         ProfileUpdateInput: {
             name?: string;
             industry?: string;
@@ -4950,7 +5743,8 @@ export interface components {
             tags?: string[];
             location?: string;
             founded?: string;
-            employees?: string;
+            employees?: number | null;
+            categoryId?: string | null;
             website?: string;
             whatsapp?: string;
             /** Format: uri */
@@ -5054,7 +5848,11 @@ export interface components {
             yearsExperience?: number | null;
             priceMin?: number | null;
             priceMax?: number | null;
-            availability?: string | null;
+            /** @enum {string|null} */
+            availability?: "immediate" | "not_immediate" | null;
+            availabilityDetails?: string | null;
+            /** @enum {string|null} */
+            modality?: "in_person" | "online" | "hybrid" | null;
             contacts?: {
                 id?: string;
                 type?: string;
@@ -5113,7 +5911,11 @@ export interface components {
                 yearsExperience?: number | null;
                 priceMin?: number | null;
                 priceMax?: number | null;
-                availability?: string | null;
+                /** @enum {string|null} */
+                availability?: "immediate" | "not_immediate" | null;
+                availabilityDetails?: string | null;
+                /** @enum {string|null} */
+                modality?: "in_person" | "online" | "hybrid" | null;
                 contacts?: {
                     id?: string;
                     type?: string;
@@ -5173,7 +5975,11 @@ export interface components {
                 yearsExperience?: number | null;
                 priceMin?: number | null;
                 priceMax?: number | null;
-                availability?: string | null;
+                /** @enum {string|null} */
+                availability?: "immediate" | "not_immediate" | null;
+                availabilityDetails?: string | null;
+                /** @enum {string|null} */
+                modality?: "in_person" | "online" | "hybrid" | null;
                 contacts?: {
                     id?: string;
                     type?: string;
@@ -5222,14 +6028,17 @@ export interface components {
             }[];
         };
         CreateServiceInput: {
-            slug?: string;
             title: string;
             marca?: string;
             description?: string;
             yearsExperience?: number;
             priceMin?: number;
             priceMax?: number;
-            availability?: string;
+            /** @enum {string} */
+            availability?: "immediate" | "not_immediate";
+            availabilityDetails?: string;
+            /** @enum {string} */
+            modality?: "in_person" | "online" | "hybrid";
             /** Format: uri */
             bannerUrl?: string;
             /** Format: uri */
@@ -5259,10 +6068,14 @@ export interface components {
             title?: string;
             marca?: string;
             description?: string;
+            /** @enum {string} */
+            availability?: "immediate" | "not_immediate";
+            availabilityDetails?: string;
+            /** @enum {string} */
+            modality?: "in_person" | "online" | "hybrid";
             yearsExperience?: number;
             priceMin?: number;
             priceMax?: number;
-            availability?: string;
             /** Format: uri */
             bannerUrl?: string;
             /** Format: uri */
@@ -5720,6 +6533,7 @@ export interface components {
             title?: string;
             message?: string;
             data?: Record<string, never>;
+            actionUrl?: string | null;
             /** Format: date-time */
             readAt?: string | null;
             /** Format: date-time */
@@ -5734,6 +6548,7 @@ export interface components {
                 title?: string;
                 message?: string;
                 data?: Record<string, never>;
+                actionUrl?: string | null;
                 /** Format: date-time */
                 readAt?: string | null;
                 /** Format: date-time */
@@ -5742,6 +6557,173 @@ export interface components {
         };
         NotificationSettings: {
             emailNotificationsEnabled?: boolean;
+        };
+        NotificationUnreadCountResponse: {
+            success?: boolean;
+            data?: {
+                count: number;
+            };
+        };
+        UserRequest: {
+            id: string;
+            profileId: string;
+            /** @enum {string} */
+            type: "profile_verification" | "profile_report" | "publication_report" | "withdrawal" | "general_question" | "feedback";
+            /** @enum {string} */
+            status: "pending" | "in_review" | "approved" | "rejected" | "resolved" | "cancelled";
+            title: string;
+            description?: string | null;
+            metadata?: {
+                [key: string]: unknown;
+            } | null;
+            targetEntityType?: string | null;
+            targetEntityId?: string | null;
+            reviewerUserId?: string | null;
+            reviewerComment?: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+            /** Format: date-time */
+            reviewedAt?: string | null;
+        };
+        UserRequestResponse: {
+            success?: boolean;
+            data?: {
+                id: string;
+                profileId: string;
+                /** @enum {string} */
+                type: "profile_verification" | "profile_report" | "publication_report" | "withdrawal" | "general_question" | "feedback";
+                /** @enum {string} */
+                status: "pending" | "in_review" | "approved" | "rejected" | "resolved" | "cancelled";
+                title: string;
+                description?: string | null;
+                metadata?: {
+                    [key: string]: unknown;
+                } | null;
+                targetEntityType?: string | null;
+                targetEntityId?: string | null;
+                reviewerUserId?: string | null;
+                reviewerComment?: string | null;
+                /** Format: date-time */
+                createdAt: string;
+                /** Format: date-time */
+                updatedAt: string;
+                /** Format: date-time */
+                reviewedAt?: string | null;
+            };
+        };
+        UserRequestsResponse: {
+            success?: boolean;
+            data?: {
+                id: string;
+                profileId: string;
+                /** @enum {string} */
+                type: "profile_verification" | "profile_report" | "publication_report" | "withdrawal" | "general_question" | "feedback";
+                /** @enum {string} */
+                status: "pending" | "in_review" | "approved" | "rejected" | "resolved" | "cancelled";
+                title: string;
+                description?: string | null;
+                metadata?: {
+                    [key: string]: unknown;
+                } | null;
+                targetEntityType?: string | null;
+                targetEntityId?: string | null;
+                reviewerUserId?: string | null;
+                reviewerComment?: string | null;
+                /** Format: date-time */
+                createdAt: string;
+                /** Format: date-time */
+                updatedAt: string;
+                /** Format: date-time */
+                reviewedAt?: string | null;
+            }[];
+        };
+        ProfileVerificationCheck: {
+            /** @enum {string} */
+            key: "HAS_PROFILE" | "HAS_NAME" | "HAS_DESCRIPTION" | "HAS_REGION" | "HAS_CATEGORY" | "HAS_LOGO" | "HAS_WEBSITE" | "HAS_WHATSAPP" | "HAS_SOCIAL_LINK" | "ACCOUNT_AGE";
+            label: string;
+            description: string;
+            required: boolean;
+            passed: boolean;
+            message: string;
+        };
+        ProfileVerificationChecklist: {
+            eligible: boolean;
+            checks: {
+                /** @enum {string} */
+                key: "HAS_PROFILE" | "HAS_NAME" | "HAS_DESCRIPTION" | "HAS_REGION" | "HAS_CATEGORY" | "HAS_LOGO" | "HAS_WEBSITE" | "HAS_WHATSAPP" | "HAS_SOCIAL_LINK" | "ACCOUNT_AGE";
+                label: string;
+                description: string;
+                required: boolean;
+                passed: boolean;
+                message: string;
+            }[];
+        };
+        ProfileVerificationChecklistResponse: {
+            success?: boolean;
+            data?: {
+                eligible: boolean;
+                checks: {
+                    /** @enum {string} */
+                    key: "HAS_PROFILE" | "HAS_NAME" | "HAS_DESCRIPTION" | "HAS_REGION" | "HAS_CATEGORY" | "HAS_LOGO" | "HAS_WEBSITE" | "HAS_WHATSAPP" | "HAS_SOCIAL_LINK" | "ACCOUNT_AGE";
+                    label: string;
+                    description: string;
+                    required: boolean;
+                    passed: boolean;
+                    message: string;
+                }[];
+            };
+        };
+        ProfileVerificationRequirementsError: {
+            /** @example false */
+            success?: boolean;
+            /** @enum {string} */
+            errorCode?: "PROFILE_VERIFICATION_REQUIREMENTS_NOT_MET";
+            details?: {
+                checklist?: {
+                    eligible: boolean;
+                    checks: {
+                        /** @enum {string} */
+                        key: "HAS_PROFILE" | "HAS_NAME" | "HAS_DESCRIPTION" | "HAS_REGION" | "HAS_CATEGORY" | "HAS_LOGO" | "HAS_WEBSITE" | "HAS_WHATSAPP" | "HAS_SOCIAL_LINK" | "ACCOUNT_AGE";
+                        label: string;
+                        description: string;
+                        required: boolean;
+                        passed: boolean;
+                        message: string;
+                    }[];
+                };
+            };
+        };
+        CreateUserRequestInput: {
+            /** @enum {string} */
+            type: "profile_verification" | "profile_report" | "publication_report" | "withdrawal" | "general_question" | "feedback";
+            title: string;
+            description?: string | null;
+            metadata?: {
+                [key: string]: unknown;
+            } | null;
+            targetEntityType?: string | null;
+            targetEntityId?: string | null;
+        };
+        UpdateRequestStatusInput: {
+            /** @enum {string} */
+            status: "pending" | "in_review" | "approved" | "rejected" | "resolved" | "cancelled";
+            comment?: string | null;
+        };
+        RecommendationResponse: {
+            success?: boolean;
+            data?: {
+                profiles?: {
+                    [key: string]: unknown;
+                }[];
+                services?: {
+                    [key: string]: unknown;
+                }[];
+                events?: {
+                    [key: string]: unknown;
+                }[];
+            };
         };
         Thread: {
             id?: string;

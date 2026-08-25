@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1783911642752,
-      "tag": "0000_handy_micromacro",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1783912044804,
-      "tag": "0001_wakeful_captain_america",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1783916839786,
-      "tag": "0002_supreme_living_mummy",
+      "when": 1787558000000,
+      "tag": "0000_existing_database_upgrade",
       "breakpoints": true
     }
   ]

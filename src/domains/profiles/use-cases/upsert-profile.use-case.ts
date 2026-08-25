@@ -14,8 +14,9 @@ export type UpsertProfileInput = {
   description?: string | null;
   tags?: string[];
   regionId?: string | null;
+  categoryId?: string | null;
   founded?: string | null;
-  employees?: string | null;
+  employees?: number | null;
   website?: string | null;
   whatsapp?: string | null;
   socialLinks?: Array<{ platform: string; url: string; orden?: number }>;

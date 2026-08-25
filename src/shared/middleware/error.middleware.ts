@@ -15,6 +15,9 @@ export function createErrorMiddleware() {
         success: false,
         errorCode: err.code,
       };
+      if ('details' in err) {
+        response.details = (err as { details?: unknown }).details;
+      }
       res.status(err.statusCode).json(response);
       return;
     }

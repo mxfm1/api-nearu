@@ -28,7 +28,9 @@ export interface Service {
   yearsExperience: number | null;
   priceMin: number | null;
   priceMax: number | null;
-  availability: string | null;
+  availability: 'immediate' | 'not_immediate' | null;
+  availabilityDetails: string | null;
+  modality: 'in_person' | 'online' | 'hybrid' | null;
   bannerUrl: string | null;
   logoUrl: string | null;
   thumbnailUrl: string | null;

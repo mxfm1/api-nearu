@@ -3,12 +3,26 @@ import type { IListNotificationsUseCase } from '../use-cases/list-notifications.
 import type { IMarkNotificationReadUseCase, IMarkAllNotificationsReadUseCase } from '../use-cases/mark-read.use-case';
 import type { IGetNotificationSettingsUseCase } from '../use-cases/get-settings.use-case';
 import type { IUpdateNotificationSettingsUseCase } from '../use-cases/update-settings.use-case';
+import type { ICountUnreadNotificationsUseCase } from '../use-cases/count-unread.use-case';
 
 export type IListNotificationsController = ReturnType<typeof listNotificationsController>;
 export type IMarkNotificationReadController = ReturnType<typeof markNotificationReadController>;
 export type IMarkAllNotificationsReadController = ReturnType<typeof markAllNotificationsReadController>;
 export type IGetNotificationSettingsController = ReturnType<typeof getNotificationSettingsController>;
 export type IUpdateNotificationSettingsController = ReturnType<typeof updateNotificationSettingsController>;
+export type ICountUnreadNotificationsController = ReturnType<typeof countUnreadNotificationsController>;
+
+export const countUnreadNotificationsController =
+  (countUnreadUseCase: ICountUnreadNotificationsUseCase) =>
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const authUser = (req as any).user;
+      const count = await countUnreadUseCase(authUser.id);
+      res.json({ success: true, data: { count } });
+    } catch (error) {
+      next(error);
+    }
+  };
 
 export const listNotificationsController =
   (listNotificationsUseCase: IListNotificationsUseCase) =>

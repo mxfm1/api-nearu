@@ -20,7 +20,7 @@ import {
   listLocationsController,
   listScoringRulesCatalogController,
 } from '@/src/domains/catalog/controllers/catalog.controller';
-import { getProfileSchema, updateProfileSchema } from '@/src/domains/profiles/validators/profile.validator';
+import { getProfileSchema, listProfilesSchema, updateProfileSchema } from '@/src/domains/profiles/validators/profile.validator';
 import { createContactRequestSchema, getInboxSchema, updateContactRequestStatusSchema } from '@/src/domains/contact-requests/validators/contact-request.validator';
 import { listIntencionesController } from '@/src/domains/contact-requests/controllers/contact-request.controller';
 import { createServiceSchema, updateServiceSchema, getServiceSchema, deleteServiceSchema, listServicesSchema, addPortfolioItemSchema, deletePortfolioItemSchema } from '@/src/domains/services/validators/service.validator';
@@ -28,6 +28,8 @@ import { createEventSchema, updateEventSchema, getEventSchema, deleteEventSchema
 import { sendMessageSchema, getThreadSchema } from '@/src/domains/messages/validators/message.validator';
 import { markNotificationReadSchema, updateNotificationSettingsSchema } from '@/src/domains/notifications/validators/notification.validator';
 import { createApplicationSchema, getApplicationSchema, listEventApplicationsSchema, updateApplicationStatusSchema, createScoringRulesSchema } from '@/src/domains/applications/validators/application.validator';
+import { createRequestSchema, listRequestsSchema, updateRequestStatusSchema } from '@/src/domains/requests/validators/request.validator';
+import { requireRole } from '@/src/shared/middleware/role.middleware';
 
 export function createRouter() {
   const router = Router();
@@ -74,6 +76,7 @@ export function createRouter() {
   // ──────────────────────────────────────────────
   // PROFILES
   // ──────────────────────────────────────────────
+  router.get('/api/profiles', validate(listProfilesSchema), getInjection('IListProfilesController'));
   router.get('/api/profiles/:userId', validate(getProfileSchema), getInjection('IGetProfileController'));
   router.patch('/api/profiles/me', authMiddleware, validate(updateProfileSchema), getInjection('IUpsertProfileController'));
 
@@ -96,10 +99,19 @@ export function createRouter() {
   // NOTIFICATIONS
   // ──────────────────────────────────────────────
   router.get('/api/notificaciones', authMiddleware, getInjection('IListNotificationsController'));
+  router.get('/api/notificaciones/unread-count', authMiddleware, getInjection('ICountUnreadNotificationsController'));
   router.patch('/api/notificaciones/:id/read', authMiddleware, validate(markNotificationReadSchema), getInjection('IMarkNotificationReadController'));
   router.patch('/api/notificaciones/read-all', authMiddleware, getInjection('IMarkAllNotificationsReadController'));
   router.get('/api/notificaciones/config', authMiddleware, getInjection('IGetNotificationSettingsController'));
   router.patch('/api/notificaciones/config', authMiddleware, validate(updateNotificationSettingsSchema), getInjection('IUpdateNotificationSettingsController'));
+
+  // USER REQUESTS
+  router.get('/api/requests/profile-verification/checklist', authMiddleware, getInjection('IGetProfileVerificationChecklistController'));
+  router.post('/api/requests', authMiddleware, validate(createRequestSchema), getInjection('ICreateRequestController'));
+  router.get('/api/requests', authMiddleware, validate(listRequestsSchema), getInjection('IListMyRequestsController'));
+  router.get('/api/admin/requests', authMiddleware, requireRole('admin'), validate(listRequestsSchema), getInjection('IListRequestsController'));
+  router.patch('/api/admin/requests/:id/status', authMiddleware, requireRole('admin'), validate(updateRequestStatusSchema), getInjection('IUpdateRequestStatusController'));
+  router.get('/api/recommendations', authMiddleware, getInjection('IGetRecommendationsController'));
 
   // ──────────────────────────────────────────────
   // SERVICES

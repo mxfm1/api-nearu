@@ -61,6 +61,14 @@ export const auth = betterAuth({
     autoSignInAfterVerification: true,
   },
   user: {
+    additionalFields: {
+      role: {
+        type: 'string',
+        required: false,
+        defaultValue: 'user',
+        input: false,
+      },
+    },
     deleteUser: {
       enabled: true
     },

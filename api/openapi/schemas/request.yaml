@@ -1,0 +1,103 @@
+UserRequest:
+  type: object
+  required: [id, profileId, type, status, title, createdAt, updatedAt]
+  properties:
+    id: { type: string }
+    profileId: { type: string }
+    type:
+      type: string
+      enum: [profile_verification, profile_report, publication_report, withdrawal, general_question, feedback]
+    status:
+      type: string
+      enum: [pending, in_review, approved, rejected, resolved, cancelled]
+    title: { type: string }
+    description: { type: string, nullable: true }
+    metadata: { type: object, nullable: true, additionalProperties: true }
+    targetEntityType: { type: string, nullable: true }
+    targetEntityId: { type: string, nullable: true }
+    reviewerUserId: { type: string, nullable: true }
+    reviewerComment: { type: string, nullable: true }
+    createdAt: { type: string, format: date-time }
+    updatedAt: { type: string, format: date-time }
+    reviewedAt: { type: string, format: date-time, nullable: true }
+
+UserRequestResponse:
+  type: object
+  properties:
+    success: { type: boolean }
+    data:
+      $ref: '#/components/schemas/UserRequest'
+
+UserRequestsResponse:
+  type: object
+  properties:
+    success: { type: boolean }
+    data:
+      type: array
+      items:
+        $ref: '#/components/schemas/UserRequest'
+
+ProfileVerificationCheck:
+  type: object
+  required: [key, label, description, required, passed, message]
+  properties:
+    key:
+      type: string
+      enum: [HAS_PROFILE, HAS_NAME, HAS_DESCRIPTION, HAS_REGION, HAS_CATEGORY, HAS_LOGO, HAS_WEBSITE, HAS_WHATSAPP, HAS_SOCIAL_LINK, ACCOUNT_AGE]
+    label: { type: string }
+    description: { type: string }
+    required: { type: boolean }
+    passed: { type: boolean }
+    message: { type: string }
+
+ProfileVerificationChecklist:
+  type: object
+  required: [eligible, checks]
+  properties:
+    eligible: { type: boolean }
+    checks:
+      type: array
+      items:
+        $ref: '#/components/schemas/ProfileVerificationCheck'
+
+ProfileVerificationChecklistResponse:
+  type: object
+  properties:
+    success: { type: boolean }
+    data:
+      $ref: '#/components/schemas/ProfileVerificationChecklist'
+
+ProfileVerificationRequirementsError:
+  type: object
+  properties:
+    success: { type: boolean, example: false }
+    errorCode:
+      type: string
+      enum: [PROFILE_VERIFICATION_REQUIREMENTS_NOT_MET]
+    details:
+      type: object
+      properties:
+        checklist:
+          $ref: '#/components/schemas/ProfileVerificationChecklist'
+
+CreateUserRequestInput:
+  type: object
+  required: [type, title]
+  properties:
+    type:
+      type: string
+      enum: [profile_verification, profile_report, publication_report, withdrawal, general_question, feedback]
+    title: { type: string, maxLength: 160 }
+    description: { type: string, nullable: true, maxLength: 5000 }
+    metadata: { type: object, nullable: true, additionalProperties: true }
+    targetEntityType: { type: string, nullable: true }
+    targetEntityId: { type: string, nullable: true }
+
+UpdateRequestStatusInput:
+  type: object
+  required: [status]
+  properties:
+    status:
+      type: string
+      enum: [pending, in_review, approved, rejected, resolved, cancelled]
+    comment: { type: string, nullable: true, maxLength: 5000 }

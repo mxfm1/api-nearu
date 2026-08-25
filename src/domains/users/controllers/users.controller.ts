@@ -44,6 +44,7 @@ export const createUserController = () =>
         name: result.user.name,
         email: result.user.email,
         emailVerified: result.user.emailVerified,
+        role: 'user',
         image: result.user.image ?? null,
         createdAt: result.user.createdAt,
         updatedAt: result.user.updatedAt,

@@ -15,9 +15,7 @@ export const config = {
     if (enviroment === 'production') dbURL = process.env.PRODUCTION_DB_URL!
     if (enviroment === 'test') dbURL = process.env.TEST_DB_URL!
 
-    console.log('dbURL', dbURL);
-
-    return dbURL;
+     return dbURL;
   },
   get betterAuthSecret() {
     return process.env.BETTER_AUTH_SECRET!;

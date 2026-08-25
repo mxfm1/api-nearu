@@ -1,4 +1,4 @@
-import { eq, desc, and, isNull, sql } from 'drizzle-orm';
+import { eq, desc, and, isNull, sql, count } from 'drizzle-orm';
 import { db } from '@/src/shared/database';
 import { notifications, userNotificationSettings, notificationPreferences } from '@/src/shared/database/schema';
 import type { INotificationsRepository } from './notifications.repository.interface';
@@ -30,6 +30,14 @@ export class NotificationsRepository implements INotificationsRepository {
       console.error('[NotificationsRepository.findByEntityId] Error:', error);
       throw error;
     }
+  }
+
+  async countUnreadByUserId(userId: string): Promise<number> {
+    const result = await db
+      .select({ count: count() })
+      .from(notifications)
+      .where(and(eq(notifications.userId, userId), eq(notifications.isRead, false)));
+    return Number(result[0]?.count ?? 0);
   }
 
   async create(data: {

@@ -1,0 +1,23 @@
+RecommendationResponse:
+  type: object
+  properties:
+    success:
+      type: boolean
+    data:
+      type: object
+      properties:
+        profiles:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        services:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        events:
+          type: array
+          items:
+            type: object
+            additionalProperties: true

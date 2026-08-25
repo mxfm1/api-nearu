@@ -29,6 +29,15 @@
         required: false
         schema:
           type: boolean
+      - name: from
+        in: query
+        schema: { type: string, format: date-time }
+      - name: to
+        in: query
+        schema: { type: string, format: date-time }
+      - name: sort
+        in: query
+        schema: { type: string, enum: [relevance, newest, oldest, start_date], default: newest }
     responses:
       '200':
         description: Lista de eventos

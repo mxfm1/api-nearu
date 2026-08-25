@@ -13,9 +13,23 @@ export type NotificationType =
   | 'event_filled'
   | 'new_message'
   | 'system'
-  | 'new_contact_request';
+  | 'new_contact_request'
+  | 'publication_created'
+  | 'publication_disabled'
+  | 'email_confirmed'
+  | 'request_submitted'
+  | 'request_status_changed'
+  | 'profile_verification_request_received'
+  | 'profile_verification_rejected'
+  | 'profile_report_received'
+  | 'publication_report_received'
+  | 'request_received'
+  | 'user_report_received'
+  | 'request_review_delayed'
+  | 'feedback_received'
+  | 'deal_created';
 
-export type EntityType = 'application' | 'event' | 'message' | 'conversation' | 'profile' | 'account' | 'system' | 'service';
+export type EntityType = 'application' | 'event' | 'message' | 'conversation' | 'profile' | 'account' | 'system' | 'service' | 'request' | 'feedback' | 'deal';
 
 export interface Notification {
   id: string;

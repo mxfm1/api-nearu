@@ -13,6 +13,9 @@ Notification:
       type: string
     data:
       type: object
+    actionUrl:
+      type: string
+      nullable: true
     readAt:
       type: string
       format: date-time
@@ -36,3 +39,13 @@ NotificationSettings:
   properties:
     emailNotificationsEnabled:
       type: boolean
+
+NotificationUnreadCountResponse:
+  type: object
+  properties:
+    success: { type: boolean }
+    data:
+      type: object
+      required: [count]
+      properties:
+        count: { type: integer, minimum: 0 }

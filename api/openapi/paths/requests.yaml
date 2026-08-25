@@ -1,0 +1,124 @@
+/api/requests:
+  get:
+    summary: Listar solicitudes del perfil actual
+    tags: [Requests]
+    security:
+      - cookieAuth: []
+    parameters:
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+          enum: [pending, in_review, approved, rejected, resolved, cancelled]
+    responses:
+      '200':
+        description: Solicitudes del perfil
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yaml#/components/schemas/UserRequestsResponse'
+      '401':
+        $ref: '../openapi.yaml#/components/responses/Unauthenticated'
+  post:
+    summary: Crear una solicitud asociada al perfil actual
+    tags: [Requests]
+    security:
+      - cookieAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '../openapi.yaml#/components/schemas/CreateUserRequestInput'
+    responses:
+      '201':
+        description: Solicitud creada
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yaml#/components/schemas/UserRequestResponse'
+      '400':
+        description: Requisitos de verificación de perfil no cumplidos
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yaml#/components/schemas/ProfileVerificationRequirementsError'
+      '401':
+        $ref: '../openapi.yaml#/components/responses/Unauthenticated'
+      '409':
+        $ref: '../openapi.yaml#/components/responses/Conflict'
+
+/api/requests/profile-verification/checklist:
+  get:
+    summary: Obtener checklist de verificación de perfil
+    description: Evalúa si el perfil del usuario autenticado cumple los requisitos obligatorios para solicitar verificación.
+    tags: [Requests]
+    security:
+      - cookieAuth: []
+    responses:
+      '200':
+        description: Checklist de verificación del perfil
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yaml#/components/schemas/ProfileVerificationChecklistResponse'
+      '401':
+        $ref: '../openapi.yaml#/components/responses/Unauthenticated'
+
+/api/admin/requests:
+  get:
+    summary: Listar solicitudes para revisión administrativa
+    tags: [Admin Requests]
+    security:
+      - cookieAuth: []
+    parameters:
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+          enum: [pending, in_review, approved, rejected, resolved, cancelled]
+    responses:
+      '200':
+        description: Solicitudes
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yaml#/components/schemas/UserRequestsResponse'
+      '401':
+        $ref: '../openapi.yaml#/components/responses/Unauthenticated'
+      '403':
+        $ref: '../openapi.yaml#/components/responses/Unauthorized'
+
+/api/admin/requests/{id}/status:
+  patch:
+    summary: Cambiar el estado de una solicitud
+    tags: [Admin Requests]
+    security:
+      - cookieAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '../openapi.yaml#/components/schemas/UpdateRequestStatusInput'
+    responses:
+      '200':
+        description: Estado actualizado
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yaml#/components/schemas/UserRequestResponse'
+      '401':
+        $ref: '../openapi.yaml#/components/responses/Unauthenticated'
+      '403':
+        $ref: '../openapi.yaml#/components/responses/Unauthorized'
+      '404':
+        $ref: '../openapi.yaml#/components/responses/NotFound'

@@ -72,6 +72,14 @@ Service:
     availability:
       type: string
       nullable: true
+      enum: [immediate, not_immediate]
+    availabilityDetails:
+      type: string
+      nullable: true
+    modality:
+      type: string
+      nullable: true
+      enum: [in_person, online, hybrid]
     contacts:
       type: array
       items:
@@ -152,9 +160,6 @@ CreateServiceInput:
   type: object
   required: [title]
   properties:
-    slug:
-      type: string
-      pattern: '^[a-z0-9-]+$'
     title:
       type: string
       minLength: 1
@@ -176,7 +181,13 @@ CreateServiceInput:
       minimum: 0
     availability:
       type: string
+      enum: [immediate, not_immediate]
+    availabilityDetails:
+      type: string
       maxLength: 500
+    modality:
+      type: string
+      enum: [in_person, online, hybrid]
     bannerUrl:
       type: string
       format: uri
@@ -232,6 +243,15 @@ UpdateServiceInput:
     description:
       type: string
       maxLength: 5000
+    availability:
+      type: string
+      enum: [immediate, not_immediate]
+    availabilityDetails:
+      type: string
+      maxLength: 500
+    modality:
+      type: string
+      enum: [in_person, online, hybrid]
     yearsExperience:
       type: integer
       minimum: 0
@@ -241,9 +261,6 @@ UpdateServiceInput:
     priceMax:
       type: integer
       minimum: 0
-    availability:
-      type: string
-      maxLength: 500
     bannerUrl:
       type: string
       format: uri

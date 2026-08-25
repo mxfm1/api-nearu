@@ -22,8 +22,9 @@ export interface Profile {
   description: string | null;
   slug: string | null;
   regionId: string | null;
+  categoryId: string | null;
   founded: string | null;
-  employees: string | null;
+  employees: number | null;
   website: string | null;
   whatsapp: string | null;
   isVerified: boolean;

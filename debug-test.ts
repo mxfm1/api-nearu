@@ -15,7 +15,7 @@ const companies = [
       bannerUrl: 'https://example.com/banner.jpg',
       logoUrl: 'https://example.com/logo.jpg',
       founded: '2020',
-      employees: '11-50',
+       employees: 30,
       website: 'https://test.cl',
       whatsapp: '+56912345678',
       isVerified: false,

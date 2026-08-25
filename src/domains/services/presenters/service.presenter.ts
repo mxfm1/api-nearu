@@ -12,6 +12,8 @@ export function presentService(service: ServiceWithDetails) {
     priceMin: service.priceMin,
     priceMax: service.priceMax,
     availability: service.availability,
+    availabilityDetails: service.availabilityDetails,
+    modality: service.modality,
     contacts: service.contacts.map((c) => ({
       id: c.id,
       type: c.type,

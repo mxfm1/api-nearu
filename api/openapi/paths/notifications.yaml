@@ -44,6 +44,22 @@
       '401':
         $ref: '../openapi.yaml#/components/responses/Unauthenticated'
 
+/api/notificaciones/unread-count:
+  get:
+    summary: Obtener cantidad de notificaciones no leídas
+    tags: [Notificaciones]
+    security:
+      - cookieAuth: []
+    responses:
+      '200':
+        description: Contador de notificaciones no leídas
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yaml#/components/schemas/NotificationUnreadCountResponse'
+      '401':
+        $ref: '../openapi.yaml#/components/responses/Unauthenticated'
+
 /api/notificaciones/config:
   get:
     summary: Obtener configuración de notificaciones

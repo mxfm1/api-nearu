@@ -103,6 +103,9 @@ export const listEventsController =
         status: 'published',
         search: req.query.search as string | undefined,
         upcoming: req.query.upcoming === 'true',
+        from: req.query.from as string | undefined,
+        to: req.query.to as string | undefined,
+        sort: req.query.sort as 'relevance' | 'newest' | 'oldest' | 'start_date' | undefined,
       };
 
       const events = await listEventsUseCase(filters);

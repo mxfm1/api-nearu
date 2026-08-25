@@ -2,6 +2,7 @@ import type { Notification, NotificationPreferences, NotificationSettings, Notif
 
 export interface INotificationsRepository {
   findByUserId(userId: string): Promise<Notification[]>;
+  countUnreadByUserId(userId: string): Promise<number>;
   findByEntityId(entityId: string): Promise<Notification[]>;
   create(data: {
     userId: string;

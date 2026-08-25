@@ -1,4 +1,4 @@
-import { eq, like, and, desc, gte, sql } from 'drizzle-orm';
+import { eq, and, desc, asc, gte, lte, sql } from 'drizzle-orm';
 import { db } from '@/src/shared/database';
 import { events, locations, categories, profiles, statuses, regions } from '@/src/shared/database/schema';
 import type { IEventsRepository, IListEventsFilters } from './events.repository.interface';
@@ -142,8 +142,16 @@ export class EventsRepository implements IEventsRepository {
       if (filters?.categoryId) conditions.push(eq(events.categoryId, filters.categoryId));
       if (filters?.locationId) conditions.push(eq(events.locationId, filters.locationId));
       if (filters?.status) conditions.push(eq(statuses.slug, filters.status));
-      if (filters?.search) conditions.push(like(events.title, `%${filters.search}%`));
+      if (filters?.search) {
+        const query = sql`websearch_to_tsquery('spanish', ${filters.search})`;
+        conditions.push(sql`(${events.searchVector} @@ ${query}
+          OR ${events.title} % ${filters.search}
+          OR ${events.description} % ${filters.search}
+          OR ${events.requirements} % ${filters.search})`);
+      }
       if (filters?.upcoming) conditions.push(gte(events.startAt, new Date()));
+      if (filters?.from) conditions.push(gte(events.startAt, new Date(filters.from)));
+      if (filters?.to) conditions.push(lte(events.startAt, new Date(filters.to)));
 
       const query = db
         .select({
@@ -159,11 +167,20 @@ export class EventsRepository implements IEventsRepository {
         .leftJoin(locations, eq(events.locationId, locations.id))
         .leftJoin(categories, eq(events.categoryId, categories.id))
         .leftJoin(profiles, eq(events.profileId, profiles.id))
-        .leftJoin(statuses, eq(events.statusId, statuses.id))
-        .orderBy(desc(events.createdAt));
+        .leftJoin(statuses, eq(events.statusId, statuses.id));
 
       if (conditions.length > 0) {
         query.where(and(...conditions));
+      }
+
+      if (filters?.search) {
+        query.orderBy(sql`ts_rank_cd(${events.searchVector}, websearch_to_tsquery('spanish', ${filters.search})) DESC`, desc(events.createdAt));
+      } else if (filters?.sort === 'start_date') {
+        query.orderBy(asc(events.startAt));
+      } else if (filters?.sort === 'oldest') {
+        query.orderBy(asc(events.createdAt));
+      } else {
+        query.orderBy(desc(events.createdAt));
       }
 
       const result = await query;

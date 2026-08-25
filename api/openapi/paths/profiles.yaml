@@ -1,3 +1,37 @@
+/api/profiles:
+  get:
+    summary: Buscar perfiles de empresas
+    tags: [Profiles]
+    parameters:
+      - name: search
+        in: query
+        schema: { type: string }
+      - name: regionId
+        in: query
+        schema: { type: string }
+      - name: categoryId
+        in: query
+        schema: { type: string }
+      - name: verified
+        in: query
+        schema: { type: boolean }
+      - name: employeesMin
+        in: query
+        schema: { type: integer, minimum: 0 }
+      - name: employeesMax
+        in: query
+        schema: { type: integer, minimum: 0 }
+      - name: sort
+        in: query
+        schema: { type: string, enum: [relevance, newest, oldest], default: newest }
+    responses:
+      '200':
+        description: Perfiles encontrados
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yaml#/components/schemas/ProfilesResponse'
+
 /api/profiles/{userId}:
   get:
     summary: Obtener perfil por ID de usuario

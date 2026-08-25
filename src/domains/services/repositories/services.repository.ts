@@ -1,4 +1,4 @@
-import { eq, like, and, desc } from 'drizzle-orm';
+import { eq, and, desc, asc, gte, lte, isNull, or, sql } from 'drizzle-orm';
 import { db } from '@/src/shared/database';
 import { services, locations, categories, profiles, serviceContacts, statuses } from '@/src/shared/database/schema';
 import type { IServicesRepository, IListServicesFilters } from './services.repository.interface';
@@ -151,7 +151,21 @@ export class ServicesRepository implements IServicesRepository {
       if (filters?.categoryId) conditions.push(eq(services.categoryId, filters.categoryId));
       if (filters?.locationId) conditions.push(eq(services.locationId, filters.locationId));
       if (filters?.status) conditions.push(eq(statuses.slug, filters.status));
-      if (filters?.search) conditions.push(like(services.title, `%${filters.search}%`));
+      if (filters?.priceMin !== undefined) {
+        conditions.push(or(isNull(services.priceMax), gte(services.priceMax, filters.priceMin))!);
+      }
+      if (filters?.priceMax !== undefined) {
+        conditions.push(or(isNull(services.priceMin), lte(services.priceMin, filters.priceMax))!);
+      }
+      if (filters?.modality) conditions.push(eq(services.modality, filters.modality));
+      if (filters?.availability) conditions.push(eq(services.availability, filters.availability));
+      if (filters?.search) {
+        const query = sql`websearch_to_tsquery('spanish', ${filters.search})`;
+        conditions.push(sql`(${services.searchVector} @@ ${query}
+          OR ${services.title} % ${filters.search}
+          OR ${services.marca} % ${filters.search}
+          OR ${services.description} % ${filters.search})`);
+      }
 
       const query = db
         .select({
@@ -167,11 +181,18 @@ export class ServicesRepository implements IServicesRepository {
         .leftJoin(locations, eq(services.locationId, locations.id))
         .leftJoin(categories, eq(services.categoryId, categories.id))
         .leftJoin(profiles, eq(services.profileId, profiles.id))
-        .leftJoin(statuses, eq(services.statusId, statuses.id))
-        .orderBy(desc(services.createdAt));
+        .leftJoin(statuses, eq(services.statusId, statuses.id));
 
       if (conditions.length > 0) {
         query.where(and(...conditions));
+      }
+
+      if (filters?.search) {
+        query.orderBy(sql`ts_rank_cd(${services.searchVector}, websearch_to_tsquery('spanish', ${filters.search})) DESC`, desc(services.createdAt));
+      } else if (filters?.sort === 'oldest') {
+        query.orderBy(asc(services.createdAt));
+      } else {
+        query.orderBy(desc(services.createdAt));
       }
 
       const result = await query;
@@ -201,7 +222,9 @@ export class ServicesRepository implements IServicesRepository {
     yearsExperience?: number | null;
     priceMin?: number | null;
     priceMax?: number | null;
-    availability?: string | null;
+    availability?: 'immediate' | 'not_immediate' | null;
+    availabilityDetails?: string | null;
+    modality?: 'in_person' | 'online' | 'hybrid' | null;
     bannerUrl?: string | null;
     logoUrl?: string | null;
     thumbnailUrl?: string | null;
@@ -222,7 +245,9 @@ export class ServicesRepository implements IServicesRepository {
           yearsExperience: data.yearsExperience ?? null,
           priceMin: data.priceMin ?? null,
           priceMax: data.priceMax ?? null,
-          availability: data.availability ?? null,
+           availability: data.availability ?? null,
+           availabilityDetails: data.availabilityDetails ?? null,
+           modality: data.modality ?? null,
           bannerUrl: data.bannerUrl ?? null,
           logoUrl: data.logoUrl ?? null,
           thumbnailUrl: data.thumbnailUrl ?? null,
@@ -248,7 +273,9 @@ export class ServicesRepository implements IServicesRepository {
       yearsExperience: number | null;
       priceMin: number | null;
       priceMax: number | null;
-      availability: string | null;
+       availability: 'immediate' | 'not_immediate' | null;
+       availabilityDetails: string | null;
+       modality: 'in_person' | 'online' | 'hybrid' | null;
       bannerUrl: string | null;
       logoUrl: string | null;
       thumbnailUrl: string | null;

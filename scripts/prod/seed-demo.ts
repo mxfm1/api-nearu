@@ -495,6 +495,11 @@ async function main() {
   // STEP 3: Profiles (explicit fields, no spread)
   // ──────────────────────────────────────────────
   console.log('\n 🏢 Creating profiles...');
+  const employeeCount = (value: string | null | undefined) => {
+    if (!value) return null;
+    const [min, max] = value.split('-').map(Number);
+    return Number.isFinite(max) ? Math.round((min + max) / 2) : Number.isFinite(min) ? min : null;
+  };
   for (const c of companies) {
     const p = c.profile;
 
@@ -511,7 +516,7 @@ async function main() {
         ${p.description},
         ${p.regionId},
         ${p.founded},
-        ${p.employees},
+         ${employeeCount(p.employees)},
         ${p.website},
         ${p.whatsapp},
         ${p.isVerified}
@@ -556,7 +561,8 @@ async function main() {
       yearsExperience: s.yearsExperience ?? null,
       priceMin: s.priceMin ?? null,
       priceMax: s.priceMax ?? null,
-      availability: s.availability ?? null,
+       availability: s.availability?.includes('24/7') ? 'immediate' : 'not_immediate',
+       availabilityDetails: s.availability ?? null,
       bannerUrl: s.bannerUrl ?? null,
       logoUrl: s.logoUrl ?? null,
       thumbnailUrl: s.thumbnailUrl ?? null,

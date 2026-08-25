@@ -16,6 +16,7 @@ export function presentProfile(profile: Profile) {
     region: profile.regionId
       ? { id: profile.regionId, name: profile.regionName ?? null }
       : null,
+    categoryId: profile.categoryId,
     founded: profile.founded,
     employees: profile.employees,
     website: profile.website,
@@ -30,5 +31,6 @@ export function presentProfile(profile: Profile) {
     updatedAt: profile.updatedAt?.toISOString?.() ?? profile.updatedAt,
     missingFields,
     isComplete: missingFields.length === 0,
+    isVerified: profile.isVerified,
   };
 }

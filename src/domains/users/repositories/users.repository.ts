@@ -25,6 +25,11 @@ export class UsersRepository implements IUsersRepository {
     }
   }
 
+  async findAdmins(): Promise<User[]> {
+    const result = await db.select().from(users).where(eq(users.role, 'admin'));
+    return result as User[];
+  }
+
   async create(user: { name: string; email: string }): Promise<User> {
     try {
       const result = await db.insert(users).values({ id: crypto.randomUUID(), name: user.name, email: user.email }).returning();

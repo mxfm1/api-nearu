@@ -97,12 +97,17 @@ export const listServicesController =
   (listServicesUseCase: IListServicesUseCase) =>
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const filters: Record<string, string | undefined> = {
+      const filters = {
         profileId: req.query.profileId as string | undefined,
         categoryId: req.query.categoryId as string | undefined,
         locationId: req.query.locationId as string | undefined,
         status: 'published',
         search: req.query.search as string | undefined,
+        priceMin: req.query.priceMin ? Number(req.query.priceMin) : undefined,
+        priceMax: req.query.priceMax ? Number(req.query.priceMax) : undefined,
+        modality: req.query.modality as 'in_person' | 'online' | 'hybrid' | undefined,
+        availability: req.query.availability as 'immediate' | 'not_immediate' | undefined,
+        sort: req.query.sort as 'relevance' | 'newest' | 'oldest' | undefined,
       };
 
       const services = await listServicesUseCase(filters);

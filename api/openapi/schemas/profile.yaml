@@ -16,6 +16,9 @@ Profile:
     name:
       type: string
       nullable: true
+    categoryId:
+      type: string
+      nullable: true
     industry:
       type: string
     description:
@@ -32,8 +35,10 @@ Profile:
       type: string
       nullable: true
     employees:
-      type: string
+      type: integer
       nullable: true
+    isVerified:
+      type: boolean
     website:
       type: string
       nullable: true
@@ -80,6 +85,15 @@ ProfileResponse:
     data:
       $ref: '#/components/schemas/Profile'
 
+ProfilesResponse:
+  type: object
+  properties:
+    success: { type: boolean }
+    data:
+      type: array
+      items:
+        $ref: '#/components/schemas/Profile'
+
 ProfileUpdateInput:
   type: object
   properties:
@@ -98,7 +112,11 @@ ProfileUpdateInput:
     founded:
       type: string
     employees:
+      type: integer
+      nullable: true
+    categoryId:
       type: string
+      nullable: true
     website:
       type: string
     whatsapp:

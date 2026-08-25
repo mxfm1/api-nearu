@@ -45,10 +45,23 @@ paths:
     $ref: './paths/users.yaml#/api/users~1{id}'
 
   # Profiles
+  /api/profiles:
+    $ref: './paths/profiles.yaml#/api/profiles'
   /api/profiles/{userId}:
     $ref: './paths/profiles.yaml#/api/profiles~1{userId}'
   /api/profiles/me:
     $ref: './paths/profiles.yaml#/api/profiles~1me'
+  /api/recommendations:
+    $ref: './paths/recommendations.yaml#/api/recommendations'
+
+  /api/requests:
+    $ref: './paths/requests.yaml#/api/requests'
+  /api/requests/profile-verification/checklist:
+    $ref: './paths/requests.yaml#/api/requests~1profile-verification~1checklist'
+  /api/admin/requests:
+    $ref: './paths/requests.yaml#/api/admin~1requests'
+  /api/admin/requests/{id}/status:
+    $ref: './paths/requests.yaml#/api/admin~1requests~1{id}~1status'
 
   # Catalog
   /api/categorias:
@@ -133,6 +146,8 @@ paths:
     $ref: './paths/notifications.yaml#/api/notificaciones~1read-all'
   /api/notificaciones/config:
     $ref: './paths/notifications.yaml#/api/notificaciones~1config'
+  /api/notificaciones/unread-count:
+    $ref: './paths/notifications.yaml#/api/notificaciones~1unread-count'
 
   # Threads
   /api/threads:
@@ -178,6 +193,8 @@ components:
       $ref: './schemas/profile.yaml#/ProfileResponse'
     ProfileUpdateInput:
       $ref: './schemas/profile.yaml#/ProfileUpdateInput'
+    RecommendationResponse:
+      $ref: './schemas/recommendation.yaml#/RecommendationResponse'
 
     # ── Catalog ──
     Categoria:
@@ -256,6 +273,23 @@ components:
       $ref: './schemas/notification.yaml#/NotificationsResponse'
     NotificationSettings:
       $ref: './schemas/notification.yaml#/NotificationSettings'
+    NotificationUnreadCountResponse:
+      $ref: './schemas/notification.yaml#/NotificationUnreadCountResponse'
+
+    UserRequest:
+      $ref: './schemas/request.yaml#/UserRequest'
+    UserRequestsResponse:
+      $ref: './schemas/request.yaml#/UserRequestsResponse'
+    UserRequestResponse:
+      $ref: './schemas/request.yaml#/UserRequestResponse'
+    ProfileVerificationChecklistResponse:
+      $ref: './schemas/request.yaml#/ProfileVerificationChecklistResponse'
+    ProfileVerificationRequirementsError:
+      $ref: './schemas/request.yaml#/ProfileVerificationRequirementsError'
+    CreateUserRequestInput:
+      $ref: './schemas/request.yaml#/CreateUserRequestInput'
+    UpdateRequestStatusInput:
+      $ref: './schemas/request.yaml#/UpdateRequestStatusInput'
 
     # ── Thread ──
     Thread:

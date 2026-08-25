@@ -3,6 +3,7 @@ import type { IServicesRepository } from '../repositories/services.repository.in
 import type { IServicePortfolioRepository } from '../repositories/service-portfolio.repository.interface';
 import type { IServiceContactsRepository } from '../repositories/service-contacts.repository.interface';
 import type { IStatusesRepository } from '@/src/domains/statuses/repositories/statuses.repository.interface';
+import { slugifyUnique } from '@/src/shared/utils/slugify';
 
 export type ICreateServiceUseCase = ReturnType<typeof createServiceUseCase>;
 
@@ -19,14 +20,15 @@ export interface ContactInput {
 
 export interface CreateServiceInput {
   profileId: string;
-  slug: string;
   title: string;
   marca?: string | null;
   description?: string | null;
   yearsExperience?: number | null;
   priceMin?: number | null;
   priceMax?: number | null;
-  availability?: string | null;
+  availability?: 'immediate' | 'not_immediate' | null;
+  availabilityDetails?: string | null;
+  modality?: 'in_person' | 'online' | 'hybrid' | null;
   bannerUrl?: string | null;
   logoUrl?: string | null;
   thumbnailUrl?: string | null;
@@ -45,14 +47,14 @@ export const createServiceUseCase =
     statusesRepository: IStatusesRepository,
   ) =>
   async (input: CreateServiceInput): Promise<ServiceWithDetails> => {
-    const existing = await servicesRepository.findBySlug(input.slug);
-    if (existing) {
-      throw new Error('Ya existe un servicio con ese slug');
-    }
+    const slug = await slugifyUnique(input.title, async (s) => {
+      const existing = await servicesRepository.findBySlug(s);
+      return existing !== null;
+    });
 
     const status = await statusesRepository.findBySlug(input.status ?? 'draft');
     const { portfolio, contacts, status: _status, ...serviceData } = input;
-    const service = await servicesRepository.create({ ...serviceData, statusId: status.id });
+    const service = await servicesRepository.create({ ...serviceData, slug, statusId: status.id });
 
     if (contacts && contacts.length > 0) {
       await contactsRepository.replaceByServiceId(service.id, contacts);

@@ -10,6 +10,9 @@ User:
       format: email
     emailVerified:
       type: boolean
+    role:
+      type: string
+      enum: [user, admin]
     image:
       type: string
       nullable: true

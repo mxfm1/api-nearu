@@ -13,14 +13,15 @@ const portfolioItemSchema = z.object({
 
 export const createServiceSchema = z.object({
   body: z.object({
-    slug: z.string().min(1).regex(/^[a-z0-9-]+$/, 'Slug debe ser solo minúsculas, números y guiones'),
     title: z.string().min(1, 'Título es requerido').max(200),
     marca: z.string().max(200).optional().nullable(),
     description: z.string().max(5000).optional().nullable(),
     yearsExperience: z.number().int().min(0).optional().nullable(),
     priceMin: z.number().int().min(0).optional().nullable(),
     priceMax: z.number().int().min(0).optional().nullable(),
-    availability: z.string().max(500).optional().nullable(),
+    availability: z.enum(['immediate', 'not_immediate']).optional().nullable(),
+    availabilityDetails: z.string().max(500).optional().nullable(),
+    modality: z.enum(['in_person', 'online', 'hybrid']).optional().nullable(),
     bannerUrl: z.string().url().optional().nullable(),
     logoUrl: z.string().url().optional().nullable(),
     thumbnailUrl: z.string().url().optional().nullable(),
@@ -42,7 +43,9 @@ export const updateServiceSchema = z.object({
     yearsExperience: z.number().int().min(0).optional().nullable(),
     priceMin: z.number().int().min(0).optional().nullable(),
     priceMax: z.number().int().min(0).optional().nullable(),
-    availability: z.string().max(500).optional().nullable(),
+    availability: z.enum(['immediate', 'not_immediate']).optional().nullable(),
+    availabilityDetails: z.string().max(500).optional().nullable(),
+    modality: z.enum(['in_person', 'online', 'hybrid']).optional().nullable(),
     bannerUrl: z.string().url().optional().nullable(),
     logoUrl: z.string().url().optional().nullable(),
     thumbnailUrl: z.string().url().optional().nullable(),
@@ -69,6 +72,11 @@ export const listServicesSchema = z.object({
     locationId: z.string().optional(),
     status: z.string().optional(),
     search: z.string().optional(),
+    priceMin: z.coerce.number().int().min(0).optional(),
+    priceMax: z.coerce.number().int().min(0).optional(),
+    modality: z.enum(['in_person', 'online', 'hybrid']).optional(),
+    availability: z.enum(['immediate', 'not_immediate']).optional(),
+    sort: z.enum(['relevance', 'newest', 'oldest']).optional().default('newest'),
   }),
 });
 

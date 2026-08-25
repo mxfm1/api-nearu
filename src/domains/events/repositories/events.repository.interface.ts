@@ -7,6 +7,9 @@ export interface IListEventsFilters {
   status?: string;
   search?: string;
   upcoming?: boolean;
+  from?: string;
+  to?: string;
+  sort?: 'relevance' | 'newest' | 'oldest' | 'start_date';
 }
 
 export interface IEventsRepository {

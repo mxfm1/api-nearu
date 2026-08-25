@@ -1,11 +1,16 @@
-import { pgTable, text, boolean, timestamp, integer, index, jsonb, pgEnum } from 'drizzle-orm/pg-core';
+import { pgTable, text, boolean, timestamp, integer, index, jsonb, pgEnum, uniqueIndex, customType } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
+
+const tsvector = customType<{ data: string; driverData: string }>({
+  dataType: () => 'tsvector',
+});
 
 export const users = pgTable('users', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
   email: text('email').notNull().unique(),
   emailVerified: boolean('email_verified').notNull().default(false),
+  role: text('role').notNull().default('user'),
   image: text('image'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at')
@@ -90,11 +95,13 @@ export const profiles = pgTable(
     name: text('name'),
     description: text('description'),
     regionId: text('region_id').references(() => regions.id),
+    categoryId: text('category_id').references(() => categories.id),
     founded: text('founded'),
-    employees: text('employees'),
+    employees: integer('employees'),
     website: text('website'),
     whatsapp: text('whatsapp'),
     isVerified: boolean('is_verified').notNull().default(false),
+    searchVector: tsvector('search_vector'),
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at')
       .notNull()
@@ -104,6 +111,10 @@ export const profiles = pgTable(
   (table) => [
     index('profiles_userId_idx').on(table.userId),
     index('profiles_slug_idx').on(table.slug),
+    index('profiles_region_category_idx').on(table.regionId, table.categoryId),
+    index('profiles_region_verified_created_idx').on(table.regionId, table.isVerified, table.createdAt),
+    index('profiles_employees_idx').on(table.employees),
+    index('profiles_search_vector_idx').using('gin', table.searchVector),
   ],
 );
 
@@ -127,6 +138,7 @@ export const profilesToTags = pgTable(
   (table) => [
     index('pt_profiles_idx').on(table.profileId),
     index('pt_tags_idx').on(table.tagId),
+    uniqueIndex('pt_profile_tag_unique').on(table.profileId, table.tagId),
   ],
 );
 
@@ -238,6 +250,19 @@ export const notificationTypeEnum = pgEnum('notification_type', [
   'event_filled',
   'new_message',
   'system',
+  'publication_created',
+  'publication_disabled',
+  'email_confirmed',
+  'request_submitted',
+  'request_status_changed',
+  'profile_verification_request_received',
+  'profile_report_received',
+  'publication_report_received',
+  'request_received',
+  'user_report_received',
+  'request_review_delayed',
+  'feedback_received',
+  'deal_created',
 ]);
 
 export const entityTypeEnum = pgEnum('entity_type', [
@@ -249,7 +274,59 @@ export const entityTypeEnum = pgEnum('entity_type', [
   'account',
   'system',
   'service',
+  'request',
+  'feedback',
+  'deal',
 ]);
+
+export const requestTypeEnum = pgEnum('request_type', [
+  'profile_verification',
+  'profile_report',
+  'publication_report',
+  'withdrawal',
+  'general_question',
+  'feedback',
+]);
+
+export const requestStatusEnum = pgEnum('request_status', [
+  'pending',
+  'in_review',
+  'approved',
+  'rejected',
+  'resolved',
+  'cancelled',
+]);
+
+export const requests = pgTable(
+  'requests',
+  {
+    id: text('id').primaryKey(),
+    profileId: text('profile_id')
+      .notNull()
+      .references(() => profiles.id, { onDelete: 'cascade' }),
+    type: requestTypeEnum('type').notNull(),
+    status: requestStatusEnum('status').notNull().default('pending'),
+    title: text('title').notNull(),
+    description: text('description'),
+    metadata: jsonb('metadata'),
+    targetEntityType: entityTypeEnum('target_entity_type'),
+    targetEntityId: text('target_entity_id'),
+    reviewerUserId: text('reviewer_user_id').references(() => users.id, { onDelete: 'set null' }),
+    reviewerComment: text('reviewer_comment'),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at')
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+    reviewedAt: timestamp('reviewed_at'),
+  },
+  (table) => [
+    index('requests_profile_idx').on(table.profileId),
+    index('requests_type_status_idx').on(table.type, table.status),
+    index('requests_created_at_idx').on(table.createdAt),
+    index('requests_reviewer_idx').on(table.reviewerUserId),
+  ],
+);
 
 export const notifications = pgTable(
   'notifications',
@@ -258,7 +335,7 @@ export const notifications = pgTable(
     userId: text('user_id')
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
-    actorProfileId: text('actor_profile_id'),
+    actorProfileId: text('actor_profile_id').references(() => profiles.id, { onDelete: 'set null' }),
     type: notificationTypeEnum('type').notNull(),
     title: text('title').notNull(),
     body: text('body').notNull(),
@@ -303,6 +380,7 @@ export const notificationPreferences = pgTable(
   (table) => [
     index('np_user_idx').on(table.userId),
     index('np_user_type_idx').on(table.userId, table.type),
+    uniqueIndex('np_user_type_unique').on(table.userId, table.type),
   ],
 );
 
@@ -371,13 +449,16 @@ export const categories = pgTable('categories', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
   slug: text('slug').notNull().unique(),
-  type: text('type').notNull(), // 'service' | 'event'
+  type: text('type').notNull(), // 'service' | 'event' | 'profile'
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
 // ──────────────────────────────────────────────
 // SERVICES
 // ──────────────────────────────────────────────
+export const serviceModalityEnum = pgEnum('service_modality', ['in_person', 'online', 'hybrid']);
+export const serviceAvailabilityEnum = pgEnum('service_availability', ['immediate', 'not_immediate']);
+
 export const services = pgTable(
   'services',
   {
@@ -392,7 +473,10 @@ export const services = pgTable(
     yearsExperience: integer('years_experience'),
     priceMin: integer('price_min'),
     priceMax: integer('price_max'),
-    availability: text('availability'),
+    availability: serviceAvailabilityEnum('availability'),
+    availabilityDetails: text('availability_details'),
+    modality: serviceModalityEnum('modality'),
+    searchVector: tsvector('search_vector'),
     bannerUrl: text('banner_url'),
     logoUrl: text('logo_url'),
     thumbnailUrl: text('thumbnail_url'),
@@ -414,6 +498,11 @@ export const services = pgTable(
     index('services_statusId_idx').on(table.statusId),
     index('services_createdAt_idx').on(table.createdAt),
     index('services_slug_idx').on(table.slug),
+    index('services_status_category_created_idx').on(table.statusId, table.categoryId, table.createdAt),
+    index('services_status_location_created_idx').on(table.statusId, table.locationId, table.createdAt),
+    index('services_modality_idx').on(table.modality),
+    index('services_availability_idx').on(table.availability),
+    index('services_search_vector_idx').using('gin', table.searchVector),
   ],
 );
 
@@ -461,6 +550,7 @@ export const events = pgTable(
     applicationCount: integer('application_count').notNull().default(0),
     requiresVerifiedProfile: boolean('requires_verified_profile').notNull().default(true),
     autoCloseWhenFilled: boolean('auto_close_when_filled').notNull().default(true),
+    searchVector: tsvector('search_vector'),
     statusId: text('status_id')
       .notNull()
       .references(() => statuses.id),
@@ -479,6 +569,9 @@ export const events = pgTable(
     index('events_applicationDeadline_idx').on(table.applicationDeadline),
     index('events_createdAt_idx').on(table.createdAt),
     index('events_slug_idx').on(table.slug),
+    index('events_status_category_start_idx').on(table.statusId, table.categoryId, table.startAt),
+    index('events_status_location_start_idx').on(table.statusId, table.locationId, table.startAt),
+    index('events_search_vector_idx').using('gin', table.searchVector),
   ],
 );
 
@@ -715,6 +808,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   contactRequestsAsOwner: many(contactRequests, { relationName: 'contact_requests_owner' }),
   contactRequestsAsSender: many(contactRequests, { relationName: 'contact_requests_sender' }),
   notifications: many(notifications),
+  notificationPreferences: many(notificationPreferences),
   notificationSettings: many(userNotificationSettings),
   inboxMessages: many(inboxMessages),
 }));
@@ -741,6 +835,10 @@ export const profilesRelations = relations(profiles, ({ one, many }) => ({
   region: one(regions, {
     fields: [profiles.regionId],
     references: [regions.id],
+  }),
+  category: one(categories, {
+    fields: [profiles.categoryId],
+    references: [categories.id],
   }),
   socialLinks: many(profileSocialLinks),
   tags: many(profilesToTags),
@@ -785,6 +883,7 @@ export const regionsRelations = relations(regions, ({ many }) => ({
 }));
 
 export const categoriesRelations = relations(categories, ({ many }) => ({
+  profiles: many(profiles),
   services: many(services),
   events: many(events),
 }));
@@ -879,6 +978,17 @@ export const notificationsRelations = relations(notifications, ({ one }) => ({
   actorProfile: one(profiles, {
     fields: [notifications.actorProfileId],
     references: [profiles.id],
+  }),
+}));
+
+export const requestsRelations = relations(requests, ({ one }) => ({
+  profile: one(profiles, {
+    fields: [requests.profileId],
+    references: [profiles.id],
+  }),
+  reviewer: one(users, {
+    fields: [requests.reviewerUserId],
+    references: [users.id],
   }),
 }));
 

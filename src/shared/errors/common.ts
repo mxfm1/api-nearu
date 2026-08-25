@@ -1,4 +1,5 @@
 import { AppError } from './app-error';
+import type { ProfileVerificationChecklist } from '@/src/domains/requests/use-cases/get-profile-verification-checklist.use-case';
 
 export class InputParseError extends AppError {
   constructor(message: string, cause?: Error) {
@@ -41,5 +42,16 @@ export class EmptyScoringRulesError extends InputParseError {
     super('Debe configurar al menos una regla de scoring para el evento.');
     this.name = 'EmptyScoringRulesError';
     (this as any).code = 'SCORING_RULES_EMPTY';
+  }
+}
+
+export class ProfileVerificationRequirementsNotMetError extends InputParseError {
+  public readonly details: { checklist: ProfileVerificationChecklist };
+
+  constructor(checklist: ProfileVerificationChecklist) {
+    super('Tu perfil no cumple los requisitos obligatorios para solicitar verificación.');
+    this.name = 'ProfileVerificationRequirementsNotMetError';
+    (this as any).code = 'PROFILE_VERIFICATION_REQUIREMENTS_NOT_MET';
+    this.details = { checklist };
   }
 }

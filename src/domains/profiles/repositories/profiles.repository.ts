@@ -1,4 +1,4 @@
-import { eq, sql } from 'drizzle-orm';
+import { eq, sql, and, asc, desc, gte, lte } from 'drizzle-orm';
 import { db } from '@/src/shared/database';
 import { profiles, profileSocialLinks, profilesToTags, tags, regions } from '@/src/shared/database/schema';
 import type { IProfilesRepository } from './profiles.repository.interface';
@@ -78,6 +78,40 @@ export class ProfilesRepository implements IProfilesRepository {
     }
   }
 
+  async search(filters?: {
+    search?: string;
+    regionId?: string;
+    categoryId?: string;
+    verified?: boolean;
+    employeesMin?: number;
+    employeesMax?: number;
+    sort?: 'relevance' | 'newest' | 'oldest';
+  }): Promise<Profile[]> {
+    const conditions = [];
+    if (filters?.search) {
+      const query = sql`websearch_to_tsquery('spanish', ${filters.search})`;
+      conditions.push(sql`(${profiles.searchVector} @@ ${query}
+        OR ${profiles.name} % ${filters.search}
+        OR ${profiles.description} % ${filters.search})`);
+    }
+    if (filters?.regionId) conditions.push(eq(profiles.regionId, filters.regionId));
+    if (filters?.categoryId) conditions.push(eq(profiles.categoryId, filters.categoryId));
+    if (filters?.verified !== undefined) conditions.push(eq(profiles.isVerified, filters.verified));
+    if (filters?.employeesMin !== undefined) conditions.push(gte(profiles.employees, filters.employeesMin));
+    if (filters?.employeesMax !== undefined) conditions.push(lte(profiles.employees, filters.employeesMax));
+
+    const query = db.select().from(profiles);
+    if (conditions.length > 0) query.where(and(...conditions));
+    if (filters?.search) {
+      query.orderBy(sql`ts_rank_cd(${profiles.searchVector}, websearch_to_tsquery('spanish', ${filters.search})) DESC`, desc(profiles.createdAt));
+    } else if (filters?.sort === 'oldest') {
+      query.orderBy(asc(profiles.createdAt));
+    } else {
+      query.orderBy(desc(profiles.createdAt));
+    }
+    return (await query) as Profile[];
+  }
+
   async upsert(userId: string, data: Partial<Profile>): Promise<Profile> {
     try {
       // Check if profile exists
@@ -114,8 +148,9 @@ export class ProfilesRepository implements IProfilesRepository {
           logoUrl: data.logoUrl ?? null,
           name: data.name ?? null,
           slug: data.slug ?? null,
-          description: data.description ?? null,
+           description: data.description ?? null,
           regionId: data.regionId ?? null,
+          categoryId: data.categoryId ?? null,
           founded: data.founded ?? null,
           employees: data.employees ?? null,
           website: data.website ?? null,

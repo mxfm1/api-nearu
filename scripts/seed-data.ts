@@ -156,7 +156,7 @@ async function seedData() {
       description: 'Empresa líder en producción de eventos corporativos y sociales en Santiago.',
       locationId: santiagoLoc?.id ?? null,
       founded: '2018',
-      employees: '10-50',
+       employees: 30,
       website: 'https://eventpro.cl',
       whatsapp: '+56912345678',
       createdAt: now,
@@ -201,7 +201,8 @@ async function seedData() {
       yearsExperience: 8,
       priceMin: 1500000,
       priceMax: 15000000,
-      availability: 'Lun-Sáb 9:00-22:00',
+       availability: 'not_immediate',
+       availabilityDetails: 'Lun-Sáb 9:00-22:00',
       contacts: [
         { type: 'email', value: 'contacto@eventpro.cl' },
         { type: 'whatsapp', value: '+56912345678' },
@@ -218,7 +219,8 @@ async function seedData() {
       yearsExperience: 5,
       priceMin: 25000,
       priceMax: 80000,
-      availability: 'Previa reserva, 7 días',
+       availability: 'not_immediate',
+       availabilityDetails: 'Previa reserva, 7 días',
       contacts: [
         { type: 'email', value: 'catering@eventpro.cl' },
         { type: 'whatsapp', value: '+56987654321' },
@@ -234,7 +236,8 @@ async function seedData() {
       yearsExperience: 10,
       priceMin: 500000,
       priceMax: 5000000,
-      availability: 'Lun-Dom 24 hrs (eventos)',
+       availability: 'immediate',
+       availabilityDetails: 'Lun-Dom 24 hrs (eventos)',
       contacts: [
         { type: 'email', value: 'lighting@eventpro.cl' },
         { type: 'instagram', value: '@eventprolight' },

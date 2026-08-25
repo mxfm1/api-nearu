@@ -91,5 +91,8 @@ export const listEventsSchema = z.object({
       .string()
       .optional()
       .transform((v) => v === 'true'),
+    from: z.string().datetime().optional(),
+    to: z.string().datetime().optional(),
+    sort: z.enum(['relevance', 'newest', 'oldest', 'start_date']).optional().default('newest'),
   }),
 });

@@ -1,0 +1,26 @@
+/api/recommendations:
+  get:
+    summary: Obtener recomendaciones por región y categoría
+    tags: [Recommendations]
+    security:
+      - cookieAuth: []
+    parameters:
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 50
+          default: 12
+    responses:
+      '200':
+        description: Recomendaciones de perfiles, servicios y eventos
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yaml#/components/schemas/RecommendationResponse'
+      '401':
+        $ref: '../openapi.yaml#/components/responses/Unauthenticated'
+      '404':
+        $ref: '../openapi.yaml#/components/responses/NotFound'
